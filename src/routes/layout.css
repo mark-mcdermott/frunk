@@ -122,3 +122,35 @@ h1, h2, h3, h4, h5, h6 {
 .dark .bg-surface-900 {
   background-color: var(--color-bg, #18181b) !important;
 }
+
+/* Hero gradient animation */
+@keyframes gradient-undulate {
+  0%, 100% {
+    background-size: 200% 200%;
+    background-position: 0% 0%;
+    opacity: 1;
+  }
+  50% {
+    background-size: 200% 200%;
+    background-position: 100% 100%;
+    opacity: 0.7;
+  }
+}
+
+.animate-gradient {
+  animation: gradient-undulate 30s ease-in-out infinite;
+}
+
+/* Hero title shadow animation - synced with gradient */
+@keyframes shadow-undulate {
+  0%, 100% {
+    filter: drop-shadow(0 4px 6px rgba(0,0,0,0.4));
+  }
+  50% {
+    filter: drop-shadow(0 4px 6px rgba(0,0,0,0.15));
+  }
+}
+
+.animate-shadow {
+  animation: shadow-undulate 30s ease-in-out infinite;
+}
