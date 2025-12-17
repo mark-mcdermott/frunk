@@ -42,15 +42,15 @@
 	<!-- Main Content - Centered Form -->
 	<main class="flex-1 flex items-start justify-center pt-48 px-4 sm:px-6 lg:px-8">
 		<div class="bg-white dark:bg-surface-800 rounded-2xl p-6 shadow-xl shadow-surface-900/5 w-full max-w-sm">
-			<h3 class="text-xl font-bold text-black dark:text-white mb-2">Sign In</h3>
-			<p class="text-sm text-surface-500 mb-6">Complete the form to sign in.</p>
+			<h3 class="text-xl font-bold text-black dark:text-white mb-2">Create Account</h3>
+			<p class="text-sm text-surface-500 mb-6">Complete the form to get started.</p>
 
 			<!-- <div class="flex gap-3 mb-4">
 				<button class="flex-1 btn preset-outlined-surface-500 py-2 rounded-lg text-sm font-medium">GitHub</button>
 				<button class="flex-1 btn preset-outlined-surface-500 py-2 rounded-lg text-sm font-medium">Google</button>
 			</div> -->
 
-			<form method="post" action="?/login" use:enhance class="space-y-4">
+			<form method="post" action="?/register" use:enhance class="space-y-4">
 				<div>
 					<label for="username-input" class="text-xs font-medium text-surface-600 dark:text-surface-400 block mb-1">Email</label>
 					<input id="username-input" name="username" type="email" placeholder="me@example.com" class="w-full px-3 py-2 rounded-lg bg-surface-100 dark:bg-surface-700 border-0 text-sm focus:ring-2 focus:ring-primary-500" />
@@ -60,9 +60,9 @@
 					<input id="password-input" name="password" type="password" placeholder="Enter your password..." class="w-full px-3 py-2 rounded-lg bg-surface-100 dark:bg-surface-700 border-0 text-sm focus:ring-2 focus:ring-primary-500" />
 				</div>
 				<button type="submit" class="w-full btn preset-filled-primary-500 py-2.5 rounded-lg font-semibold text-white">
-					Sign In
+					Create Account
 				</button>
-				<p class="text-xs text-surface-500 text-right">Don't have an account? <a href="/demo/lucia/signup" class="text-primary-500 hover:text-[#93c5fd] transition-colors">Sign up.</a></p>
+				<p class="text-xs text-surface-500 text-right">Already have an account? <a href="/demo/lucia/login" class="text-primary-500 hover:text-[#93c5fd] transition-colors">Sign in.</a></p>
 			</form>
 			{#if form?.message}
 				<p class="text-red-500 text-sm mt-4">{form.message}</p>

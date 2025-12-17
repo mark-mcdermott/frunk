@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { Avatar, Switch, SegmentedControl } from '@skeletonlabs/skeleton-svelte';
 	import { ThemeToggle } from '$lib/components/ui/theme-toggle';
+	import head from '$lib/assets/head.png';
 	import logo from '$lib/assets/logo.png';
 
 	// State for interactive components
@@ -51,24 +52,24 @@
 				<div class="flex items-center gap-8">
 					<!-- Logo -->
 					<a href="/" class="flex items-center gap-2" aria-label="Home">
-						<img src={logo} alt="Logo" class="h-16 w-auto" />
+						<img src={head} alt="Logo" class="h-16 w-auto" />
 					</a>
 					<!-- Nav Links -->
 					<div class="hidden md:flex items-center gap-6">
 						<a href="/blocks" class="text-surface-600 dark:text-surface-400 hover:text-primary-500 font-medium transition-colors">Blocks</a>
-						<a href="/charts" class="text-primary-500 font-medium transition-colors">Charts</a>
+						<a href="/charts" class="text-primary-500 font-medium">Charts</a>
 						<a href="/content" class="text-surface-600 dark:text-surface-400 hover:text-primary-500 font-medium transition-colors">Content</a>
 					</div>
 				</div>
 				<div class="flex items-center gap-4">
-					<!-- Sign In -->
-					<a href="/demo/lucia/login" class="text-surface-600 dark:text-surface-400 hover:text-primary-500 font-medium transition-colors">Sign In</a>
 					<!-- GitHub -->
 					<a href="https://github.com/mark-mcdermott/frunk" class="p-2 rounded-lg hover:bg-surface-100 dark:hover:bg-surface-800 transition-colors" aria-label="GitHub">
 						<svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
 					</a>
 					<!-- Theme Toggle -->
 					<ThemeToggle mode="light-dark-system" />
+					<!-- Sign In -->
+					<a href="/demo/lucia/login" class="btn btn-sm preset-filled-primary-500">Sign In</a>
 				</div>
 			</div>
 		</div>
@@ -78,7 +79,7 @@
 	<section id="showcase" class="py-20 px-4 sm:px-6 lg:px-8">
 		<div class="max-w-7xl mx-auto">
 			<div class="text-center mb-16">
-				<h2 class="text-3xl sm:text-4xl font-bold text-surface-900 dark:text-white mb-4">
+				<h2 class="text-3xl sm:text-4xl font-bold text-black dark:text-white mb-4">
 					Charts
 				</h2>
 				<p class="text-lg text-surface-600 dark:text-surface-400 max-w-2xl mx-auto">
@@ -91,7 +92,7 @@
 
 				<!-- Create Account Card -->
 				<div class="lg:col-span-1 bg-white dark:bg-surface-800 rounded-2xl p-6 shadow-xl shadow-surface-900/5">
-					<h3 class="text-xl font-bold text-surface-900 dark:text-white mb-2">Create Account</h3>
+					<h3 class="text-xl font-bold text-black dark:text-white mb-2">Create Account</h3>
 					<p class="text-sm text-surface-500 mb-6">Complete the form to get started.</p>
 
 					<div class="flex gap-3 mb-4">
@@ -116,7 +117,7 @@
 
 				<!-- Notifications Card -->
 				<div class="bg-white dark:bg-surface-800 rounded-2xl p-6 shadow-xl shadow-surface-900/5">
-					<h3 class="text-xl font-bold text-surface-900 dark:text-white mb-2">Notifications</h3>
+					<h3 class="text-xl font-bold text-black dark:text-white mb-2">Notifications</h3>
 					<p class="text-sm text-surface-500 mb-6">Review each available option.</p>
 
 					<div class="space-y-4">
@@ -145,7 +146,7 @@
 
 				<!-- Team Card -->
 				<div class="bg-white dark:bg-surface-800 rounded-2xl p-6 shadow-xl shadow-surface-900/5">
-					<h3 class="text-xl font-bold text-surface-900 dark:text-white mb-2">Team</h3>
+					<h3 class="text-xl font-bold text-black dark:text-white mb-2">Team</h3>
 					<p class="text-sm text-surface-500 mb-4">View all members of the team.</p>
 
 					<input type="text" placeholder="Search Members..." class="w-full px-3 py-2 rounded-lg bg-surface-100 dark:bg-surface-700 border-0 text-sm mb-4 focus:ring-2 focus:ring-primary-500" />
@@ -155,7 +156,7 @@
 							<div class="flex items-center gap-3">
 								<Avatar name={member.name} class={member.color} />
 								<div class="min-w-0">
-									<p class="text-sm font-medium text-surface-900 dark:text-white truncate">{member.name}</p>
+									<p class="text-sm font-medium text-black dark:text-white truncate">{member.name}</p>
 									<p class="text-xs text-surface-500 truncate">{member.email}</p>
 								</div>
 							</div>
@@ -166,7 +167,7 @@
 				<!-- Music Player Card -->
 				<div class="lg:row-span-2 bg-white dark:bg-surface-800 rounded-2xl p-6 shadow-xl shadow-surface-900/5 flex flex-col">
 					<div class="flex items-center justify-between mb-4">
-						<span class="text-xl font-bold text-surface-900 dark:text-white">Music</span>
+						<span class="text-xl font-bold text-black dark:text-white">Music</span>
 						<span class="text-xs text-surface-500">Harman Kardon Luna</span>
 					</div>
 
@@ -218,7 +219,7 @@
 								</svg>
 							</div>
 							<div>
-								<p class="font-bold text-surface-900 dark:text-white">Success</p>
+								<p class="font-bold text-black dark:text-white">Success</p>
 								<p class="text-sm text-surface-500">Task was completed.</p>
 							</div>
 						</div>
@@ -228,12 +229,12 @@
 
 				<!-- Statistics Card -->
 				<div class="lg:col-span-2 bg-white dark:bg-surface-800 rounded-2xl p-6 shadow-xl shadow-surface-900/5">
-					<h3 class="text-xl font-bold text-surface-900 dark:text-white mb-6">Statistics</h3>
+					<h3 class="text-xl font-bold text-black dark:text-white mb-6">Statistics</h3>
 
 					<div class="grid grid-cols-3 gap-6 mb-6">
 						{#each stats as stat}
 							<div class="text-center">
-								<p class="text-3xl font-bold text-surface-900 dark:text-white">{stat.value}</p>
+								<p class="text-3xl font-bold text-black dark:text-white">{stat.value}</p>
 								<p class="text-sm text-surface-500">{stat.label}</p>
 								<span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium mt-2 {stat.positive ? 'bg-success-500/20 text-success-600' : 'bg-error-500/20 text-error-600'}">
 									{stat.change}
@@ -247,7 +248,7 @@
 
 				<!-- Circular Progress -->
 				<div class="bg-white dark:bg-surface-800 rounded-2xl p-6 shadow-xl shadow-surface-900/5">
-					<h3 class="text-xl font-bold text-surface-900 dark:text-white mb-4 text-center">Progression</h3>
+					<h3 class="text-xl font-bold text-black dark:text-white mb-4 text-center">Progression</h3>
 
 					<div class="relative w-32 h-32 mx-auto">
 						<svg class="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
@@ -255,7 +256,7 @@
 							<circle cx="50" cy="50" r="40" fill="none" stroke="currentColor" stroke-width="8" stroke-dasharray="251.2" stroke-dashoffset="170.8" class="text-primary-500"/>
 						</svg>
 						<div class="absolute inset-0 flex items-center justify-center">
-							<span class="text-2xl font-bold text-surface-900 dark:text-white">32%</span>
+							<span class="text-2xl font-bold text-black dark:text-white">32%</span>
 						</div>
 					</div>
 
@@ -267,7 +268,7 @@
 
 				<!-- Delivery Options -->
 				<div class="bg-white dark:bg-surface-800 rounded-2xl p-6 shadow-xl shadow-surface-900/5">
-					<h3 class="text-lg font-bold text-surface-900 dark:text-white mb-4">Delivery</h3>
+					<h3 class="text-lg font-bold text-black dark:text-white mb-4">Delivery</h3>
 
 					<SegmentedControl name="delivery" bind:value={deliveryOption}>
 						{#snippet children()}
@@ -276,7 +277,7 @@
 						{/snippet}
 					</SegmentedControl>
 
-					<h3 class="text-lg font-bold text-surface-900 dark:text-white mt-6 mb-4">Size</h3>
+					<h3 class="text-lg font-bold text-black dark:text-white mt-6 mb-4">Size</h3>
 					<div class="grid grid-cols-5 gap-2">
 						{#each sizes as size}
 							<button
@@ -293,7 +294,7 @@
 				<div class="lg:col-span-2 bg-white dark:bg-surface-800 rounded-2xl p-6 shadow-xl shadow-surface-900/5">
 					<div class="flex items-center justify-between mb-6">
 						<div>
-							<h3 class="text-xl font-bold text-surface-900 dark:text-white">Revenue</h3>
+							<h3 class="text-xl font-bold text-black dark:text-white">Revenue</h3>
 							<p class="text-sm text-surface-500">Period: April 1-13</p>
 						</div>
 						<button aria-label="Open in new window" class="p-2 rounded-lg hover:bg-surface-100 dark:hover:bg-surface-700 transition-colors">
@@ -306,7 +307,7 @@
 					<div class="space-y-4">
 						{#each revenue as item}
 							<div class="flex items-center gap-4">
-								<span class="text-lg font-bold text-surface-900 dark:text-white w-20">{item.amount}</span>
+								<span class="text-lg font-bold text-black dark:text-white w-20">{item.amount}</span>
 								<div class="flex-1 h-3 bg-surface-100 dark:bg-surface-700 rounded-full overflow-hidden">
 									<div class="h-full bg-gradient-to-r from-primary-500 to-secondary-500 rounded-full transition-all" style="width: {item.percent}%"></div>
 								</div>
@@ -326,9 +327,9 @@
 	<footer class="border-t border-surface-200 dark:border-surface-800 py-12 px-4 sm:px-6 lg:px-8">
 		<div class="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
 			<div class="flex items-center gap-2">
-				<img src={logo} alt="Logo" class="h-6 w-auto" />
+				<img src={logo} alt="Logo" class="h-12 w-auto" />
 			</div>
-			<p class="text-sm text-surface-500">Built with Skeleton + SvelteKit + Tailwind CSS</p>
+			<p class="text-sm text-surface-500 flex items-center gap-1">Built with <svg class="w-5 h-5 text-red-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clip-rule="evenodd"/></svg> by <a href="https://markmcdermott.io" class="text-primary-500 hover:text-[#93c5fd] transition-colors">Mark McDermott</a></p>
 		</div>
 	</footer>
 </div>

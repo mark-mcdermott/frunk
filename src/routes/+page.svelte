@@ -31,7 +31,7 @@
 					<!-- Theme Toggle -->
 					<ThemeToggle mode="light-dark-system" />
 					<!-- Sign In -->
-					<a href="/demo/lucia/login" class="btn preset-filled-primary-500 px-4 pt-1 pb-1 rounded-full font-medium text-white text-xs">Sign In</a>
+					<a href="/demo/lucia/login" class="btn btn-sm preset-filled-primary-500">Sign In</a>
 				</div>
 			</div>
 		</div>
@@ -150,7 +150,7 @@
 			<h2 class="text-3xl sm:text-4xl font-bold text-black dark:text-white mb-8">
 				Get started now and let's get Frunk!
 			</h2>
-			<a href="/demo/lucia/login" class="btn preset-filled-primary-500 px-8 py-3 rounded-lg font-semibold text-white shadow-lg shadow-primary-500/25">
+			<a href="/demo/lucia/signup" class="btn btn-lg preset-filled-primary-500">
 				Sign Up
 			</a>
 		</div>

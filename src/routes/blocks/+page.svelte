@@ -1,5 +1,7 @@
 <script lang="ts">
 	import { Avatar } from '@skeletonlabs/skeleton-svelte';
+	import { ThemeToggle } from '$lib/components/ui/theme-toggle';
+	import head from '$lib/assets/head.png';
 	import logo from '$lib/assets/logo.png';
 
 	const team = [
@@ -92,9 +94,11 @@
 		<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 			<div class="flex items-center justify-between h-16">
 				<div class="flex items-center gap-8">
+					<!-- Logo -->
 					<a href="/" class="flex items-center gap-2" aria-label="Home">
-						<img src={logo} alt="Logo" class="h-8 w-auto" />
+						<img src={head} alt="Logo" class="h-16 w-auto" />
 					</a>
+					<!-- Nav Links -->
 					<div class="hidden md:flex items-center gap-6">
 						<a href="/blocks" class="text-primary-500 font-medium">Blocks</a>
 						<a href="/charts" class="text-surface-600 dark:text-surface-400 hover:text-primary-500 font-medium transition-colors">Charts</a>
@@ -102,9 +106,14 @@
 					</div>
 				</div>
 				<div class="flex items-center gap-4">
-					<a href="https://github.com" class="p-2 rounded-lg hover:bg-surface-100 dark:hover:bg-surface-800 transition-colors" aria-label="GitHub">
+					<!-- GitHub -->
+					<a href="https://github.com/mark-mcdermott/frunk" class="p-2 rounded-lg hover:bg-surface-100 dark:hover:bg-surface-800 transition-colors" aria-label="GitHub">
 						<svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
 					</a>
+					<!-- Theme Toggle -->
+					<ThemeToggle mode="light-dark-system" />
+					<!-- Sign In -->
+					<a href="/demo/lucia/login" class="btn btn-sm preset-filled-primary-500">Sign In</a>
 				</div>
 			</div>
 		</div>
@@ -159,7 +168,7 @@
 			<div class="grid lg:grid-cols-2 gap-16 items-center">
 				<div>
 					<span class="text-primary-500 font-semibold text-sm uppercase tracking-wider">Our Mission</span>
-					<h2 class="text-3xl sm:text-4xl font-bold text-surface-900 dark:text-white mt-4 mb-6">
+					<h2 class="text-3xl sm:text-4xl font-bold text-black dark:text-white mt-4 mb-6">
 						Democratizing great design
 					</h2>
 					<p class="text-lg text-surface-600 dark:text-surface-400 mb-6 leading-relaxed">
@@ -208,7 +217,7 @@
 		<div class="max-w-7xl mx-auto">
 			<div class="text-center mb-16">
 				<span class="text-secondary-500 font-semibold text-sm uppercase tracking-wider">Our Values</span>
-				<h2 class="text-3xl sm:text-4xl font-bold text-surface-900 dark:text-white mt-4 mb-4">
+				<h2 class="text-3xl sm:text-4xl font-bold text-black dark:text-white mt-4 mb-4">
 					What drives us forward
 				</h2>
 				<p class="text-lg text-surface-600 dark:text-surface-400 max-w-2xl mx-auto">
@@ -227,7 +236,7 @@
 								</svg>
 							</div>
 							<div>
-								<h3 class="text-xl font-bold text-surface-900 dark:text-white mb-2">{value.title}</h3>
+								<h3 class="text-xl font-bold text-black dark:text-white mb-2">{value.title}</h3>
 								<p class="text-surface-600 dark:text-surface-400 leading-relaxed">{value.description}</p>
 							</div>
 						</div>
@@ -242,7 +251,7 @@
 		<div class="max-w-7xl mx-auto">
 			<div class="text-center mb-16">
 				<span class="text-primary-500 font-semibold text-sm uppercase tracking-wider">The Team</span>
-				<h2 class="text-3xl sm:text-4xl font-bold text-surface-900 dark:text-white mt-4 mb-4">
+				<h2 class="text-3xl sm:text-4xl font-bold text-black dark:text-white mt-4 mb-4">
 					Meet the people behind Skeleton
 				</h2>
 				<p class="text-lg text-surface-600 dark:text-surface-400 max-w-2xl mx-auto">
@@ -260,7 +269,7 @@
 									<Avatar name={member.name} class="{member.color} w-24 h-24 text-2xl" />
 								</div>
 							</div>
-							<h3 class="text-xl font-bold text-surface-900 dark:text-white">{member.name}</h3>
+							<h3 class="text-xl font-bold text-black dark:text-white">{member.name}</h3>
 							<p class="text-primary-500 font-medium text-sm mb-3">{member.role}</p>
 							<p class="text-surface-600 dark:text-surface-400 text-sm leading-relaxed">{member.bio}</p>
 							<div class="flex gap-3 mt-4">
@@ -286,7 +295,7 @@
 		<div class="max-w-4xl mx-auto">
 			<div class="text-center mb-16">
 				<span class="text-tertiary-500 font-semibold text-sm uppercase tracking-wider">Our Journey</span>
-				<h2 class="text-3xl sm:text-4xl font-bold text-surface-900 dark:text-white mt-4 mb-4">
+				<h2 class="text-3xl sm:text-4xl font-bold text-black dark:text-white mt-4 mb-4">
 					From idea to impact
 				</h2>
 				<p class="text-lg text-surface-600 dark:text-surface-400">
@@ -310,7 +319,7 @@
 									<span class="inline-block px-3 py-1 rounded-full bg-primary-500/10 text-primary-600 dark:text-primary-400 text-sm font-bold mb-3">
 										{milestone.year}
 									</span>
-									<h3 class="text-xl font-bold text-surface-900 dark:text-white mb-2">{milestone.title}</h3>
+									<h3 class="text-xl font-bold text-black dark:text-white mb-2">{milestone.title}</h3>
 									<p class="text-surface-600 dark:text-surface-400">{milestone.description}</p>
 								</div>
 							</div>
@@ -352,9 +361,9 @@
 	<footer class="border-t border-surface-200 dark:border-surface-800 py-12 px-4 sm:px-6 lg:px-8">
 		<div class="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
 			<div class="flex items-center gap-2">
-				<img src={logo} alt="Logo" class="h-6 w-auto" />
+				<img src={logo} alt="Logo" class="h-12 w-auto" />
 			</div>
-			<p class="text-sm text-surface-500">Built with Skeleton + SvelteKit + Tailwind CSS</p>
+			<p class="text-sm text-surface-500 flex items-center gap-1">Built with <svg class="w-5 h-5 text-red-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clip-rule="evenodd"/></svg> by <a href="https://markmcdermott.io" class="text-primary-500 hover:text-[#93c5fd] transition-colors">Mark McDermott</a></p>
 		</div>
 	</footer>
 </div>

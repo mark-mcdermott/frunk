@@ -1,11 +1,7 @@
 <script lang="ts">
-	import { enhance } from '$app/forms';
 	import { ThemeToggle } from '$lib/components/ui/theme-toggle';
 	import head from '$lib/assets/head.png';
 	import logo from '$lib/assets/logo.png';
-	import type { ActionData } from './$types';
-
-	let { form }: { form: ActionData } = $props();
 </script>
 
 <div class="min-h-screen bg-surface-50 dark:bg-surface-900 flex flex-col">
@@ -39,34 +35,17 @@
 		</div>
 	</nav>
 
-	<!-- Main Content - Centered Form -->
+	<!-- Main Content - Centered Card -->
 	<main class="flex-1 flex items-start justify-center pt-48 px-4 sm:px-6 lg:px-8">
-		<div class="bg-white dark:bg-surface-800 rounded-2xl p-6 shadow-xl shadow-surface-900/5 w-full max-w-sm">
-			<h3 class="text-xl font-bold text-black dark:text-white mb-2">Sign In</h3>
-			<p class="text-sm text-surface-500 mb-6">Complete the form to sign in.</p>
-
-			<!-- <div class="flex gap-3 mb-4">
-				<button class="flex-1 btn preset-outlined-surface-500 py-2 rounded-lg text-sm font-medium">GitHub</button>
-				<button class="flex-1 btn preset-outlined-surface-500 py-2 rounded-lg text-sm font-medium">Google</button>
-			</div> -->
-
-			<form method="post" action="?/login" use:enhance class="space-y-4">
-				<div>
-					<label for="username-input" class="text-xs font-medium text-surface-600 dark:text-surface-400 block mb-1">Email</label>
-					<input id="username-input" name="username" type="email" placeholder="me@example.com" class="w-full px-3 py-2 rounded-lg bg-surface-100 dark:bg-surface-700 border-0 text-sm focus:ring-2 focus:ring-primary-500" />
-				</div>
-				<div>
-					<label for="password-input" class="text-xs font-medium text-surface-600 dark:text-surface-400 block mb-1">Password</label>
-					<input id="password-input" name="password" type="password" placeholder="Enter your password..." class="w-full px-3 py-2 rounded-lg bg-surface-100 dark:bg-surface-700 border-0 text-sm focus:ring-2 focus:ring-primary-500" />
-				</div>
-				<button type="submit" class="w-full btn preset-filled-primary-500 py-2.5 rounded-lg font-semibold text-white">
-					Sign In
-				</button>
-				<p class="text-xs text-surface-500 text-right">Don't have an account? <a href="/demo/lucia/signup" class="text-primary-500 hover:text-[#93c5fd] transition-colors">Sign up.</a></p>
-			</form>
-			{#if form?.message}
-				<p class="text-red-500 text-sm mt-4">{form.message}</p>
-			{/if}
+		<div class="bg-white dark:bg-surface-800 rounded-2xl p-6 shadow-xl shadow-surface-900/5 w-full max-w-sm text-center">
+			<span class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-secondary-500/10 text-secondary-600 dark:text-secondary-400 text-sm font-medium mb-6">
+				404
+			</span>
+			<p class="text-4xl sm:text-5xl lg:text-6xl font-bold leading-tight">
+				<span class="text-transparent bg-clip-text bg-gradient-to-r from-secondary-500 to-primary-500">
+					Apologies, this page could not be found.
+				</span>
+			</p>
 		</div>
 	</main>
 
