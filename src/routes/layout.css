@@ -1,8 +1,11 @@
+@import url('https://fonts.googleapis.com/css2?family=Arvo:ital,wght@0,400;0,700;1,400;1,700&family=Open+Sans:ital,wght@0,300..800;1,300..800&display=swap');
 @import 'tailwindcss';
 
 @import '@skeletonlabs/skeleton';
 @import '@skeletonlabs/skeleton-svelte';
 @import '@skeletonlabs/skeleton/themes/cerberus';
+
+@custom-variant dark (&:where(.dark, .dark *));
 
 @theme inline {
   /* Bridge theme-forseen colors to Tailwind */
@@ -38,15 +41,32 @@
   --font-body: var(--font-body);
 }
 
-/* Direct style overrides using theme-forseen variables */
+/* Direct style overrides */
 html {
-  background-color: var(--color-bg, white) !important;
-  color: var(--color-text, #1a1a1a) !important;
+  --color-primary: #3b82f6;
+  --color-primary-shadow: #2563eb;
+  --color-accent: #FBB428;
+  --color-accent-shadow: #F59E0B;
+  --color-bg: #fafafa;
+  --color-card-bg: #f4f4f5;
+  --color-text: #1a1a1a;
+  --font-heading: 'Arvo', serif;
+  --font-body: 'Open Sans', sans-serif;
+  background-color: var(--color-bg) !important;
+  color: var(--color-text) !important;
 }
 
 html.dark {
-  background-color: var(--color-bg, #0a0a0a) !important;
-  color: var(--color-text, #fafafa) !important;
+  --color-primary: #60A5FA;
+  --color-primary-shadow: #3B82F6;
+  --color-accent: #FBB428;
+  --color-accent-shadow: #F59E0B;
+  --color-bg: #0F172A;
+  --color-card-bg: #1E293B;
+  --color-text: #F1F5F9;
+  --color-extra: #93C5FD;
+  background-color: var(--color-bg) !important;
+  color: var(--color-text) !important;
 }
 
 body {
@@ -55,6 +75,25 @@ body {
 
 h1, h2, h3, h4, h5, h6 {
   font-family: var(--font-heading, inherit) !important;
+}
+
+/* Global link styles */
+a {
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+a:hover {
+  color: #93c5fd;
+}
+
+a.btn:hover,
+a.btn.text-white:hover {
+  color: white;
+}
+
+a.btn.preset-outlined-surface-500:hover {
+  color: currentColor;
 }
 
 /* Override gradient classes to use theme-forseen primary/accent */
@@ -87,11 +126,11 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .text-primary-500 {
-  color: var(--color-primary, #3b82f6) !important;
+  color: var(--color-primary, #3b82f6);
 }
 
 .text-primary-600 {
-  color: var(--color-primary-shadow, #2563eb) !important;
+  color: var(--color-primary-shadow, #2563eb);
 }
 
 .text-secondary-500 {
@@ -153,4 +192,18 @@ h1, h2, h3, h4, h5, h6 {
 
 .animate-shadow {
   animation: shadow-undulate 30s ease-in-out infinite;
+}
+
+/* Hero pill background animation - synced with gradient */
+@keyframes pill-undulate {
+  0%, 100% {
+    background-color: rgba(255, 255, 255, 0.9);
+  }
+  50% {
+    background-color: rgba(59, 130, 246, 0.1);
+  }
+}
+
+.animate-pill {
+  animation: pill-undulate 30s ease-in-out infinite;
 }

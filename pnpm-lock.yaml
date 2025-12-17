@@ -26,9 +26,6 @@ importers:
       tailwind-merge:
         specifier: ^3.4.0
         version: 3.4.0
-      theme-forseen:
-        specifier: ^0.1.1
-        version: 0.1.1
     devDependencies:
       '@eslint/compat':
         specifier: ^1.4.0
@@ -2597,9 +2594,6 @@ packages:
     resolution: {integrity: sha512-g9ljZiwki/LfxmQADO3dEY1CbpmXT5Hm2fJ+QaGKwSXUylMybePR7/67YW7jOrrvjEgL1Fmz5kzyAjWVWLlucg==}
     engines: {node: '>=6'}
 
-  theme-forseen@0.1.1:
-    resolution: {integrity: sha512-6Xxu2JgF9oDrXHvzUWmSwhfY8v70V9Q9fyJ4vcL6dwvsyrLwE3HS+/EwKYLKG2I8BoWVkZASOCd3nhO/ounR6A==}
-
   tinybench@2.9.0:
     resolution: {integrity: sha512-0+DUvqWMValLmha6lr4kD8iAMK1HzV0/aKnCtWb9v9641TnP/MFb7Pc2bxoxQjTXAErryXVgUOfv2YqNllqGeg==}
 
@@ -5087,8 +5081,6 @@ snapshots:
   tailwindcss@4.1.18: {}
 
   tapable@2.3.0: {}
-
-  theme-forseen@0.1.1: {}
 
   tinybench@2.9.0: {}
 

@@ -96,8 +96,8 @@
 						<img src={logo} alt="Logo" class="h-8 w-auto" />
 					</a>
 					<div class="hidden md:flex items-center gap-6">
-						<a href="/" class="text-surface-600 dark:text-surface-400 hover:text-primary-500 font-medium transition-colors">Home</a>
-						<a href="/about" class="text-primary-500 font-medium">About</a>
+						<a href="/blocks" class="text-primary-500 font-medium">Blocks</a>
+						<a href="/charts" class="text-surface-600 dark:text-surface-400 hover:text-primary-500 font-medium transition-colors">Charts</a>
 						<a href="/content" class="text-surface-600 dark:text-surface-400 hover:text-primary-500 font-medium transition-colors">Content</a>
 					</div>
 				</div>
@@ -125,10 +125,9 @@
 					Meet the Team
 				</span>
 
-				<h1 class="text-4xl sm:text-5xl lg:text-6xl font-bold text-surface-900 dark:text-white mb-6 leading-tight">
-					We're building the future of
+				<h1 class="text-4xl sm:text-5xl lg:text-6xl font-bold mb-6 leading-tight">
 					<span class="text-transparent bg-clip-text bg-gradient-to-r from-secondary-500 to-primary-500">
-						design systems
+						We're building the future of design systems
 					</span>
 				</h1>
 
