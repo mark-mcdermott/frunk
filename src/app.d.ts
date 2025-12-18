@@ -8,10 +8,13 @@ declare global {
 		}
 
 		// interface Error {}
-		// interface Locals {}
 		// interface PageData {}
 		// interface PageState {}
-		// interface Platform {}
+		interface Platform {
+			env: {
+				R2_AVATARS: R2Bucket;
+			};
+		}
 	}
 }
 

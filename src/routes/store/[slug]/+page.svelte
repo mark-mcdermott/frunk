@@ -2,6 +2,7 @@
 	import { getAvailableSizes, getAvailableColors, getVariantByOptions, formatPrice } from '$lib/data/products';
 	import { ShoppingBag, ArrowLeft, Check } from 'lucide-svelte';
 	import { toast } from 'svelte-sonner';
+	import Breadcrumbs from '$lib/components/Breadcrumbs.svelte';
 
 	let { data } = $props();
 	const product = data.product;
@@ -55,13 +56,7 @@
 
 <div class="min-h-screen bg-surface-50 dark:bg-surface-900 py-8 px-4 sm:px-6 lg:px-8">
 	<div class="max-w-6xl mx-auto">
-		<a
-			href="/store"
-			class="inline-flex items-center gap-2 text-surface-600 dark:text-surface-400 hover:text-surface-900 dark:hover:text-white mb-8 no-underline"
-		>
-			<ArrowLeft class="w-4 h-4" />
-			Back to Store
-		</a>
+		<Breadcrumbs items={[{ label: 'Store', href: '/store' }, { label: product.name }]} />
 
 		<div class="grid md:grid-cols-2 gap-12">
 			<!-- Product Image -->

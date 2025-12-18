@@ -1,11 +1,14 @@
 <script lang="ts">
 	import { ThemeToggle } from '$lib/components/ui/theme-toggle';
 	import { Avatar, Menu, Portal } from '@skeletonlabs/skeleton-svelte';
+	import Breadcrumbs from '$lib/components/Breadcrumbs.svelte';
 	import head from '$lib/assets/head.png';
 	import logo from '$lib/assets/logo.png';
 	import { page } from '$app/stores';
 
 	const user = $derived($page.data.user);
+	const profileUser = $derived($page.data.profileUser);
+	const isOwnProfile = $derived(user?.uuid === profileUser?.uuid);
 </script>
 
 <div class="min-h-screen bg-surface-50 dark:bg-surface-900 flex flex-col">
@@ -92,17 +95,41 @@
 		</div>
 	</nav>
 
-	<!-- Main Content - Centered Card -->
-	<main class="flex-1 flex items-start justify-center pt-48 px-4 sm:px-6 lg:px-8">
-		<div class="bg-white dark:bg-surface-800 rounded-2xl p-6 shadow-xl shadow-surface-900/5 w-full max-w-sm text-center border border-[#eee]">
-			<span class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-secondary-500/10 text-secondary-600 dark:text-secondary-400 text-sm font-medium mb-6">
-				404
-			</span>
-			<p class="text-4xl sm:text-5xl lg:text-6xl font-bold leading-tight">
-				<span class="text-transparent bg-clip-text bg-gradient-to-r from-secondary-500 to-primary-500">
-					Apologies, this page could not be found.
-				</span>
-			</p>
+	<!-- Breadcrumbs -->
+	<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6">
+		{#if isOwnProfile}
+			<Breadcrumbs items={[{ label: 'Profile' }]} />
+		{:else}
+			<Breadcrumbs items={[{ label: 'Users', href: '/users' }, { label: profileUser.username }]} />
+		{/if}
+	</div>
+
+	<!-- Main Content -->
+	<main class="flex-1 flex items-start justify-center pt-12 px-4 sm:px-6 lg:px-8">
+		<div class="bg-white dark:bg-surface-800 rounded-2xl p-6 shadow-xl shadow-surface-900/5 w-full max-w-sm border border-[#eee]">
+			<div class="flex flex-col items-center text-center">
+				<Avatar class="w-24 h-24 border-2 border-[#ccc] mb-4">
+					{#if profileUser.avatar}
+						<Avatar.Image src={profileUser.avatar} alt="Avatar" class="rounded-full object-cover" />
+					{:else}
+						<Avatar.Fallback class="preset-filled-primary-500 rounded-full text-2xl">{profileUser.username?.charAt(0).toUpperCase()}</Avatar.Fallback>
+					{/if}
+				</Avatar>
+				<h1 class="text-sm font-medium text-surface-600 dark:text-surface-400 mb-1">{profileUser.username}</h1>
+				{#if profileUser.admin}
+					<span class="inline-flex items-center px-4 py-1.5 rounded-full text-xs font-medium bg-primary-500/10 text-primary-600 dark:text-primary-400">
+						Admin
+					</span>
+				{/if}
+			</div>
+
+			{#if user?.uuid === profileUser.uuid}
+				<div class="mt-8 pt-6 border-t border-surface-200 dark:border-surface-700">
+					<a href="/users/{profileUser.uuid}/edit" class="w-full btn preset-filled-primary-500 py-2.5 rounded-lg font-semibold text-white block text-center">
+						Edit Profile
+					</a>
+				</div>
+			{/if}
 		</div>
 	</main>
 

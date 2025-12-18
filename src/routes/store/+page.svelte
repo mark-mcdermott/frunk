@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { products, formatPrice } from '$lib/data/products';
 	import { ShoppingBag } from 'lucide-svelte';
+	import Breadcrumbs from '$lib/components/Breadcrumbs.svelte';
 </script>
 
 <svelte:head>
@@ -8,8 +9,9 @@
 	<meta name="description" content="Browse our merchandise" />
 </svelte:head>
 
-<div class="min-h-screen bg-surface-50 dark:bg-surface-900 py-16 px-4 sm:px-6 lg:px-8">
+<div class="min-h-screen bg-surface-50 dark:bg-surface-900 py-8 px-4 sm:px-6 lg:px-8">
 	<div class="max-w-6xl mx-auto">
+		<Breadcrumbs items={[{ label: 'Store' }]} />
 		<div class="text-center mb-12">
 			<h1 class="text-4xl sm:text-5xl font-bold text-surface-900 dark:text-white mb-4">Store</h1>
 			<p class="text-lg text-surface-600 dark:text-surface-400 max-w-2xl mx-auto">

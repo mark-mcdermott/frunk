@@ -26,14 +26,14 @@ export const actions: Actions = {
 			return fail(400, { message: 'Invalid password' });
 		}
 
-		const userId = generateUserId();
+		const userUuid = generateUserId();
 		const passwordHash = await hashPassword(password);
 
 		try {
-			await db.insert(table.user).values({ id: userId, username, passwordHash });
+			await db.insert(table.user).values({ uuid: userUuid, username, passwordHash });
 
 			const sessionToken = auth.generateSessionToken();
-			const session = await auth.createSession(sessionToken, userId);
+			const session = await auth.createSession(sessionToken, userUuid);
 			auth.setSessionTokenCookie(event, sessionToken, session.expiresAt);
 		} catch {
 			return fail(500, { message: 'An error has occurred' });

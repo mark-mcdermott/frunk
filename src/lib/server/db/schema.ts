@@ -1,7 +1,8 @@
-import { pgTable, integer, text, timestamp, jsonb } from 'drizzle-orm/pg-core';
+import { pgTable, integer, text, timestamp, jsonb, serial } from 'drizzle-orm/pg-core';
 
 export const user = pgTable('user', {
-	id: text('id').primaryKey(),
+	id: serial('id').primaryKey(),
+	uuid: text('uuid').notNull().unique(),
 	age: integer('age'),
 	username: text('username').notNull().unique(),
 	passwordHash: text('password_hash').notNull(),
@@ -13,7 +14,7 @@ export const session = pgTable('session', {
 	id: text('id').primaryKey(),
 	userId: text('user_id')
 		.notNull()
-		.references(() => user.id),
+		.references(() => user.uuid),
 	expiresAt: timestamp('expires_at', { withTimezone: true, mode: 'date' }).notNull()
 });
 
@@ -25,7 +26,7 @@ export type User = typeof user.$inferSelect;
 export const orders = pgTable('orders', {
 	id: text('id').primaryKey(),
 	email: text('email').notNull(),
-	userId: text('user_id').references(() => user.id, { onDelete: 'set null' }),
+	userId: text('user_id').references(() => user.uuid, { onDelete: 'set null' }),
 	stripeSessionId: text('stripe_session_id'),
 	stripePaymentIntentId: text('stripe_payment_intent_id'),
 	printfulOrderId: text('printful_order_id'),

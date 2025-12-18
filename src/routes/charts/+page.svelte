@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { Avatar, Switch, SegmentedControl, Menu, Portal } from '@skeletonlabs/skeleton-svelte';
 	import { ThemeToggle } from '$lib/components/ui/theme-toggle';
+	import Breadcrumbs from '$lib/components/Breadcrumbs.svelte';
 	import head from '$lib/assets/head.png';
 	import logo from '$lib/assets/logo.png';
 	import { page } from '$app/stores';
@@ -59,9 +60,30 @@
 					</a>
 					<!-- Nav Links -->
 					<div class="hidden md:flex items-center gap-6">
-						<a href="/blocks" class="text-surface-600 dark:text-surface-400 hover:text-primary-500 font-medium transition-colors">Blocks</a>
-						<a href="/charts" class="text-primary-500 font-medium">Charts</a>
-						<a href="/content" class="text-surface-600 dark:text-surface-400 hover:text-primary-500 font-medium transition-colors">Content</a>
+						<Menu>
+							<Menu.Trigger class="cursor-pointer outline-none text-primary-500 font-medium flex items-center gap-1">
+								Style
+								<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+							</Menu.Trigger>
+							<Portal>
+								<Menu.Positioner>
+									<Menu.Content class="bg-white dark:bg-surface-800 rounded-lg shadow-xl border border-[#ddd] dark:border-surface-700 p-1 min-w-[140px]">
+										<Menu.Item value="blocks" class="px-3 py-2 rounded hover:bg-surface-100 dark:hover:bg-surface-700 cursor-pointer outline-none">
+											<a href="/blocks" class="w-full block outline-none">Blocks</a>
+										</Menu.Item>
+										<Menu.Item value="charts" class="px-3 py-2 rounded hover:bg-surface-100 dark:hover:bg-surface-700 cursor-pointer outline-none">
+											<a href="/charts" class="w-full block outline-none text-primary-500">Charts</a>
+										</Menu.Item>
+										<Menu.Item value="content" class="px-3 py-2 rounded hover:bg-surface-100 dark:hover:bg-surface-700 cursor-pointer outline-none">
+											<a href="/content" class="w-full block outline-none">Content</a>
+										</Menu.Item>
+									</Menu.Content>
+								</Menu.Positioner>
+							</Portal>
+						</Menu>
+						{#if user?.admin}
+							<a href="/users" class="text-surface-600 dark:text-surface-400 hover:text-primary-500 font-medium transition-colors">Users</a>
+						{/if}
 					</div>
 				</div>
 				<div class="flex items-center gap-4">
@@ -75,7 +97,7 @@
 					{#if user}
 						<Menu>
 							<Menu.Trigger class="cursor-pointer outline-none">
-								<Avatar class="w-8 h-8 border border-[#ddd]">
+								<Avatar class="w-8 h-8 border border-[#ccc] ml-2">
 									{#if user.avatar}
 										<Avatar.Image src={user.avatar} alt="Avatar" class="rounded-full object-cover" />
 									{:else}
@@ -87,10 +109,10 @@
 								<Menu.Positioner class="!z-[9999]">
 									<Menu.Content class="bg-white dark:bg-surface-800 rounded-lg shadow-xl border border-[#ddd] dark:border-surface-700 p-1 min-w-[160px]">
 										<Menu.Item value="profile" class="px-3 py-2 rounded hover:bg-surface-100 dark:hover:bg-surface-700 cursor-pointer outline-none">
-											<Menu.ItemText>Profile</Menu.ItemText>
+											<a href="/users/{user.uuid}" class="w-full block outline-none">Profile</a>
 										</Menu.Item>
 										<Menu.Item value="settings" class="px-3 py-2 rounded hover:bg-surface-100 dark:hover:bg-surface-700 cursor-pointer outline-none">
-											<Menu.ItemText>Settings</Menu.ItemText>
+											<a href="/users/{user.uuid}/edit" class="w-full block outline-none">Settings</a>
 										</Menu.Item>
 										<Menu.Separator class="my-1 border-t border-surface-200 dark:border-surface-700" />
 										<Menu.Item value="signout" class="px-3 py-2 rounded hover:bg-surface-100 dark:hover:bg-surface-700 cursor-pointer outline-none">
@@ -109,6 +131,11 @@
 			</div>
 		</div>
 	</nav>
+
+	<!-- Breadcrumbs -->
+	<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6">
+		<Breadcrumbs items={[{ label: 'Charts' }]} />
+	</div>
 
 	<!-- Showcase Section -->
 	<section id="showcase" class="py-20 px-4 sm:px-6 lg:px-8">

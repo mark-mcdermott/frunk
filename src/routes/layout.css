@@ -207,3 +207,8 @@ a.btn.preset-outlined-surface-500:hover {
 .animate-pill {
   animation: pill-undulate 30s ease-in-out infinite;
 }
+
+/* Global z-index fix for Skeleton menu dropdowns */
+[data-scope="menu"][data-part="positioner"] {
+  z-index: 9999 !important;
+}
