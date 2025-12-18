@@ -113,7 +113,7 @@
 					<!-- Theme Toggle -->
 					<ThemeToggle mode="light-dark-system" />
 					<!-- Sign In -->
-					<a href="/demo/lucia/login" class="btn btn-sm preset-filled-primary-500">Sign In</a>
+					<a href="/sign-in" class="btn btn-sm preset-filled-primary-500">Sign In</a>
 				</div>
 			</div>
 		</div>

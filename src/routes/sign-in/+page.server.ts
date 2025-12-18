@@ -9,7 +9,7 @@ import type { Actions, PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async (event) => {
 	if (event.locals.user) {
-		return redirect(302, '/demo/lucia');
+		return redirect(302, '/');
 	}
 	return {};
 };
@@ -20,9 +20,9 @@ export const actions: Actions = {
 		const username = formData.get('username');
 		const password = formData.get('password');
 
-		if (!validateUsername(username)) {
+		if (!validateEmail(username)) {
 			return fail(400, {
-				message: 'Invalid username (min 3, max 31 characters, alphanumeric only)'
+				message: 'Invalid email address'
 			});
 		}
 		if (!validatePassword(password)) {
@@ -33,19 +33,19 @@ export const actions: Actions = {
 
 		const existingUser = results.at(0);
 		if (!existingUser) {
-			return fail(400, { message: 'Incorrect username or password' });
+			return fail(400, { message: 'Incorrect email or password' });
 		}
 
 		const validPassword = await verifyPassword(existingUser.passwordHash, password);
 		if (!validPassword) {
-			return fail(400, { message: 'Incorrect username or password' });
+			return fail(400, { message: 'Incorrect email or password' });
 		}
 
 		const sessionToken = auth.generateSessionToken();
 		const session = await auth.createSession(sessionToken, existingUser.id);
 		auth.setSessionTokenCookie(event, sessionToken, session.expiresAt);
 
-		return redirect(302, '/demo/lucia');
+		return redirect(302, '/');
 	},
 	register: async (event) => {
 		const formData = await event.request.formData();
@@ -71,7 +71,7 @@ export const actions: Actions = {
 		} catch {
 			return fail(500, { message: 'An error has occurred' });
 		}
-		return redirect(302, '/demo/lucia');
+		return redirect(302, '/');
 	}
 };
 
@@ -82,12 +82,12 @@ function generateUserId() {
 	return id;
 }
 
-function validateUsername(username: unknown): username is string {
+function validateEmail(email: unknown): email is string {
 	return (
-		typeof username === 'string' &&
-		username.length >= 3 &&
-		username.length <= 31 &&
-		/^[a-z0-9_-]+$/.test(username)
+		typeof email === 'string' &&
+		email.length >= 3 &&
+		email.length <= 255 &&
+		/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
 	);
 }
 

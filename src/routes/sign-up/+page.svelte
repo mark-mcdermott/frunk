@@ -33,7 +33,7 @@
 					<!-- Theme Toggle -->
 					<ThemeToggle mode="light-dark-system" />
 					<!-- Sign In -->
-					<a href="/demo/lucia/login" class="btn btn-sm preset-filled-primary-500">Sign In</a>
+					<a href="/sign-in" class="btn btn-sm preset-filled-primary-500">Sign In</a>
 				</div>
 			</div>
 		</div>
@@ -41,7 +41,7 @@
 
 	<!-- Main Content - Centered Form -->
 	<main class="flex-1 flex items-start justify-center pt-48 px-4 sm:px-6 lg:px-8">
-		<div class="bg-white dark:bg-surface-800 rounded-2xl p-6 shadow-xl shadow-surface-900/5 w-full max-w-sm">
+		<div class="bg-white dark:bg-surface-800 rounded-2xl p-6 shadow-xl shadow-surface-900/5 w-full max-w-sm border border-[#eee]">
 			<h3 class="text-xl font-bold text-black dark:text-white mb-2">Create Account</h3>
 			<p class="text-sm text-surface-500 mb-6">Complete the form to get started.</p>
 
@@ -62,7 +62,7 @@
 				<button type="submit" class="w-full btn preset-filled-primary-500 py-2.5 rounded-lg font-semibold text-white">
 					Create Account
 				</button>
-				<p class="text-xs text-surface-500 text-right">Already have an account? <a href="/demo/lucia/login" class="text-primary-500 hover:text-[#93c5fd] transition-colors">Sign in.</a></p>
+				<p class="text-xs text-surface-500 text-right">Already have an account? <a href="/sign-in" class="text-primary-500 hover:text-[#93c5fd] transition-colors">Sign in.</a></p>
 			</form>
 			{#if form?.message}
 				<p class="text-red-500 text-sm mt-4">{form.message}</p>
