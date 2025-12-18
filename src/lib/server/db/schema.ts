@@ -7,7 +7,10 @@ export const user = pgTable('user', {
 	username: text('username').notNull().unique(),
 	passwordHash: text('password_hash').notNull(),
 	admin: integer('admin').notNull().default(0),
-	avatar: text('avatar')
+	avatar: text('avatar'),
+	emailVerified: integer('email_verified').notNull().default(0),
+	emailVerificationToken: text('email_verification_token'),
+	emailVerificationExpires: timestamp('email_verification_expires', { withTimezone: true, mode: 'date' })
 });
 
 export const session = pgTable('session', {

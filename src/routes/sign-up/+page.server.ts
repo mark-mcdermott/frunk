@@ -4,7 +4,13 @@ import * as auth from '$lib/server/auth';
 import { db } from '$lib/server/db';
 import { hashPassword } from '$lib/server/password';
 import * as table from '$lib/server/db/schema';
+import { sendVerificationEmail } from '$lib/server/email';
 import type { Actions, PageServerLoad } from './$types';
+
+function generateVerificationToken(): string {
+	const bytes = crypto.getRandomValues(new Uint8Array(32));
+	return Array.from(bytes, (b) => b.toString(16).padStart(2, '0')).join('');
+}
 
 export const load: PageServerLoad = async (event) => {
 	if (event.locals.user) {
@@ -28,17 +34,40 @@ export const actions: Actions = {
 
 		const userUuid = generateUserId();
 		const passwordHash = await hashPassword(password);
+		const verificationToken = generateVerificationToken();
+		const verificationExpires = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
+
+		console.log('Creating user with token:', verificationToken.substring(0, 10) + '...');
+		console.log('Token expires:', verificationExpires.toISOString());
 
 		try {
-			await db.insert(table.user).values({ uuid: userUuid, username, passwordHash });
+			const insertValues = {
+				uuid: userUuid,
+				username,
+				passwordHash,
+				emailVerificationToken: verificationToken,
+				emailVerificationExpires: verificationExpires
+			};
+			console.log('Insert values keys:', Object.keys(insertValues));
+			await db.insert(table.user).values(insertValues);
+
+			// Send verification email (don't block registration if email fails)
+			const baseUrl = event.url.origin;
+			try {
+				await sendVerificationEmail(username, verificationToken, baseUrl);
+			} catch (emailError) {
+				console.error('Failed to send verification email:', emailError);
+				// Continue with registration even if email fails
+			}
 
 			const sessionToken = auth.generateSessionToken();
 			const session = await auth.createSession(sessionToken, userUuid);
 			auth.setSessionTokenCookie(event, sessionToken, session.expiresAt);
-		} catch {
+		} catch (error) {
+			console.error('Registration error:', error);
 			return fail(500, { message: 'An error has occurred' });
 		}
-		return redirect(302, '/');
+		return redirect(302, `/users/${userUuid}`);
 	}
 };
 
