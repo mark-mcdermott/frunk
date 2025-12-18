@@ -37,19 +37,14 @@ export const actions: Actions = {
 		const verificationToken = generateVerificationToken();
 		const verificationExpires = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
 
-		console.log('Creating user with token:', verificationToken.substring(0, 10) + '...');
-		console.log('Token expires:', verificationExpires.toISOString());
-
 		try {
-			const insertValues = {
+			await db.insert(table.user).values({
 				uuid: userUuid,
 				username,
 				passwordHash,
 				emailVerificationToken: verificationToken,
 				emailVerificationExpires: verificationExpires
-			};
-			console.log('Insert values keys:', Object.keys(insertValues));
-			await db.insert(table.user).values(insertValues);
+			});
 
 			// Send verification email (don't block registration if email fails)
 			const baseUrl = event.url.origin;
