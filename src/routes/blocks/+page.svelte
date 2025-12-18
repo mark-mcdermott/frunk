@@ -1,8 +1,11 @@
 <script lang="ts">
-	import { Avatar } from '@skeletonlabs/skeleton-svelte';
+	import { Avatar, Menu, Portal } from '@skeletonlabs/skeleton-svelte';
 	import { ThemeToggle } from '$lib/components/ui/theme-toggle';
 	import head from '$lib/assets/head.png';
 	import logo from '$lib/assets/logo.png';
+	import { page } from '$app/stores';
+
+	const user = $derived($page.data.user);
 
 	const team = [
 		{
@@ -112,8 +115,40 @@
 					</a>
 					<!-- Theme Toggle -->
 					<ThemeToggle mode="light-dark-system" />
-					<!-- Sign In -->
-					<a href="/sign-in" class="btn btn-sm preset-filled-primary-500">Sign In</a>
+					<!-- Sign In / Sign Out -->
+					{#if user}
+						<Menu>
+							<Menu.Trigger class="cursor-pointer outline-none">
+								<Avatar class="w-8 h-8 border border-[#ddd]">
+									{#if user.avatar}
+										<Avatar.Image src={user.avatar} alt="Avatar" class="rounded-full object-cover" />
+									{:else}
+										<Avatar.Fallback class="preset-filled-primary-500 rounded-full text-sm">{user.username?.charAt(0).toUpperCase()}</Avatar.Fallback>
+									{/if}
+								</Avatar>
+							</Menu.Trigger>
+							<Portal class="!z-[9999]">
+								<Menu.Positioner class="!z-[9999]">
+									<Menu.Content class="bg-white dark:bg-surface-800 rounded-lg shadow-xl border border-[#ddd] dark:border-surface-700 p-1 min-w-[160px]">
+										<Menu.Item value="profile" class="px-3 py-2 rounded hover:bg-surface-100 dark:hover:bg-surface-700 cursor-pointer outline-none">
+											<Menu.ItemText>Profile</Menu.ItemText>
+										</Menu.Item>
+										<Menu.Item value="settings" class="px-3 py-2 rounded hover:bg-surface-100 dark:hover:bg-surface-700 cursor-pointer outline-none">
+											<Menu.ItemText>Settings</Menu.ItemText>
+										</Menu.Item>
+										<Menu.Separator class="my-1 border-t border-surface-200 dark:border-surface-700" />
+										<Menu.Item value="signout" class="px-3 py-2 rounded hover:bg-surface-100 dark:hover:bg-surface-700 cursor-pointer outline-none">
+											<form action="/sign-out" method="POST" class="w-full">
+												<button type="submit" class="w-full text-left text-red-500 outline-none">Sign Out</button>
+											</form>
+										</Menu.Item>
+									</Menu.Content>
+								</Menu.Positioner>
+							</Portal>
+						</Menu>
+					{:else}
+						<a href="/sign-in" class="btn btn-sm preset-filled-primary-500">Sign In</a>
+					{/if}
 				</div>
 			</div>
 		</div>
