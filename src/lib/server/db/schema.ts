@@ -65,3 +65,24 @@ export const vehicles = pgTable('vehicles', {
 
 export type Vehicle = typeof vehicles.$inferSelect;
 export type NewVehicle = typeof vehicles.$inferInsert;
+
+// Notes (flexible content blocks for vehicles, repairs, vendors, users)
+export const notes = pgTable('notes', {
+	id: serial('id').primaryKey(),
+	uuid: text('uuid').notNull().unique(),
+	title: text('title').notNull(),
+	body: text('body'),
+	imageUrl: text('image_url'),
+	type: text('type').notNull().default('note'), // 'note' or 'gallery'
+	order: integer('order'),
+	parentNoteId: text('parent_note_id'), // FK to notes.uuid for nesting
+	userId: text('user_id').references(() => user.uuid, { onDelete: 'cascade' }),
+	vehicleId: text('vehicle_id').references(() => vehicles.id, { onDelete: 'cascade' }),
+	repairId: text('repair_id'), // FK placeholder for future
+	vendorId: text('vendor_id'), // FK placeholder for future
+	createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+	updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow()
+});
+
+export type Note = typeof notes.$inferSelect;
+export type NewNote = typeof notes.$inferInsert;

@@ -1,6 +1,6 @@
 import { drizzle } from 'drizzle-orm/neon-http';
 import { neon } from '@neondatabase/serverless';
-import { user, vehicles } from '../src/lib/server/db/schema';
+import { user, vehicles, notes } from '../src/lib/server/db/schema';
 
 const DATABASE_URL = process.env.DATABASE_URL;
 if (!DATABASE_URL) throw new Error('DATABASE_URL is not set');
@@ -43,11 +43,54 @@ async function hashPassword(password: string): Promise<string> {
 // Avatar images stored on R2
 const AVATAR_BASE = 'https://pub-8578b5b18a5e41269fa51ae28e78a0a8.r2.dev/headshots';
 const VEHICLE_BASE = 'https://pub-8578b5b18a5e41269fa51ae28e78a0a8.r2.dev/vehicles';
+const DOC_BASE = 'https://pub-8578b5b18a5e41269fa51ae28e78a0a8.r2.dev/documents/samples';
 
 // Helper to generate vehicle image filename
 function getVehicleImage(make: string, model: string, year: number): string {
 	const filename = `${make}-${model}-${year}.jpg`.toLowerCase().replace(/ /g, '-');
 	return `${VEHICLE_BASE}/${filename}`;
+}
+
+// Note templates - randomly assigned to vehicles
+const noteTemplates = [
+	{
+		title: 'Vehicle Title',
+		body: 'Original title document for this vehicle.',
+		imageUrl: `${DOC_BASE}/sample-title.jpg`
+	},
+	{
+		title: 'Registration',
+		body: 'Current registration card - expires December 2025.',
+		imageUrl: `${DOC_BASE}/sample-registration.jpg`
+	},
+	{
+		title: 'Insurance Policy',
+		body: 'Full coverage with State Farm. Policy #12345.',
+		imageUrl: `${DOC_BASE}/sample-insurance.jpg`
+	},
+	{
+		title: 'Oil Change Receipt',
+		body: 'Last oil change performed at Jiffy Lube. Next due at 85,000 miles.',
+		imageUrl: `${DOC_BASE}/sample-receipt.jpg`
+	},
+	{
+		title: 'Purchase Notes',
+		body: 'Bought from CarMax in Springfield. Clean Carfax, one previous owner.',
+		imageUrl: null
+	},
+	{
+		title: 'Known Issues',
+		body: 'Small dent on rear bumper. AC needs recharge in summer.',
+		imageUrl: null
+	}
+];
+
+// Get random subset of notes for a vehicle
+function getNotesForVehicle(): typeof noteTemplates {
+	// Randomly select 1-4 notes for each vehicle
+	const count = Math.floor(Math.random() * 4) + 1;
+	const shuffled = [...noteTemplates].sort(() => Math.random() - 0.5);
+	return shuffled.slice(0, count);
 }
 
 const officeCharacters = [
@@ -235,8 +278,9 @@ async function seed() {
 
 		// Insert vehicles for this user
 		for (const vehicle of character.vehicles) {
+			const vehicleId = crypto.randomUUID();
 			await db.insert(vehicles).values({
-				id: crypto.randomUUID(),
+				id: vehicleId,
 				userId: userUuid,
 				make: vehicle.make,
 				model: vehicle.model,
@@ -246,6 +290,20 @@ async function seed() {
 			});
 
 			console.log(`  - Added vehicle: ${vehicle.year} ${vehicle.make} ${vehicle.model}`);
+
+			// Add random notes to this vehicle
+			const vehicleNotes = getNotesForVehicle();
+			for (const note of vehicleNotes) {
+				await db.insert(notes).values({
+					uuid: crypto.randomUUID(),
+					title: note.title,
+					body: note.body,
+					imageUrl: note.imageUrl,
+					type: 'note',
+					vehicleId: vehicleId
+				});
+				console.log(`    • Added note: ${note.title}`);
+			}
 		}
 	}
 
