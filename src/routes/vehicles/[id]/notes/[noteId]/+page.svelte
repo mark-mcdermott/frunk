@@ -8,9 +8,32 @@
 	const note = $derived($page.data.note);
 	const vehicle = $derived($page.data.vehicle);
 
+	let downloading = $state(false);
+
 	function getFilename(url: string): string {
 		const parts = url.split('/');
 		return parts[parts.length - 1];
+	}
+
+	async function downloadImage() {
+		if (!note.imageUrl || downloading) return;
+		downloading = true;
+		try {
+			const response = await fetch(note.imageUrl);
+			const blob = await response.blob();
+			const url = URL.createObjectURL(blob);
+			const a = document.createElement('a');
+			a.href = url;
+			a.download = getFilename(note.imageUrl);
+			document.body.appendChild(a);
+			a.click();
+			document.body.removeChild(a);
+			URL.revokeObjectURL(url);
+		} catch (e) {
+			console.error('Download failed:', e);
+		} finally {
+			downloading = false;
+		}
 	}
 </script>
 
@@ -47,14 +70,15 @@
 						{/if}
 					</div>
 					{#if note.imageUrl}
-						<a
-							href={note.imageUrl}
-							download={getFilename(note.imageUrl)}
-							class="flex-shrink-0 inline-flex items-center gap-2 px-4 py-2 text-sm bg-primary-500 hover:bg-primary-600 text-white rounded-lg transition-colors"
+						<button
+							type="button"
+							onclick={downloadImage}
+							disabled={downloading}
+							class="flex-shrink-0 inline-flex items-center gap-2 px-4 py-2 text-sm bg-primary-500 hover:bg-primary-600 text-white rounded-lg transition-colors disabled:opacity-50"
 						>
 							<Download class="w-4 h-4" />
-							Download
-						</a>
+							{downloading ? 'Downloading...' : 'Download'}
+						</button>
 					{/if}
 				</div>
 
