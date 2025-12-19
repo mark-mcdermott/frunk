@@ -29,8 +29,8 @@
 
 			<form method="post" action="?/register" use:enhance class="space-y-4">
 				<div>
-					<label for="username-input" class="text-xs font-medium text-surface-600 dark:text-surface-400 block mb-1">Email</label>
-					<input id="username-input" name="username" type="email" placeholder="me@example.com" class="w-full px-3 py-2 rounded-lg bg-surface-100 dark:bg-surface-700 border-0 text-sm focus:ring-2 focus:ring-primary-500" />
+					<label for="email-input" class="text-xs font-medium text-surface-600 dark:text-surface-400 block mb-1">Email</label>
+					<input id="email-input" name="email" type="email" placeholder="me@example.com" class="w-full px-3 py-2 rounded-lg bg-surface-100 dark:bg-surface-700 border-0 text-sm focus:ring-2 focus:ring-primary-500" />
 				</div>
 				<div>
 					<label for="password-input" class="text-xs font-medium text-surface-600 dark:text-surface-400 block mb-1">Password</label>

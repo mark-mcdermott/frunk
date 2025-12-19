@@ -39,6 +39,9 @@
 						</Portal>
 					</Menu>
 					<a href="/store" class="text-surface-600 dark:text-surface-400 hover:text-primary-500 font-medium transition-colors">Merch</a>
+					{#if user}
+						<a href="/vehicles" class="text-surface-600 dark:text-surface-400 hover:text-primary-500 font-medium transition-colors">Vehicles</a>
+					{/if}
 					{#if user?.admin}
 						<a href="/users" class="text-surface-600 dark:text-surface-400 hover:text-primary-500 font-medium transition-colors">Users</a>
 					{/if}

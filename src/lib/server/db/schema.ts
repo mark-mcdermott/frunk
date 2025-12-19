@@ -47,3 +47,21 @@ export const orders = pgTable('orders', {
 
 export type Order = typeof orders.$inferSelect;
 export type NewOrder = typeof orders.$inferInsert;
+
+// Vehicles
+export const vehicles = pgTable('vehicles', {
+	id: text('id').primaryKey(),
+	userId: text('user_id')
+		.notNull()
+		.references(() => user.uuid, { onDelete: 'cascade' }),
+	make: text('make').notNull(),
+	model: text('model').notNull(),
+	year: integer('year').notNull(),
+	vin: text('vin'),
+	image: text('image'),
+	createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+	updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow()
+});
+
+export type Vehicle = typeof vehicles.$inferSelect;
+export type NewVehicle = typeof vehicles.$inferInsert;

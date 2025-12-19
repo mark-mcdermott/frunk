@@ -22,10 +22,10 @@ export const load: PageServerLoad = async (event) => {
 export const actions: Actions = {
 	register: async (event) => {
 		const formData = await event.request.formData();
-		const username = formData.get('username');
+		const email = formData.get('email');
 		const password = formData.get('password');
 
-		if (!validateEmail(username)) {
+		if (!validateEmail(email)) {
 			return fail(400, { message: 'Invalid email address' });
 		}
 		if (!validatePassword(password)) {
@@ -40,7 +40,7 @@ export const actions: Actions = {
 		try {
 			await db.insert(table.user).values({
 				uuid: userUuid,
-				username,
+				username: email,
 				passwordHash,
 				emailVerificationToken: verificationToken,
 				emailVerificationExpires: verificationExpires
@@ -49,7 +49,7 @@ export const actions: Actions = {
 			// Send verification email (don't block registration if email fails)
 			const baseUrl = event.url.origin;
 			try {
-				await sendVerificationEmail(username, verificationToken, baseUrl);
+				await sendVerificationEmail(email, verificationToken, baseUrl);
 			} catch (emailError) {
 				console.error('Failed to send verification email:', emailError);
 				// Continue with registration even if email fails
