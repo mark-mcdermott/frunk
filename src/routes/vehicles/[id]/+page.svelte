@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
-	import { Car, Pencil, Calendar, Hash, StickyNote, Plus, Trash2, ImageIcon } from 'lucide-svelte';
+	import { Car, Pencil, Calendar, Hash, StickyNote, Plus, Trash2, ImageIcon, ChevronRight } from 'lucide-svelte';
 	import Navbar from '$lib/components/Navbar.svelte';
 	import Footer from '$lib/components/Footer.svelte';
 	import Breadcrumbs from '$lib/components/Breadcrumbs.svelte';
@@ -135,31 +135,37 @@
 				{:else}
 					<div class="space-y-3">
 						{#each notes as note}
-							<div class="p-4 bg-surface-50 dark:bg-surface-700/50 rounded-lg">
-								<div class="flex items-start justify-between gap-3">
-									<div class="flex-1 min-w-0">
-										<h3 class="font-medium text-black dark:text-white">{note.title}</h3>
-										{#if note.body}
-											<p class="text-sm text-surface-600 dark:text-surface-400 mt-1 whitespace-pre-wrap">{note.body}</p>
-										{/if}
-										{#if note.imageUrl}
-											<img
-												src={note.imageUrl}
-												alt=""
-												class="mt-3 w-full max-w-xs rounded-lg object-cover cursor-pointer hover:opacity-90 transition-opacity"
-												onclick={() => window.open(note.imageUrl, '_blank')}
-											/>
-										{/if}
+							<div class="group relative bg-surface-50 dark:bg-surface-700/50 rounded-lg hover:bg-surface-100 dark:hover:bg-surface-700 transition-colors">
+								<a
+									href="/vehicles/{vehicle.id}/notes/{note.uuid}"
+									class="block p-4"
+								>
+									<div class="flex items-start gap-3 pr-10">
+										<div class="flex-1 min-w-0">
+											<div class="flex items-center gap-2">
+												<h3 class="font-medium text-black dark:text-white">{note.title}</h3>
+												<ChevronRight class="w-4 h-4 text-surface-400 opacity-0 group-hover:opacity-100 transition-opacity" />
+											</div>
+											{#if note.body}
+												<p class="text-sm text-surface-600 dark:text-surface-400 mt-1 line-clamp-2">{note.body}</p>
+											{/if}
+											{#if note.imageUrl}
+												<div class="mt-3 flex items-center gap-2 text-xs text-surface-500">
+													<ImageIcon class="w-4 h-4" />
+													<span>Has attachment</span>
+												</div>
+											{/if}
+										</div>
 									</div>
-									<button
-										type="button"
-										class="p-2 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors flex-shrink-0"
-										aria-label="Delete note"
-										onclick={() => { noteToDelete = { uuid: note.uuid, title: note.title }; deleteModalOpen = true; }}
-									>
-										<Trash2 class="w-4 h-4" />
-									</button>
-								</div>
+								</a>
+								<button
+									type="button"
+									class="absolute top-3 right-3 p-2 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
+									aria-label="Delete note"
+									onclick={(e) => { e.preventDefault(); noteToDelete = { uuid: note.uuid, title: note.title }; deleteModalOpen = true; }}
+								>
+									<Trash2 class="w-4 h-4" />
+								</button>
 							</div>
 						{/each}
 					</div>
