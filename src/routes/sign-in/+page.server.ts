@@ -44,11 +44,8 @@ export const actions: Actions = {
 		const session = await auth.createSession(sessionToken, existingUser.uuid);
 		auth.setSessionTokenCookie(event, sessionToken, session.expiresAt);
 
-		// Redirect admin users to /users, regular users to their profile
-		if (existingUser.admin === 1) {
-			return redirect(302, '/users');
-		}
-		return redirect(302, `/users/${existingUser.uuid}`);
+		// Redirect all users to vehicles page after login
+		return redirect(302, '/vehicles');
 	}
 };
 

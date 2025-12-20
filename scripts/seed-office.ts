@@ -1,6 +1,7 @@
 import { drizzle } from 'drizzle-orm/neon-http';
 import { neon } from '@neondatabase/serverless';
-import { user, vehicles, notes } from '../src/lib/server/db/schema';
+import { inArray } from 'drizzle-orm';
+import { user, vehicles, notes, vendors, repairs, session } from '../src/lib/server/db/schema';
 
 const DATABASE_URL = process.env.DATABASE_URL;
 if (!DATABASE_URL) throw new Error('DATABASE_URL is not set');
@@ -90,6 +91,103 @@ function getNotesForVehicle(): typeof noteTemplates {
 	// Randomly select 1-4 notes for each vehicle
 	const count = Math.floor(Math.random() * 4) + 1;
 	const shuffled = [...noteTemplates].sort(() => Math.random() - 0.5);
+	return shuffled.slice(0, count);
+}
+
+// Vendor templates - Scranton area auto shops
+const vendorTemplates = [
+	{
+		name: "Vance Refrigeration Auto",
+		address: "1725 Slough Ave, Scranton, PA 18503",
+		phone: "(570) 555-0101",
+		website: "https://vancerefrigeration.com"
+	},
+	{
+		name: "Schrute Farms Garage",
+		address: "1812 Rural Route 6, Honesdale, PA 18431",
+		phone: "(570) 555-0102",
+		website: null
+	},
+	{
+		name: "Poor Richard's Auto",
+		address: "42 Main St, Scranton, PA 18503",
+		phone: "(570) 555-0103",
+		website: "https://poorrichardsauto.com"
+	},
+	{
+		name: "Steamtown Auto Care",
+		address: "150 Lackawanna Ave, Scranton, PA 18503",
+		phone: "(570) 555-0104",
+		website: null
+	},
+	{
+		name: "Alfredo's Auto Cafe",
+		address: "88 Pizza Lane, Scranton, PA 18503",
+		phone: "(570) 555-0105",
+		website: "https://alfredosauto.com"
+	}
+];
+
+// Repair templates with realistic costs (in cents) and descriptions
+const repairTemplates = [
+	{ description: "Oil change", cost: 4500, status: "completed" },
+	{ description: "Tire rotation", cost: 2500, status: "completed" },
+	{ description: "Brake pad replacement", cost: 35000, status: "completed" },
+	{ description: "Battery replacement", cost: 18000, status: "completed" },
+	{ description: "Air filter replacement", cost: 3500, status: "completed" },
+	{ description: "Transmission fluid change", cost: 15000, status: "completed" },
+	{ description: "Coolant flush", cost: 12000, status: "completed" },
+	{ description: "Spark plug replacement", cost: 20000, status: "completed" },
+	{ description: "Windshield wiper replacement", cost: 2500, status: "completed" },
+	{ description: "Alignment", cost: 8500, status: "completed" },
+	{ description: "AC recharge", cost: 15000, status: "completed" },
+	{ description: "Check engine light diagnosis", cost: 10000, status: "completed" },
+	{ description: "Timing belt replacement", cost: 65000, status: "completed" },
+	{ description: "Water pump replacement", cost: 45000, status: "completed" },
+	{ description: "Alternator replacement", cost: 55000, status: "completed" },
+	{ description: "Scheduled maintenance - 60k miles", cost: 45000, status: "scheduled" },
+	{ description: "State inspection", cost: 3500, status: "scheduled" },
+	{ description: "Suspension work", cost: 80000, status: "in_progress" }
+];
+
+// Get random date within last 2 years
+function getRandomPastDate(): Date {
+	const now = new Date();
+	const twoYearsAgo = new Date(now.getFullYear() - 2, now.getMonth(), now.getDate());
+	const randomTime = twoYearsAgo.getTime() + Math.random() * (now.getTime() - twoYearsAgo.getTime());
+	return new Date(randomTime);
+}
+
+// Get random future date within next 3 months (for scheduled repairs)
+function getRandomFutureDate(): Date {
+	const now = new Date();
+	const threeMonthsFromNow = new Date(now.getFullYear(), now.getMonth() + 3, now.getDate());
+	const randomTime = now.getTime() + Math.random() * (threeMonthsFromNow.getTime() - now.getTime());
+	return new Date(randomTime);
+}
+
+// Get random mileage based on vehicle year
+function getRandomMileage(vehicleYear: number): number {
+	const currentYear = new Date().getFullYear();
+	const age = currentYear - vehicleYear;
+	// Assume ~12k miles per year average
+	const estimatedMiles = age * 12000;
+	// Add some variance (+/- 30%)
+	const variance = estimatedMiles * 0.3;
+	return Math.floor(estimatedMiles + (Math.random() * variance * 2 - variance));
+}
+
+// Get random subset of vendors for a user (1-3 vendors)
+function getVendorsForUser(): typeof vendorTemplates {
+	const count = Math.floor(Math.random() * 3) + 1;
+	const shuffled = [...vendorTemplates].sort(() => Math.random() - 0.5);
+	return shuffled.slice(0, count);
+}
+
+// Get random repairs for a vehicle (0-4 repairs)
+function getRepairsForVehicle(): typeof repairTemplates {
+	const count = Math.floor(Math.random() * 5); // 0-4 repairs
+	const shuffled = [...repairTemplates].sort(() => Math.random() - 0.5);
 	return shuffled.slice(0, count);
 }
 
@@ -256,7 +354,29 @@ const officeCharacters = [
 ];
 
 async function seed() {
-	console.log('Seeding Office characters and vehicles...\n');
+	console.log('Seeding Office characters, vehicles, vendors, and repairs...\n');
+
+	// Clear existing seed data (in reverse order of dependencies)
+	console.log('Clearing existing data...');
+	const usernames = officeCharacters.map(c => c.username);
+
+	// Get existing user UUIDs for these usernames
+	const existingUsers = await db
+		.select({ uuid: user.uuid })
+		.from(user)
+		.where(inArray(user.username, usernames));
+
+	if (existingUsers.length > 0) {
+		const existingUuids = existingUsers.map(u => u.uuid);
+
+		// Delete in order: sessions -> repairs -> notes -> vehicles -> vendors -> users
+		// (repairs and notes cascade from vehicles, vendors set null on repair)
+		await db.delete(session).where(inArray(session.userId, existingUuids));
+		await db.delete(vehicles).where(inArray(vehicles.userId, existingUuids));
+		await db.delete(vendors).where(inArray(vendors.userId, existingUuids));
+		await db.delete(user).where(inArray(user.uuid, existingUuids));
+		console.log(`Cleared ${existingUsers.length} existing users and their data.\n`);
+	}
 
 	const defaultPassword = await hashPassword('password123');
 
@@ -275,6 +395,23 @@ async function seed() {
 		}).onConflictDoNothing();
 
 		console.log(`Created user: ${character.username}`);
+
+		// Create vendors for this user
+		const userVendors = getVendorsForUser();
+		const vendorIds: string[] = [];
+		for (const vendor of userVendors) {
+			const vendorId = crypto.randomUUID();
+			vendorIds.push(vendorId);
+			await db.insert(vendors).values({
+				id: vendorId,
+				userId: userUuid,
+				name: vendor.name,
+				address: vendor.address,
+				phone: vendor.phone,
+				website: vendor.website
+			});
+			console.log(`  + Added vendor: ${vendor.name}`);
+		}
 
 		// Insert vehicles for this user
 		for (const vehicle of character.vehicles) {
@@ -303,6 +440,33 @@ async function seed() {
 					vehicleId: vehicleId
 				});
 				console.log(`    • Added note: ${note.title}`);
+			}
+
+			// Add random repairs to this vehicle
+			const vehicleRepairs = getRepairsForVehicle();
+			for (const repair of vehicleRepairs) {
+				const repairId = crypto.randomUUID();
+				// Randomly assign a vendor (or none)
+				const vendorId = vendorIds.length > 0 && Math.random() > 0.3
+					? vendorIds[Math.floor(Math.random() * vendorIds.length)]
+					: null;
+
+				// Use appropriate date based on status
+				const repairDate = repair.status === 'scheduled'
+					? getRandomFutureDate()
+					: getRandomPastDate();
+
+				await db.insert(repairs).values({
+					id: repairId,
+					vehicleId: vehicleId,
+					vendorId: vendorId,
+					description: repair.description,
+					date: repairDate,
+					mileage: getRandomMileage(vehicle.year),
+					cost: repair.cost,
+					status: repair.status
+				});
+				console.log(`    ⚙ Added repair: ${repair.description} (${repair.status})`);
 			}
 		}
 	}

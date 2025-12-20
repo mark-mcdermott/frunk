@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
-	import { Car, Pencil, Calendar, Hash, StickyNote, Plus, Trash2, ImageIcon, ChevronRight } from 'lucide-svelte';
+	import { Car, Pencil, Calendar, Hash, StickyNote, Plus, Trash2, ImageIcon, ChevronRight, Wrench, DollarSign, Store } from 'lucide-svelte';
 	import Navbar from '$lib/components/Navbar.svelte';
 	import Footer from '$lib/components/Footer.svelte';
 	import Breadcrumbs from '$lib/components/Breadcrumbs.svelte';
@@ -9,10 +9,26 @@
 
 	const vehicle = $derived($page.data.vehicle);
 	const notes = $derived($page.data.notes);
+	const repairs = $derived($page.data.repairs);
+	const vendors = $derived($page.data.vendors);
 
 	let noteModalOpen = $state(false);
 	let deleteModalOpen = $state(false);
 	let noteToDelete = $state<{ uuid: string; title: string } | null>(null);
+
+	// Repair modal state
+	let repairModalOpen = $state(false);
+	let repairDeleteModalOpen = $state(false);
+	let repairToDelete = $state<{ id: string; description: string } | null>(null);
+
+	// Repair form state
+	let repairDescription = $state('');
+	let repairDate = $state('');
+	let repairMileage = $state('');
+	let repairCost = $state('');
+	let repairVendorId = $state('');
+	let repairStatus = $state('completed');
+	let savingRepair = $state(false);
 
 	// Note form state
 	let noteTitle = $state('');
@@ -20,6 +36,24 @@
 	let selectedImage = $state<File | null>(null);
 	let imageData = $state('');
 	let saving = $state(false);
+
+	function resetRepairForm() {
+		repairDescription = '';
+		repairDate = '';
+		repairMileage = '';
+		repairCost = '';
+		repairVendorId = '';
+		repairStatus = 'completed';
+	}
+
+	function formatCost(cents: number | null): string {
+		if (cents === null) return '';
+		return `$${(cents / 100).toFixed(2)}`;
+	}
+
+	function formatDate(date: Date | string): string {
+		return new Date(date).toLocaleDateString();
+	}
 
 	function handleImageSelect(e: Event) {
 		const input = e.target as HTMLInputElement;
@@ -50,7 +84,7 @@
 	</div>
 
 	<main class="flex-1 px-4 sm:px-6 lg:px-8 py-12">
-		<div class="max-w-4xl mx-auto grid md:grid-cols-2 gap-6">
+		<div class="max-w-5xl mx-auto grid md:grid-cols-3 gap-6">
 			<!-- Vehicle Info Card -->
 			<div class="bg-white dark:bg-surface-800 rounded-2xl p-6 shadow-xl shadow-surface-900/5 border border-[#eee]">
 				<div class="flex flex-col items-center text-center">
@@ -161,7 +195,7 @@
 								<div class="absolute top-3 right-3 flex items-center gap-1">
 								<a
 									href="/vehicles/{vehicle.id}/notes/{note.uuid}/edit"
-									class="p-2 text-surface-500 hover:bg-surface-200 dark:hover:bg-surface-600 rounded-lg transition-colors"
+									class="p-2 text-primary-500 hover:text-[#93c5fd] hover:bg-primary-50 dark:hover:bg-primary-900/20 rounded-lg transition-colors"
 									aria-label="Edit note"
 									onclick={(e) => e.stopPropagation()}
 								>
@@ -176,6 +210,74 @@
 									<Trash2 class="w-4 h-4" />
 								</button>
 							</div>
+							</div>
+						{/each}
+					</div>
+				{/if}
+			</div>
+
+			<!-- Repairs Card -->
+			<div class="bg-white dark:bg-surface-800 rounded-2xl p-6 shadow-xl shadow-surface-900/5 border border-[#eee]">
+				<div class="flex items-center justify-between mb-6">
+					<h2 class="text-lg font-bold text-black dark:text-white flex items-center gap-2">
+						<Wrench class="w-5 h-5" />
+						Repairs
+					</h2>
+					<button
+						type="button"
+						class="inline-flex items-center gap-1 px-3 py-1.5 text-sm bg-primary-500 hover:bg-primary-600 text-white rounded-lg transition-colors"
+						onclick={() => repairModalOpen = true}
+					>
+						<Plus class="w-4 h-4" />
+						Add Repair
+					</button>
+				</div>
+
+				{#if repairs.length === 0}
+					<div class="text-center py-8">
+						<Wrench class="w-12 h-12 mx-auto text-surface-300 dark:text-surface-600 mb-3" />
+						<p class="text-surface-500 text-sm">No repairs yet</p>
+						<p class="text-surface-400 text-xs mt-1">Track your vehicle repairs</p>
+					</div>
+				{:else}
+					<div class="space-y-3">
+						{#each repairs as repair}
+							<div class="group relative bg-surface-50 dark:bg-surface-700/50 rounded-lg p-4 hover:bg-surface-100 dark:hover:bg-surface-700 transition-colors">
+								<div class="flex items-start justify-between gap-2">
+									<div class="flex-1 min-w-0">
+										<h3 class="font-medium text-black dark:text-white">{repair.description}</h3>
+										<div class="flex flex-wrap items-center gap-2 text-xs text-surface-500 mt-1">
+											<span>{formatDate(repair.date)}</span>
+											{#if repair.mileage}
+												<span class="text-surface-300">|</span>
+												<span>{repair.mileage.toLocaleString()} mi</span>
+											{/if}
+											{#if repair.cost}
+												<span class="text-surface-300">|</span>
+												<span class="text-green-600 dark:text-green-400">{formatCost(repair.cost)}</span>
+											{/if}
+										</div>
+										{#if repair.vendorName}
+											<div class="flex items-center gap-1 text-xs text-surface-500 mt-1">
+												<Store class="w-3 h-3" />
+												<span>{repair.vendorName}</span>
+											</div>
+										{/if}
+									</div>
+									<div class="flex flex-col items-end gap-2">
+										<span class="text-xs px-2 py-0.5 rounded-full {repair.status === 'completed' ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' : repair.status === 'scheduled' ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400' : 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400'}">
+											{repair.status}
+										</span>
+										<button
+											type="button"
+											class="p-1 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded transition-colors opacity-0 group-hover:opacity-100"
+											aria-label="Delete repair"
+											onclick={() => { repairToDelete = { id: repair.id, description: repair.description }; repairDeleteModalOpen = true; }}
+										>
+											<Trash2 class="w-4 h-4" />
+										</button>
+									</div>
+								</div>
 							</div>
 						{/each}
 					</div>
@@ -304,9 +406,176 @@
 	}}
 />
 
-<!-- Hidden delete forms -->
+<!-- Hidden delete forms for notes -->
 {#each notes as note}
 	<form method="POST" action="?/deleteNote" use:enhance class="hidden" id="delete-note-form-{note.uuid}">
 		<input type="hidden" name="noteUuid" value={note.uuid} />
+	</form>
+{/each}
+
+<!-- Create Repair Modal -->
+{#if repairModalOpen}
+	<div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50" onclick={(e) => { if (e.target === e.currentTarget) repairModalOpen = false; }}>
+		<div class="bg-white dark:bg-surface-800 rounded-2xl p-6 w-full max-w-md shadow-xl">
+			<h3 class="text-lg font-bold text-black dark:text-white mb-4">Add Repair</h3>
+
+			<form
+				method="POST"
+				action="?/createRepair"
+				use:enhance={() => {
+					savingRepair = true;
+					return async ({ update }) => {
+						await update();
+						savingRepair = false;
+						repairModalOpen = false;
+						resetRepairForm();
+					};
+				}}
+				class="space-y-4"
+			>
+				<div>
+					<label for="repair-description" class="text-xs font-medium text-surface-600 dark:text-surface-400 block mb-1">
+						Description <span class="text-red-500">*</span>
+					</label>
+					<input
+						type="text"
+						id="repair-description"
+						name="description"
+						bind:value={repairDescription}
+						placeholder="e.g., Oil change, Brake replacement"
+						class="w-full px-3 py-2 rounded-lg bg-surface-100 dark:bg-surface-700 border-0 text-sm focus:ring-2 focus:ring-primary-500"
+						required
+					/>
+				</div>
+
+				<div class="grid grid-cols-2 gap-4">
+					<div>
+						<label for="repair-date" class="text-xs font-medium text-surface-600 dark:text-surface-400 block mb-1">
+							Date <span class="text-red-500">*</span>
+						</label>
+						<input
+							type="date"
+							id="repair-date"
+							name="date"
+							bind:value={repairDate}
+							class="w-full px-3 py-2 rounded-lg bg-surface-100 dark:bg-surface-700 border-0 text-sm focus:ring-2 focus:ring-primary-500"
+							required
+						/>
+					</div>
+					<div>
+						<label for="repair-mileage" class="text-xs font-medium text-surface-600 dark:text-surface-400 block mb-1">
+							Mileage
+						</label>
+						<input
+							type="number"
+							id="repair-mileage"
+							name="mileage"
+							bind:value={repairMileage}
+							placeholder="e.g., 50000"
+							class="w-full px-3 py-2 rounded-lg bg-surface-100 dark:bg-surface-700 border-0 text-sm focus:ring-2 focus:ring-primary-500"
+						/>
+					</div>
+				</div>
+
+				<div class="grid grid-cols-2 gap-4">
+					<div>
+						<label for="repair-cost" class="text-xs font-medium text-surface-600 dark:text-surface-400 block mb-1">
+							Cost
+						</label>
+						<input
+							type="number"
+							id="repair-cost"
+							name="cost"
+							bind:value={repairCost}
+							placeholder="e.g., 150.00"
+							step="0.01"
+							min="0"
+							class="w-full px-3 py-2 rounded-lg bg-surface-100 dark:bg-surface-700 border-0 text-sm focus:ring-2 focus:ring-primary-500"
+						/>
+					</div>
+					<div>
+						<label for="repair-status" class="text-xs font-medium text-surface-600 dark:text-surface-400 block mb-1">
+							Status
+						</label>
+						<select
+							id="repair-status"
+							name="status"
+							bind:value={repairStatus}
+							class="w-full px-3 py-2 rounded-lg bg-surface-100 dark:bg-surface-700 border-0 text-sm focus:ring-2 focus:ring-primary-500"
+						>
+							<option value="completed">Completed</option>
+							<option value="scheduled">Scheduled</option>
+							<option value="in_progress">In Progress</option>
+						</select>
+					</div>
+				</div>
+
+				<div>
+					<label for="repair-vendor" class="text-xs font-medium text-surface-600 dark:text-surface-400 block mb-1">
+						Vendor
+					</label>
+					<select
+						id="repair-vendor"
+						name="vendorId"
+						bind:value={repairVendorId}
+						class="w-full px-3 py-2 rounded-lg bg-surface-100 dark:bg-surface-700 border-0 text-sm focus:ring-2 focus:ring-primary-500"
+					>
+						<option value="">No vendor</option>
+						{#each vendors as vendor}
+							<option value={vendor.id}>{vendor.name}</option>
+						{/each}
+					</select>
+					{#if vendors.length === 0}
+						<p class="text-xs text-surface-500 mt-1">
+							<a href="/vendors/new" class="text-primary-500 hover:underline">Add a vendor</a> to track where repairs are done
+						</p>
+					{/if}
+				</div>
+
+				<div class="flex gap-3 pt-4">
+					<button
+						type="button"
+						class="flex-1 btn preset-outlined-surface-500 py-2.5 rounded-lg font-semibold"
+						onclick={() => { repairModalOpen = false; resetRepairForm(); }}
+					>
+						Cancel
+					</button>
+					<button
+						type="submit"
+						class="flex-1 btn preset-filled-primary-500 py-2.5 rounded-lg font-semibold text-white disabled:opacity-50"
+						disabled={!repairDescription.trim() || !repairDate || savingRepair}
+					>
+						{savingRepair ? 'Saving...' : 'Save Repair'}
+					</button>
+				</div>
+			</form>
+		</div>
+	</div>
+{/if}
+
+<!-- Delete Repair Confirmation Modal -->
+<ConfirmModal
+	open={repairDeleteModalOpen}
+	title="Delete Repair"
+	message={repairToDelete ? `Are you sure you want to delete "${repairToDelete.description}"? This action cannot be undone.` : ''}
+	confirmText="Delete"
+	onConfirm={() => {
+		if (repairToDelete) {
+			const form = document.getElementById(`delete-repair-form-${repairToDelete.id}`) as HTMLFormElement;
+			form?.requestSubmit();
+		}
+		repairDeleteModalOpen = false;
+		repairToDelete = null;
+	}}
+	onCancel={() => {
+		repairDeleteModalOpen = false;
+		repairToDelete = null;
+	}}
+/>
+
+<!-- Hidden delete forms for repairs -->
+{#each repairs as repair}
+	<form method="POST" action="?/deleteRepair" use:enhance class="hidden" id="delete-repair-form-{repair.id}">
+		<input type="hidden" name="repairId" value={repair.id} />
 	</form>
 {/each}

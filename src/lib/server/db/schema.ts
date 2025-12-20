@@ -66,6 +66,42 @@ export const vehicles = pgTable('vehicles', {
 export type Vehicle = typeof vehicles.$inferSelect;
 export type NewVehicle = typeof vehicles.$inferInsert;
 
+// Vendors
+export const vendors = pgTable('vendors', {
+	id: text('id').primaryKey(),
+	userId: text('user_id')
+		.notNull()
+		.references(() => user.uuid, { onDelete: 'cascade' }),
+	name: text('name').notNull(),
+	address: text('address'),
+	phone: text('phone'),
+	website: text('website'),
+	createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+	updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow()
+});
+
+export type Vendor = typeof vendors.$inferSelect;
+export type NewVendor = typeof vendors.$inferInsert;
+
+// Repairs
+export const repairs = pgTable('repairs', {
+	id: text('id').primaryKey(),
+	vehicleId: text('vehicle_id')
+		.notNull()
+		.references(() => vehicles.id, { onDelete: 'cascade' }),
+	vendorId: text('vendor_id').references(() => vendors.id, { onDelete: 'set null' }),
+	description: text('description').notNull(),
+	date: timestamp('date', { withTimezone: true }).notNull(),
+	mileage: integer('mileage'),
+	cost: integer('cost'), // Store in cents
+	status: text('status').notNull().default('completed'), // completed, scheduled, in_progress
+	createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+	updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow()
+});
+
+export type Repair = typeof repairs.$inferSelect;
+export type NewRepair = typeof repairs.$inferInsert;
+
 // Notes (flexible content blocks for vehicles, repairs, vendors, users)
 export const notes = pgTable('notes', {
 	id: serial('id').primaryKey(),
@@ -78,8 +114,8 @@ export const notes = pgTable('notes', {
 	parentNoteId: text('parent_note_id'), // FK to notes.uuid for nesting
 	userId: text('user_id').references(() => user.uuid, { onDelete: 'cascade' }),
 	vehicleId: text('vehicle_id').references(() => vehicles.id, { onDelete: 'cascade' }),
-	repairId: text('repair_id'), // FK placeholder for future
-	vendorId: text('vendor_id'), // FK placeholder for future
+	repairId: text('repair_id').references(() => repairs.id, { onDelete: 'cascade' }),
+	vendorId: text('vendor_id').references(() => vendors.id, { onDelete: 'cascade' }),
 	createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
 	updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow()
 });

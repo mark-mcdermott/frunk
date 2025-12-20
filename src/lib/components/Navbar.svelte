@@ -5,6 +5,8 @@
 	import { page } from '$app/stores';
 
 	const user = $derived($page.data.user);
+	const hasNotes = $derived($page.data.hasNotes);
+	const hasRepairs = $derived($page.data.hasRepairs);
 </script>
 
 <nav class="sticky top-0 z-50 bg-surface-50/80 dark:bg-surface-900/80 backdrop-blur-lg border-b border-surface-200 dark:border-surface-800">
@@ -41,6 +43,13 @@
 					<a href="/store" class="text-surface-600 dark:text-surface-400 hover:text-primary-500 font-medium transition-colors">Merch</a>
 					{#if user}
 						<a href="/vehicles" class="text-surface-600 dark:text-surface-400 hover:text-primary-500 font-medium transition-colors">Vehicles</a>
+						<a href="/vendors" class="text-surface-600 dark:text-surface-400 hover:text-primary-500 font-medium transition-colors">Vendors</a>
+					{/if}
+					{#if hasNotes}
+						<a href="/notes" class="text-surface-600 dark:text-surface-400 hover:text-primary-500 font-medium transition-colors">Notes</a>
+					{/if}
+					{#if hasRepairs}
+						<a href="/repairs" class="text-surface-600 dark:text-surface-400 hover:text-primary-500 font-medium transition-colors">Repairs</a>
 					{/if}
 					{#if user?.admin}
 						<a href="/users" class="text-surface-600 dark:text-surface-400 hover:text-primary-500 font-medium transition-colors">Users</a>

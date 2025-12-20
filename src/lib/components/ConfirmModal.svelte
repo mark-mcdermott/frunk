@@ -56,7 +56,7 @@
 
 			<!-- Modal -->
 			<div class="relative bg-white dark:bg-surface-800 rounded-2xl shadow-2xl w-full max-w-sm p-6 border border-surface-200 dark:border-surface-700">
-				<h3 id="confirm-title" class="text-lg font-semibold text-surface-900 dark:text-white mb-2">
+				<h3 id="confirm-title" class="text-lg font-semibold text-black dark:text-white mb-2">
 					{title}
 				</h3>
 				<p class="text-sm text-surface-600 dark:text-surface-400 mb-6">

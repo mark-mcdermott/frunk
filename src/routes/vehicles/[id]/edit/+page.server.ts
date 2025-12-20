@@ -26,7 +26,7 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 };
 
 export const actions: Actions = {
-	update: async ({ request, params, locals }) => {
+	update: async ({ request, params, locals, platform }) => {
 		if (!locals.user) {
 			throw redirect(302, '/sign-in');
 		}
@@ -45,6 +45,8 @@ export const actions: Actions = {
 		const model = formData.get('model') as string;
 		const yearStr = formData.get('year') as string;
 		const vin = formData.get('vin') as string;
+		const fileData = formData.get('fileData') as string | null;
+		const removeImage = formData.get('removeImage') === 'true';
 
 		if (!make?.trim()) {
 			return fail(400, { message: 'Make is required' });
@@ -59,6 +61,60 @@ export const actions: Actions = {
 			return fail(400, { message: 'Please enter a valid year' });
 		}
 
+		let image = vehicle.image;
+
+		// Handle image removal
+		if (removeImage && vehicle.image) {
+			// Delete old image from R2
+			if (vehicle.image.includes('r2.dev') && platform?.env?.R2_AVATARS && !import.meta.env.DEV) {
+				try {
+					const key = vehicle.image.split('r2.dev/')[1];
+					await platform.env.R2_AVATARS.delete(key);
+				} catch (e) {
+					console.error('R2 delete failed:', e);
+				}
+			}
+			image = null;
+		}
+
+		// Handle new image upload
+		if (fileData && fileData.startsWith('data:')) {
+			// Delete old image first if exists (only on production with real R2)
+			if (vehicle.image?.includes('r2.dev') && platform?.env?.R2_AVATARS && !import.meta.env.DEV) {
+				try {
+					const key = vehicle.image.split('r2.dev/')[1];
+					await platform.env.R2_AVATARS.delete(key);
+				} catch (e) {
+					console.error('R2 delete failed:', e);
+				}
+			}
+
+			const matches = fileData.match(/^data:([^;]+);base64,(.+)$/);
+			if (matches) {
+				const mimeType = matches[1];
+				const base64Data = matches[2];
+				const binaryData = Uint8Array.from(atob(base64Data), (c) => c.charCodeAt(0));
+				const ext = mimeType.split('/')[1] || 'jpg';
+				const filename = `vehicles/${params.id}/${crypto.randomUUID()}.${ext}`;
+
+				// Only use R2 in production (platform emulation in dev doesn't work with real R2)
+				if (platform?.env?.R2_AVATARS && !import.meta.env.DEV) {
+					try {
+						await platform.env.R2_AVATARS.put(filename, binaryData, {
+							httpMetadata: { contentType: mimeType }
+						});
+						image = `https://pub-8578b5b18a5e41269fa51ae28e78a0a8.r2.dev/${filename}`;
+					} catch (e) {
+						console.error('R2 upload failed:', e);
+						return fail(500, { message: 'Failed to upload image' });
+					}
+				} else {
+					// In dev mode, store base64 directly
+					image = fileData;
+				}
+			}
+		}
+
 		await db
 			.update(table.vehicles)
 			.set({
@@ -66,6 +122,7 @@ export const actions: Actions = {
 				model: model.trim(),
 				year,
 				vin: vin?.trim() || null,
+				image,
 				updatedAt: new Date()
 			})
 			.where(eq(table.vehicles.id, params.id));
@@ -73,7 +130,7 @@ export const actions: Actions = {
 		throw redirect(302, `/vehicles/${params.id}`);
 	},
 
-	delete: async ({ params, locals }) => {
+	delete: async ({ params, locals, platform }) => {
 		if (!locals.user) {
 			throw redirect(302, '/sign-in');
 		}
@@ -85,6 +142,16 @@ export const actions: Actions = {
 
 		if (!vehicle || vehicle.userId !== locals.user.uuid) {
 			throw error(403, 'Forbidden');
+		}
+
+		// Delete image from R2 if exists (only in production)
+		if (vehicle.image?.includes('r2.dev') && platform?.env?.R2_AVATARS && !import.meta.env.DEV) {
+			try {
+				const key = vehicle.image.split('r2.dev/')[1];
+				await platform.env.R2_AVATARS.delete(key);
+			} catch (e) {
+				console.error('R2 delete failed:', e);
+			}
 		}
 
 		await db.delete(table.vehicles).where(eq(table.vehicles.id, params.id));
