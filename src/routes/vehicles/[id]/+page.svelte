@@ -158,14 +158,24 @@
 										</div>
 									</div>
 								</a>
+								<div class="absolute top-3 right-3 flex items-center gap-1">
+								<a
+									href="/vehicles/{vehicle.id}/notes/{note.uuid}/edit"
+									class="p-2 text-surface-500 hover:bg-surface-200 dark:hover:bg-surface-600 rounded-lg transition-colors"
+									aria-label="Edit note"
+									onclick={(e) => e.stopPropagation()}
+								>
+									<Pencil class="w-4 h-4" />
+								</a>
 								<button
 									type="button"
-									class="absolute top-3 right-3 p-2 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
+									class="p-2 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
 									aria-label="Delete note"
 									onclick={(e) => { e.preventDefault(); noteToDelete = { uuid: note.uuid, title: note.title }; deleteModalOpen = true; }}
 								>
 									<Trash2 class="w-4 h-4" />
 								</button>
+							</div>
 							</div>
 						{/each}
 					</div>
