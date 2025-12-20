@@ -192,7 +192,7 @@
 										</div>
 									</div>
 								</a>
-								<div class="absolute top-3 right-3 flex items-center gap-1">
+								<div class="absolute bottom-3 right-3 flex items-center gap-1">
 								<a
 									href="/vehicles/{vehicle.id}/notes/{note.uuid}/edit"
 									class="p-2 text-primary-500 hover:text-[#93c5fd] hover:bg-primary-50 dark:hover:bg-primary-900/20 rounded-lg transition-colors"
@@ -242,41 +242,57 @@
 				{:else}
 					<div class="space-y-3">
 						{#each repairs as repair}
-							<div class="group relative bg-surface-50 dark:bg-surface-700/50 rounded-lg p-4 hover:bg-surface-100 dark:hover:bg-surface-700 transition-colors">
-								<div class="flex items-start justify-between gap-2">
-									<div class="flex-1 min-w-0">
-										<h3 class="font-medium text-black dark:text-white">{repair.description}</h3>
-										<div class="flex flex-wrap items-center gap-2 text-xs text-surface-500 mt-1">
-											<span>{formatDate(repair.date)}</span>
-											{#if repair.mileage}
-												<span class="text-surface-300">|</span>
-												<span>{repair.mileage.toLocaleString()} mi</span>
-											{/if}
-											{#if repair.cost}
-												<span class="text-surface-300">|</span>
-												<span class="text-green-600 dark:text-green-400">{formatCost(repair.cost)}</span>
+							<div class="group relative bg-surface-50 dark:bg-surface-700/50 rounded-lg hover:bg-surface-100 dark:hover:bg-surface-700 transition-colors">
+								<a
+									href="/vehicles/{vehicle.id}/repairs/{repair.id}"
+									class="block p-4"
+								>
+									<div class="flex items-start justify-between gap-2">
+										<div class="flex-1 min-w-0">
+											<div class="flex items-center gap-2">
+												<h3 class="font-medium text-black dark:text-white">{repair.description}</h3>
+												<ChevronRight class="w-4 h-4 text-surface-400 opacity-0 group-hover:opacity-100 transition-opacity" />
+											</div>
+											<div class="flex flex-wrap items-center gap-2 text-xs text-surface-500 mt-1">
+												<span>{formatDate(repair.date)}</span>
+												{#if repair.mileage}
+													<span class="text-surface-300">|</span>
+													<span>{repair.mileage.toLocaleString()} mi</span>
+												{/if}
+												{#if repair.cost}
+													<span class="text-surface-300">|</span>
+													<span class="text-green-600 dark:text-green-400">{formatCost(repair.cost)}</span>
+												{/if}
+											</div>
+											{#if repair.vendorName}
+												<div class="flex items-center gap-1 text-xs text-surface-500 mt-1">
+													<Store class="w-3 h-3" />
+													<span>{repair.vendorName}</span>
+												</div>
 											{/if}
 										</div>
-										{#if repair.vendorName}
-											<div class="flex items-center gap-1 text-xs text-surface-500 mt-1">
-												<Store class="w-3 h-3" />
-												<span>{repair.vendorName}</span>
-											</div>
-										{/if}
-									</div>
-									<div class="flex flex-col items-end gap-2">
 										<span class="text-xs px-2 py-0.5 rounded-full {repair.status === 'completed' ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' : repair.status === 'scheduled' ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400' : 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400'}">
 											{repair.status}
 										</span>
-										<button
-											type="button"
-											class="p-1 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded transition-colors opacity-0 group-hover:opacity-100"
-											aria-label="Delete repair"
-											onclick={() => { repairToDelete = { id: repair.id, description: repair.description }; repairDeleteModalOpen = true; }}
-										>
-											<Trash2 class="w-4 h-4" />
-										</button>
 									</div>
+								</a>
+								<div class="absolute bottom-3 right-3 flex items-center gap-1">
+									<a
+										href="/vehicles/{vehicle.id}/repairs/{repair.id}/edit"
+										class="p-2 text-primary-500 hover:text-[#93c5fd] hover:bg-primary-50 dark:hover:bg-primary-900/20 rounded-lg transition-colors"
+										aria-label="Edit repair"
+										onclick={(e) => e.stopPropagation()}
+									>
+										<Pencil class="w-4 h-4" />
+									</a>
+									<button
+										type="button"
+										class="p-2 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
+										aria-label="Delete repair"
+										onclick={(e) => { e.preventDefault(); repairToDelete = { id: repair.id, description: repair.description }; repairDeleteModalOpen = true; }}
+									>
+										<Trash2 class="w-4 h-4" />
+									</button>
 								</div>
 							</div>
 						{/each}

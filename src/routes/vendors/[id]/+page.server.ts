@@ -50,5 +50,37 @@ export const actions: Actions = {
 		await db.delete(table.vendors).where(eq(table.vendors.id, params.id));
 
 		throw redirect(302, '/vendors');
+	},
+
+	deleteRepair: async ({ request, locals }) => {
+		if (!locals.user) {
+			throw error(401, 'Unauthorized');
+		}
+
+		const formData = await request.formData();
+		const repairId = formData.get('repairId') as string;
+
+		// Get repair and verify ownership through vehicle
+		const [repair] = await db
+			.select()
+			.from(table.repairs)
+			.where(eq(table.repairs.id, repairId));
+
+		if (!repair) {
+			throw error(404, 'Repair not found');
+		}
+
+		const [vehicle] = await db
+			.select()
+			.from(table.vehicles)
+			.where(eq(table.vehicles.id, repair.vehicleId));
+
+		if (!vehicle || vehicle.userId !== locals.user.uuid) {
+			throw error(403, 'Forbidden');
+		}
+
+		await db.delete(table.repairs).where(eq(table.repairs.id, repairId));
+
+		return { success: true };
 	}
 };
