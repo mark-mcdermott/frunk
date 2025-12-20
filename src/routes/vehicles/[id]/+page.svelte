@@ -984,9 +984,20 @@
 
 				{#if editGalleryPhotos.length > 0}
 					<div>
-						<label class="text-xs font-medium text-surface-600 dark:text-surface-400 block mb-2">
-							Drag images to rearrange order
-						</label>
+						<div class="flex items-center justify-between mb-2">
+							<div>
+								<span class="text-xs font-medium text-surface-600 dark:text-surface-400 block">Gallery Images</span>
+								<span class="text-xs text-surface-400 dark:text-surface-500">(Drag images to rearrange order)</span>
+							</div>
+							<button
+								type="button"
+								class="p-2 text-primary-500 hover:text-[#93c5fd] hover:bg-primary-50 dark:hover:bg-primary-900/20 rounded-lg transition-colors"
+								aria-label="Add photo to gallery"
+								onclick={() => { selectedGalleryId = editingGallery?.id || ''; editGalleryModalOpen = false; photoModalOpen = true; }}
+							>
+								<Plus class="w-4 h-4" />
+							</button>
+						</div>
 						<div
 							class="grid grid-cols-3 gap-3"
 							use:dndzone={{ items: editGalleryPhotos, flipDurationMs, type: 'gallery-photos' }}
@@ -1006,6 +1017,25 @@
 									<div class="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors flex items-center justify-center">
 										<GripVertical class="w-6 h-6 text-white opacity-0 group-hover:opacity-100 transition-opacity drop-shadow-lg" />
 									</div>
+									<!-- Edit/Delete icons in top right -->
+									<div class="absolute top-1 right-1 z-10 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+										<button
+											type="button"
+											class="p-1.5 bg-white/90 dark:bg-surface-800/90 text-primary-500 hover:bg-primary-50 dark:hover:bg-primary-900/20 rounded-lg transition-colors"
+											aria-label="Edit photo"
+											onclick={(e) => { e.stopPropagation(); editGalleryModalOpen = false; openEditPhotoModal(photo); }}
+										>
+											<Pencil class="w-3 h-3" />
+										</button>
+										<button
+											type="button"
+											class="p-1.5 bg-white/90 dark:bg-surface-800/90 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
+											aria-label="Delete photo"
+											onclick={(e) => { e.stopPropagation(); photoToDelete = { id: photo.id, caption: photo.caption }; photoDeleteModalOpen = true; editGalleryModalOpen = false; }}
+										>
+											<Trash2 class="w-3 h-3" />
+										</button>
+									</div>
 									{#if photo.caption}
 										<div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-2 pt-6">
 											<p class="text-white text-xs truncate">{photo.caption}</p>
@@ -1016,9 +1046,22 @@
 						</div>
 					</div>
 				{:else}
-					<div class="text-center py-6 bg-surface-50 dark:bg-surface-700/30 rounded-xl">
-						<ImageIcon class="w-8 h-8 mx-auto text-surface-300 dark:text-surface-600 mb-2" />
-						<p class="text-surface-500 text-sm">No photos in this gallery</p>
+					<div>
+						<div class="flex items-center justify-between mb-2">
+							<span class="text-xs font-medium text-surface-600 dark:text-surface-400">Gallery Images</span>
+							<button
+								type="button"
+								class="p-2 text-primary-500 hover:text-[#93c5fd] hover:bg-primary-50 dark:hover:bg-primary-900/20 rounded-lg transition-colors"
+								aria-label="Add photo to gallery"
+								onclick={() => { selectedGalleryId = editingGallery?.id || ''; editGalleryModalOpen = false; photoModalOpen = true; }}
+							>
+								<Plus class="w-4 h-4" />
+							</button>
+						</div>
+						<div class="text-center py-6 bg-surface-50 dark:bg-surface-700/30 rounded-xl">
+							<ImageIcon class="w-8 h-8 mx-auto text-surface-300 dark:text-surface-600 mb-2" />
+							<p class="text-surface-500 text-sm">No photos in this gallery</p>
+						</div>
 					</div>
 				{/if}
 

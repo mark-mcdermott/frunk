@@ -10,7 +10,8 @@ export const user = pgTable('user', {
 	avatar: text('avatar'),
 	emailVerified: integer('email_verified').notNull().default(0),
 	emailVerificationToken: text('email_verification_token'),
-	emailVerificationExpires: timestamp('email_verification_expires', { withTimezone: true, mode: 'date' })
+	emailVerificationExpires: timestamp('email_verification_expires', { withTimezone: true, mode: 'date' }),
+	cookieConsent: jsonb('cookie_consent') // { essential: boolean, analytics: boolean, timestamp: number }
 });
 
 export const session = pgTable('session', {

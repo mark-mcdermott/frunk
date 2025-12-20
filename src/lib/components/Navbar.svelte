@@ -19,39 +19,20 @@
 				</a>
 				<!-- Nav Links -->
 				<div class="hidden md:flex items-center gap-6">
-					<Menu>
-						<Menu.Trigger class="cursor-pointer outline-none text-surface-600 dark:text-surface-400 hover:text-primary-500 font-medium transition-colors flex items-center gap-1">
-							Style
-							<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
-						</Menu.Trigger>
-						<Portal>
-							<Menu.Positioner>
-								<Menu.Content class="bg-white dark:bg-surface-800 rounded-lg shadow-xl border border-[#ddd] dark:border-surface-700 p-1 min-w-[140px]">
-									<Menu.Item value="blocks" class="px-3 py-2 rounded hover:bg-surface-100 dark:hover:bg-surface-700 cursor-pointer outline-none">
-										<a href="/blocks" class="w-full block outline-none">Blocks</a>
-									</Menu.Item>
-									<Menu.Item value="charts" class="px-3 py-2 rounded hover:bg-surface-100 dark:hover:bg-surface-700 cursor-pointer outline-none">
-										<a href="/charts" class="w-full block outline-none">Charts</a>
-									</Menu.Item>
-									<Menu.Item value="content" class="px-3 py-2 rounded hover:bg-surface-100 dark:hover:bg-surface-700 cursor-pointer outline-none">
-										<a href="/content" class="w-full block outline-none">Content</a>
-									</Menu.Item>
-								</Menu.Content>
-							</Menu.Positioner>
-						</Portal>
-					</Menu>
-					<a href="/store" class="text-surface-600 dark:text-surface-400 hover:text-primary-500 font-medium transition-colors">Merch</a>
 					{#if user}
 						<a href="/vehicles" class="text-surface-600 dark:text-surface-400 hover:text-primary-500 font-medium transition-colors">Vehicles</a>
-						<a href="/vendors" class="text-surface-600 dark:text-surface-400 hover:text-primary-500 font-medium transition-colors">Vendors</a>
-					{/if}
-					{#if hasNotes}
-						<a href="/notes" class="text-surface-600 dark:text-surface-400 hover:text-primary-500 font-medium transition-colors">Notes</a>
 					{/if}
 					{#if hasRepairs}
 						<a href="/repairs" class="text-surface-600 dark:text-surface-400 hover:text-primary-500 font-medium transition-colors">Repairs</a>
 					{/if}
+					{#if hasNotes}
+						<a href="/notes" class="text-surface-600 dark:text-surface-400 hover:text-primary-500 font-medium transition-colors">Notes</a>
+					{/if}
+					{#if user}
+						<a href="/vendors" class="text-surface-600 dark:text-surface-400 hover:text-primary-500 font-medium transition-colors">Vendors</a>
+					{/if}
 					{#if user?.admin}
+						<a href="/store" class="text-surface-600 dark:text-surface-400 hover:text-primary-500 font-medium transition-colors">Merch</a>
 						<a href="/users" class="text-surface-600 dark:text-surface-400 hover:text-primary-500 font-medium transition-colors">Users</a>
 					{/if}
 				</div>

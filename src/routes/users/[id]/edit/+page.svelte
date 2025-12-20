@@ -18,9 +18,13 @@
 	let avatarPreview = $state<string | null>(null);
 	let avatarDataUrl = $state<string>('');
 
-	// Delete confirmation modal state
+	// Delete confirmation modal state (admin deleting user)
 	let deleteModalOpen = $state(false);
 	let deleteFormEl: HTMLFormElement | null = null;
+
+	// Delete account modal state (user deleting own account)
+	let deleteAccountModalOpen = $state(false);
+	let deleteAccountFormEl: HTMLFormElement | null = null;
 
 	function handleFileSelect(event: Event) {
 		const input = event.target as HTMLInputElement;
@@ -131,7 +135,7 @@
 				<form method="POST" action="?/delete" bind:this={deleteFormEl} class="hidden"></form>
 			{:else}
 				<!-- User Edit Own Profile View -->
-				<h3 class="text-xl font-bold text-black dark:text-white mb-2">Edit Profile</h3>
+				<h3 class="text-xl font-bold text-black dark:text-white mb-2">Settings</h3>
 				<p class="text-sm text-surface-500 mb-6">Update your account settings.</p>
 
 				<!-- Avatar Display -->
@@ -178,6 +182,20 @@
 						</a>
 					</div>
 				</form>
+
+				<!-- Delete Account Section -->
+				<div class="mt-8 pt-6 border-t border-surface-200 dark:border-surface-700">
+					<h4 class="text-sm font-semibold text-red-500 mb-2">Danger Zone</h4>
+					<p class="text-xs text-surface-500 mb-4">Permanently delete your account and all associated data.</p>
+					<button
+						type="button"
+						class="w-full btn py-2.5 rounded-lg font-semibold border border-red-500 bg-transparent text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10"
+						onclick={() => deleteAccountModalOpen = true}
+					>
+						Delete Account
+					</button>
+				</div>
+				<form method="POST" action="?/deleteAccount" bind:this={deleteAccountFormEl} class="hidden"></form>
 			{/if}
 			{#if form?.message}
 				<p class="text-red-500 text-sm mt-4">{form.message}</p>
@@ -188,7 +206,7 @@
 	<Footer />
 </div>
 
-<!-- Delete Confirmation Modal -->
+<!-- Delete Confirmation Modal (Admin) -->
 <ConfirmModal
 	open={deleteModalOpen}
 	title="Delete User"
@@ -200,5 +218,20 @@
 	}}
 	onCancel={() => {
 		deleteModalOpen = false;
+	}}
+/>
+
+<!-- Delete Account Modal (User) -->
+<ConfirmModal
+	open={deleteAccountModalOpen}
+	title="Delete Your Account"
+	message="This will permanently delete your account and all associated data including your vehicles, repairs, notes, vendors, and uploaded files. This action cannot be undone and your data cannot be recovered."
+	confirmText="Delete My Account"
+	onConfirm={() => {
+		deleteAccountFormEl?.requestSubmit();
+		deleteAccountModalOpen = false;
+	}}
+	onCancel={() => {
+		deleteAccountModalOpen = false;
 	}}
 />

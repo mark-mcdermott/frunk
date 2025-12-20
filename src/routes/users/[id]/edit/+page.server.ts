@@ -124,5 +124,27 @@ export const actions: Actions = {
 		await db.delete(table.user).where(eq(table.user.uuid, params.id));
 
 		return redirect(302, '/users');
+	},
+
+	deleteAccount: async ({ params, locals, cookies }) => {
+		if (!locals.user) {
+			throw error(401, 'Unauthorized');
+		}
+
+		// Users can only delete their own account
+		if (locals.user.uuid !== params.id) {
+			throw error(403, 'You can only delete your own account');
+		}
+
+		// Delete user's sessions first
+		await db.delete(table.session).where(eq(table.session.userId, params.id));
+
+		// Delete the user (cascade will handle related data)
+		await db.delete(table.user).where(eq(table.user.uuid, params.id));
+
+		// Clear session cookie
+		cookies.delete('session', { path: '/' });
+
+		return redirect(302, '/');
 	}
 };
