@@ -102,6 +102,38 @@ export const repairs = pgTable('repairs', {
 export type Repair = typeof repairs.$inferSelect;
 export type NewRepair = typeof repairs.$inferInsert;
 
+// Vehicle Galleries (groups of photos for vehicles)
+export const galleries = pgTable('galleries', {
+	id: text('id').primaryKey(),
+	vehicleId: text('vehicle_id')
+		.notNull()
+		.references(() => vehicles.id, { onDelete: 'cascade' }),
+	name: text('name').notNull(),
+	description: text('description'),
+	order: integer('order').notNull().default(0),
+	createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+	updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow()
+});
+
+export type Gallery = typeof galleries.$inferSelect;
+export type NewGallery = typeof galleries.$inferInsert;
+
+// Vehicle Photos (images within galleries)
+export const vehiclePhotos = pgTable('vehicle_photos', {
+	id: text('id').primaryKey(),
+	galleryId: text('gallery_id')
+		.notNull()
+		.references(() => galleries.id, { onDelete: 'cascade' }),
+	imageUrl: text('image_url').notNull(),
+	caption: text('caption'),
+	order: integer('order').notNull().default(0),
+	createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+	updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow()
+});
+
+export type VehiclePhoto = typeof vehiclePhotos.$inferSelect;
+export type NewVehiclePhoto = typeof vehiclePhotos.$inferInsert;
+
 // Notes (flexible content blocks for vehicles, repairs, vendors, users)
 export const notes = pgTable('notes', {
 	id: serial('id').primaryKey(),

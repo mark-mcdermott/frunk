@@ -23,6 +23,9 @@ importers:
       stripe:
         specifier: ^20.1.0
         version: 20.1.0(@types/node@24.10.4)
+      svelte-dnd-action:
+        specifier: ^0.9.68
+        version: 0.9.68(svelte@5.46.0)
       svelte-sonner:
         specifier: ^1.0.7
         version: 1.0.7(svelte@5.46.0)
@@ -2989,6 +2992,11 @@ packages:
     peerDependencies:
       svelte: ^4.0.0 || ^5.0.0-next.0
       typescript: '>=5.0.0'
+
+  svelte-dnd-action@0.9.68:
+    resolution: {integrity: sha512-maFNIHwimGYbvIG8uOHsU9T/4+VKBIaAaFEGWYFIyo4f8qwUs0BIqwvBfHkaN+MXt8MBB9rByPTvF7fRx0eIjw==}
+    peerDependencies:
+      svelte: '>=3.23.0 || ^5.0.0-next.0'
 
   svelte-eslint-parser@1.4.1:
     resolution: {integrity: sha512-1eqkfQ93goAhjAXxZiu1SaKI9+0/sxp4JIWQwUpsz7ybehRE5L8dNuz7Iry7K22R47p5/+s9EM+38nHV2OlgXA==}
@@ -6318,6 +6326,10 @@ snapshots:
       typescript: 5.9.3
     transitivePeerDependencies:
       - picomatch
+
+  svelte-dnd-action@0.9.68(svelte@5.46.0):
+    dependencies:
+      svelte: 5.46.0
 
   svelte-eslint-parser@1.4.1(svelte@5.46.0):
     dependencies:

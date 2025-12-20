@@ -1,7 +1,7 @@
 import { drizzle } from 'drizzle-orm/neon-http';
 import { neon } from '@neondatabase/serverless';
 import { inArray } from 'drizzle-orm';
-import { user, vehicles, notes, vendors, repairs, session } from '../src/lib/server/db/schema';
+import { user, vehicles, notes, vendors, repairs, session, galleries, vehiclePhotos } from '../src/lib/server/db/schema';
 
 const DATABASE_URL = process.env.DATABASE_URL;
 if (!DATABASE_URL) throw new Error('DATABASE_URL is not set');
@@ -45,6 +45,7 @@ async function hashPassword(password: string): Promise<string> {
 const AVATAR_BASE = 'https://pub-8578b5b18a5e41269fa51ae28e78a0a8.r2.dev/headshots';
 const VEHICLE_BASE = 'https://pub-8578b5b18a5e41269fa51ae28e78a0a8.r2.dev/vehicles';
 const DOC_BASE = 'https://pub-8578b5b18a5e41269fa51ae28e78a0a8.r2.dev/documents/samples';
+const GALLERY_BASE = 'https://pub-8578b5b18a5e41269fa51ae28e78a0a8.r2.dev/gallery';
 
 // Helper to generate vehicle image filename
 function getVehicleImage(make: string, model: string, year: number): string {
@@ -149,6 +150,43 @@ const repairTemplates = [
 	{ description: "State inspection", cost: 3500, status: "scheduled" },
 	{ description: "Suspension work", cost: 80000, status: "in_progress" }
 ];
+
+// Gallery templates with associated photos
+const galleryTemplates = [
+	{
+		name: 'Exterior',
+		description: 'Outside views of the vehicle',
+		photos: [
+			{ filename: 'car-front.jpg', caption: 'Front view' },
+			{ filename: 'car-side.jpg', caption: 'Side profile' },
+			{ filename: 'car-rear.jpg', caption: 'Rear view' }
+		]
+	},
+	{
+		name: 'Interior',
+		description: 'Inside the cabin',
+		photos: [
+			{ filename: 'car-interior.jpg', caption: 'Dashboard and seats' }
+		]
+	},
+	{
+		name: 'Details',
+		description: 'Close-up detail shots',
+		photos: [
+			{ filename: 'car-detail.jpg', caption: 'Detail shot' },
+			{ filename: 'car-wheel.jpg', caption: 'Wheel and tire' }
+		]
+	}
+];
+
+// Get random galleries for a vehicle (0-2 galleries, each with 2+ photos)
+function getGalleriesForVehicle(): typeof galleryTemplates {
+	// 30% chance of no galleries, 70% chance of 1-2 galleries
+	if (Math.random() < 0.3) return [];
+	const count = Math.floor(Math.random() * 2) + 1; // 1-2 galleries
+	const shuffled = [...galleryTemplates].sort(() => Math.random() - 0.5);
+	return shuffled.slice(0, count);
+}
 
 // Get random date within last 2 years
 function getRandomPastDate(): Date {
@@ -467,6 +505,35 @@ async function seed() {
 					status: repair.status
 				});
 				console.log(`    ⚙ Added repair: ${repair.description} (${repair.status})`);
+			}
+
+			// Add random galleries with photos to this vehicle
+			const vehicleGalleries = getGalleriesForVehicle();
+			for (let gi = 0; gi < vehicleGalleries.length; gi++) {
+				const gallery = vehicleGalleries[gi];
+				const galleryId = crypto.randomUUID();
+
+				await db.insert(galleries).values({
+					id: galleryId,
+					vehicleId: vehicleId,
+					name: gallery.name,
+					description: gallery.description,
+					order: gi
+				});
+				console.log(`    📁 Added gallery: ${gallery.name}`);
+
+				// Add photos to this gallery
+				for (let pi = 0; pi < gallery.photos.length; pi++) {
+					const photo = gallery.photos[pi];
+					await db.insert(vehiclePhotos).values({
+						id: crypto.randomUUID(),
+						galleryId: galleryId,
+						imageUrl: `${GALLERY_BASE}/${photo.filename}`,
+						caption: photo.caption,
+						order: pi
+					});
+					console.log(`      📷 Added photo: ${photo.caption}`);
+				}
 			}
 		}
 	}
