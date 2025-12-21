@@ -94,7 +94,7 @@
 					<section>
 						<h2 class="text-xl font-semibold text-black dark:text-white mt-8 mb-4">9. Contact Us</h2>
 						<p>If you have any questions about this Privacy Policy, please contact us at:</p>
-						<p class="mt-2"><a href="mailto:privacy@frunk.app" class="text-primary-500 hover:text-[#93c5fd]">privacy@frunk.app</a></p>
+						<p class="mt-2"><a href="mailto:hello@frunk.cloud" class="text-primary-500 hover:text-[#93c5fd]">hello@frunk.cloud</a></p>
 					</section>
 				</div>
 			</div>

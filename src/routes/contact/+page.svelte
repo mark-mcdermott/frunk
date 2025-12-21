@@ -30,7 +30,7 @@
 						<div>
 							<h3 class="font-semibold text-black dark:text-white">Email</h3>
 							<p class="text-surface-600 dark:text-surface-400 mt-1">For general inquiries and support</p>
-							<a href="mailto:hello@frunk.app" class="text-primary-500 hover:text-[#93c5fd] transition-colors">hello@frunk.app</a>
+							<a href="mailto:hello@frunk.cloud" class="text-primary-500 hover:text-[#93c5fd] transition-colors">hello@frunk.cloud</a>
 						</div>
 					</div>
 

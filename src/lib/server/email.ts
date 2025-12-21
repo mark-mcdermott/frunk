@@ -110,7 +110,7 @@ export async function sendContactEmail({
 	email: string;
 	message: string;
 }) {
-	const toEmail = env.CONTACT_EMAIL || 'hello@frunk.app';
+	const toEmail = env.CONTACT_EMAIL || 'hello@frunk.cloud';
 
 	await sendEmail({
 		to: toEmail,
