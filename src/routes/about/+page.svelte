@@ -104,22 +104,26 @@
 			<div class="bg-white dark:bg-surface-800 rounded-2xl shadow-xl border border-[#eee] dark:border-surface-700 p-8 mb-8">
 				<h2 class="text-2xl font-bold text-black dark:text-white mb-4">The Frunk Story</h2>
 				<p class="text-surface-600 dark:text-surface-400 mb-4">
-					This app has been a dream of mine for a few years now. It started as a toy/joke project for me to work on my webdev skills, and after a while I realized it was actually a great idea and I wanted to build it for real.
+					This app has been a dream of mine for a few years now. It started as sort of fake app project just for me to work on my webdev skills. After a while I realized it was actually a decent idea and decided to try to build it for real.
 				</p>
 				<p class="text-surface-600 dark:text-surface-400 mb-4">
-					For whatever reason, over the years I built and rebuilt this in different frameworks to about 75% completion, then put it aside for a while only to rebuild it again to 75% completion later. This year I finally got serious and decided to build it all the way.
+					For whatever reason, over the years I would build this app until it was about 75% done, then put it down for about 9 months and not touch it. Then I would decide to build it in a different framework and would get it to 75% done and the cycle would repeat. But recently when I realized how powerful Claude Code was, I decided to finish it for real.
 				</p>
 			</div>
 
-			<!-- Potential Roadmap -->
+			<!-- Roadmap -->
 			<div class="bg-white dark:bg-surface-800 rounded-2xl shadow-xl border border-[#eee] dark:border-surface-700 p-8">
-				<h2 class="text-2xl font-bold text-black dark:text-white mb-4">Potential Roadmap</h2>
+				<h2 class="text-2xl font-bold text-black dark:text-white mb-4">Roadmap</h2>
 				<p class="text-surface-600 dark:text-surface-400 mb-4">
-					Nothing is set in stone here. My first next step will be to get the Merch store running with hoodies of the Frunk robot and whatnot.
+					Nothing is set in stone here, but here are my loose goals for this app, in this order:
 				</p>
-				<p class="text-surface-600 dark:text-surface-400">
-					After that, my goal is to add more features and release them in a paid-only tier, likely for a flat one-time $5 price. The first paid feature I want to add is expected maintenance - a list of maintenances your car manufacturer recommends and at what mileage.
-				</p>
+				<ul class="list-disc list-inside text-surface-600 dark:text-surface-400 space-y-2">
+					<li>Small logo tweak</li>
+					<li>Get the merch store running</li>
+					<li>Scheduled maintenance feature (probably for pay-tier only, likely a flat one-time $5)</li>
+					<li>Maybe add more pay-tier features</li>
+					<li>Get iOS and Android mobile apps running and in the app stores and get Mac/Windows/Linux desktop apps running</li>
+				</ul>
 			</div>
 		</div>
 	</main>
