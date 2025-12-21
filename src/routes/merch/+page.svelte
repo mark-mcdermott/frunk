@@ -5,23 +5,23 @@
 </script>
 
 <svelte:head>
-	<title>Store - Frunk</title>
+	<title>Merch - Frunk</title>
 	<meta name="description" content="Browse our merchandise" />
 </svelte:head>
 
 <div class="min-h-screen bg-surface-50 dark:bg-surface-900 py-8 px-4 sm:px-6 lg:px-8">
 	<div class="max-w-6xl mx-auto">
-		<Breadcrumbs items={[{ label: 'Store' }]} />
+		<Breadcrumbs items={[{ label: 'Merch' }]} />
 		<div class="text-center mb-12">
-			<h1 class="text-4xl sm:text-5xl font-bold text-surface-900 dark:text-white mb-4">Store</h1>
+			<h1 class="text-4xl sm:text-5xl font-bold text-surface-900 dark:text-white mb-4">Merch</h1>
 			<p class="text-lg text-surface-600 dark:text-surface-400 max-w-2xl mx-auto">
-				Browse our collection. All items are printed on-demand and shipped directly to you.
+				Browse our fashionable Frunk attire and stickers.<br />All t-shirts and hoodies have the Frunk robot small on the front and the large Frunk robot illustration with logo on the back.
 			</p>
 		</div>
 
 		<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
 			{#each products as product}
-				<a href="/store/{product.slug}" class="group no-underline">
+				<a href="/merch/{product.slug}" class="group no-underline">
 					<div
 						class="bg-white dark:bg-surface-800 rounded-2xl overflow-hidden shadow-xl shadow-surface-900/5 hover:shadow-2xl transition-shadow"
 					>
@@ -47,7 +47,7 @@
 						</div>
 						<div class="p-6">
 							<h2
-								class="text-xl font-semibold mb-2 text-surface-900 dark:text-white group-hover:text-primary-500 transition-colors"
+								class="text-xl font-semibold mb-2 text-primary-500 group-hover:text-[#93c5fd] transition-colors"
 							>
 								{product.name}
 							</h2>
@@ -55,11 +55,11 @@
 								{product.description}
 							</p>
 							<div class="flex items-center justify-between">
-								<span class="text-lg font-bold text-surface-900 dark:text-white"
+								<span class="text-lg font-bold text-surface-600 dark:text-surface-400"
 									>{formatPrice(product.price)}</span
 								>
 								<span class="text-sm text-surface-500">
-									{product.variants.filter((v) => v.inStock).length} options
+									{[...new Set(product.variants.filter((v) => v.inStock).map((v) => v.color))].length} colors available
 								</span>
 							</div>
 						</div>

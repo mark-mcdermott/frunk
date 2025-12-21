@@ -118,7 +118,6 @@
 					Nothing is set in stone here, but here are my loose goals for this app, in this order:
 				</p>
 				<ul class="list-disc list-inside text-surface-600 dark:text-surface-400 space-y-2">
-					<li>Small logo tweak</li>
 					<li>Get the merch store running</li>
 					<li>Scheduled maintenance feature (probably for pay-tier only, likely a flat one-time $5)</li>
 					<li>Maybe add more pay-tier features</li>

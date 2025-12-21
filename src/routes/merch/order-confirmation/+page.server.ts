@@ -10,7 +10,7 @@ export const load: PageServerLoad = async ({ url }) => {
 	const sessionId = url.searchParams.get('session_id');
 
 	if (!sessionId) {
-		redirect(302, '/store');
+		redirect(302, '/merch');
 	}
 
 	const stripeSecretKey = env.STRIPE_SECRET_KEY;
@@ -27,7 +27,7 @@ export const load: PageServerLoad = async ({ url }) => {
 		});
 
 		if (session.payment_status !== 'paid') {
-			redirect(302, '/store?error=payment_incomplete');
+			redirect(302, '/merch?error=payment_incomplete');
 		}
 
 		const orderId = session.metadata?.orderId;
@@ -63,6 +63,6 @@ export const load: PageServerLoad = async ({ url }) => {
 		};
 	} catch (err) {
 		console.error('Error retrieving order:', err);
-		redirect(302, '/store?error=order_not_found');
+		redirect(302, '/merch?error=order_not_found');
 	}
 };
