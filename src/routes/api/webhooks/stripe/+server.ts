@@ -92,6 +92,8 @@ export const POST: RequestHandler = async ({ request }) => {
 		console.log('[Webhook] Shipping from session:', JSON.stringify(session.shipping));
 		if (printfulApiKey && shippingAddress) {
 			try {
+				console.log('[Webhook] Creating Printful order for:', order.id);
+				console.log('[Webhook] Order items:', JSON.stringify(order.items));
 				const printfulOrder = await createPrintfulOrder(
 					printfulApiKey,
 					order,
@@ -156,6 +158,23 @@ async function createPrintfulOrder(
 		quantity: item.quantity
 	}));
 
+	const payload = {
+		external_id: order.id,
+		recipient: {
+			name: shipping.name,
+			address1: shipping.address1,
+			address2: shipping.address2,
+			city: shipping.city,
+			state_code: shipping.state,
+			zip: shipping.zip,
+			country_code: shipping.country,
+			email: shipping.email
+		},
+		items: printfulItems
+	};
+
+	console.log('[Webhook] Printful payload:', JSON.stringify(payload, null, 2));
+
 	const response = await fetch('https://api.printful.com/orders', {
 		method: 'POST',
 		headers: {
@@ -163,20 +182,7 @@ async function createPrintfulOrder(
 			'Content-Type': 'application/json',
 			'X-PF-Store-Id': '17418567' // Frunk store ID
 		},
-		body: JSON.stringify({
-			external_id: order.id,
-			recipient: {
-				name: shipping.name,
-				address1: shipping.address1,
-				address2: shipping.address2,
-				city: shipping.city,
-				state_code: shipping.state,
-				zip: shipping.zip,
-				country_code: shipping.country,
-				email: shipping.email
-			},
-			items: printfulItems
-		})
+		body: JSON.stringify(payload)
 	});
 
 	const result = await response.json();
