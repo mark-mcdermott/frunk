@@ -61,8 +61,9 @@ export const POST: RequestHandler = async ({ request }) => {
 
 		// Update order with email and payment info
 		const customerEmail = session.customer_details?.email || '';
-		const shippingAddress = session.shipping_details?.address;
-		const shippingName = session.shipping_details?.name;
+		// Stripe uses session.shipping (not shipping_details) for checkout sessions
+		const shippingAddress = session.shipping?.address;
+		const shippingName = session.shipping?.name;
 
 		await db.update(orders).set({
 			email: customerEmail,
