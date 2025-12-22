@@ -31,7 +31,8 @@ export const POST: RequestHandler = async ({ request }) => {
 
 	let event;
 	try {
-		event = stripe.webhooks.constructEvent(body, signature, webhookSecret);
+		// Use async version for Cloudflare Workers environment
+		event = await stripe.webhooks.constructEventAsync(body, signature, webhookSecret);
 	} catch (err) {
 		console.error('[Webhook] Signature verification failed:', err);
 		error(400, 'Invalid signature');
