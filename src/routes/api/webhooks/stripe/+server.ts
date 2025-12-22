@@ -85,6 +85,10 @@ export const POST: RequestHandler = async ({ request }) => {
 		console.log('[Webhook] Order updated with payment info');
 
 		// Create Printful order if API key is configured
+		console.log('[Webhook] Printful API key exists:', !!printfulApiKey);
+		console.log('[Webhook] Shipping address exists:', !!shippingAddress);
+		console.log('[Webhook] Shipping details from session:', JSON.stringify(session.shipping_details));
+		console.log('[Webhook] Shipping from session:', JSON.stringify(session.shipping));
 		if (printfulApiKey && shippingAddress) {
 			try {
 				const printfulOrder = await createPrintfulOrder(
