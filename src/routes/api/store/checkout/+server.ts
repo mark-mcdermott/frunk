@@ -80,7 +80,9 @@ export const POST: RequestHandler = async ({ request, locals, url }) => {
 			}
 
 			const quantity = item.quantity || 1;
-			subtotal += product.price * quantity;
+			// Use variant-specific price if available, otherwise product price
+			const itemPrice = variant.price ?? product.price;
+			subtotal += itemPrice * quantity;
 
 			orderItems.push({
 				productId: product.id,
@@ -90,7 +92,7 @@ export const POST: RequestHandler = async ({ request, locals, url }) => {
 				size: variant.size,
 				color: variant.color,
 				quantity,
-				price: product.price
+				price: itemPrice
 			});
 
 			// Get the color-specific image if available
@@ -104,7 +106,7 @@ export const POST: RequestHandler = async ({ request, locals, url }) => {
 						description: product.description,
 						...(productImage?.startsWith('http') ? { images: [productImage] } : {})
 					},
-					unit_amount: product.price
+					unit_amount: itemPrice
 				},
 				quantity
 			});

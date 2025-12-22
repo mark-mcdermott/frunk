@@ -28,6 +28,9 @@
 
 	const selectedVariant = $derived(getVariantByOptions(product, selectedSize, selectedColor));
 
+	// Get the current price (variant price if available, otherwise product price)
+	const currentPrice = $derived(selectedVariant?.price ?? product.price);
+
 	// Get the current image based on selected color and front/back toggle
 	const currentImage = $derived(() => {
 		if (showBack && product.colorBackImages && product.colorBackImages[selectedColor]) {
@@ -55,7 +58,7 @@
 			shortName: product.shortName,
 			size: selectedVariant.size,
 			color: selectedVariant.color,
-			price: product.price,
+			price: currentPrice,
 			image
 		});
 
@@ -142,7 +145,7 @@
 					{product.name}
 				</h1>
 				<p class="text-2xl font-bold text-surface-600 dark:text-surface-400 mb-6">
-					{formatPrice(product.price)}
+					{formatPrice(currentPrice)}
 				</p>
 				<p class="text-surface-600 dark:text-surface-400 mb-8">{product.description}</p>
 
@@ -202,7 +205,7 @@
 					disabled={!selectedVariant}
 					class="w-full py-4 text-lg font-semibold rounded-lg transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed bg-primary-500 text-white hover:bg-primary-600 shadow-lg shadow-primary-500/25"
 				>
-					Add to Cart · <span class="ml-2">{formatPrice(product.price)}</span>
+					Add to Cart · <span class="ml-2">{formatPrice(currentPrice)}</span>
 				</button>
 
 				<p class="text-sm text-surface-500 mt-4 text-center">
