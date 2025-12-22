@@ -185,5 +185,8 @@ async function createPrintfulOrder(
 		throw new Error(result.error?.message || 'Printful order failed');
 	}
 
+	console.log('[Webhook] Printful order status:', result.result?.status);
+	console.log('[Webhook] Printful confirm was set to true, response:', JSON.stringify(result.result, null, 2));
+
 	return result.result;
 }
