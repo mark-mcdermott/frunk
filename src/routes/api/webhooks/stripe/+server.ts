@@ -164,7 +164,8 @@ async function createPrintfulOrder(
 			country_code: shipping.country,
 			email: shipping.email
 		},
-		items: printfulItems
+		items: printfulItems,
+		confirm: true // Auto-submit order for fulfillment
 	};
 
 	const response = await fetch('https://api.printful.com/orders', {
