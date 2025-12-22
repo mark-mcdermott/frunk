@@ -150,8 +150,14 @@
 								<!-- Product Details -->
 								<div class="flex-1 min-w-0 flex flex-col">
 									<!-- Product Name -->
-									<h3 class="font-semibold text-surface-600 dark:text-surface-400">
-										Frunk {item.shortName || item.name}
+									<h3 class="font-semibold">
+										<a
+											href="/merch/{item.productId}"
+											onclick={closeCart}
+											class="text-primary-500 hover:text-[#93c5fd] transition-colors"
+										>
+											Frunk {item.shortName || item.name}
+										</a>
 									</h3>
 
 									<!-- Color & Size -->

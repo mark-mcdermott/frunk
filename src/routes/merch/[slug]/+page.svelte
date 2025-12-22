@@ -211,7 +211,7 @@
 
 				<!-- Product Details -->
 				<div class="mt-8 p-6 bg-white dark:bg-surface-800 rounded-2xl">
-					<h3 class="font-semibold text-surface-900 dark:text-white mb-3">Product Details</h3>
+					<h3 class="font-semibold text-surface-600 dark:text-surface-400 mb-3">Product Details</h3>
 					<ul class="text-sm text-surface-600 dark:text-surface-400 space-y-2">
 						<li>100% ring-spun cotton</li>
 						<li>Pre-shrunk fabric</li>
