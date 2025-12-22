@@ -158,8 +158,11 @@ async function createPrintfulOrder(
 		quantity: item.quantity
 	}));
 
+	// Printful external_id has 32 char limit, remove hyphens from UUID
+	const externalId = order.id.replace(/-/g, '');
+
 	const payload = {
-		external_id: order.id,
+		external_id: externalId,
 		recipient: {
 			name: shipping.name,
 			address1: shipping.address1,
