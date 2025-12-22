@@ -185,8 +185,27 @@ async function createPrintfulOrder(
 		throw new Error(result.error?.message || 'Printful order failed');
 	}
 
-	console.log('[Webhook] Printful order status:', result.result?.status);
-	console.log('[Webhook] Printful confirm was set to true, response:', JSON.stringify(result.result, null, 2));
+	console.log('[Webhook] Printful order created with status:', result.result?.status);
+
+	// If order was created but not confirmed, make a separate confirm request
+	if (result.result?.id && result.result?.status === 'draft') {
+		console.log('[Webhook] Order in draft, sending confirm request...');
+		const confirmResponse = await fetch(`https://api.printful.com/orders/${result.result.id}/confirm`, {
+			method: 'POST',
+			headers: {
+				'Authorization': `Bearer ${apiKey}`,
+				'Content-Type': 'application/json',
+				'X-PF-Store-Id': '17418567'
+			}
+		});
+
+		const confirmResult = await confirmResponse.json();
+		console.log('[Webhook] Confirm response:', JSON.stringify(confirmResult, null, 2));
+
+		if (confirmResponse.ok) {
+			return confirmResult.result;
+		}
+	}
 
 	return result.result;
 }
