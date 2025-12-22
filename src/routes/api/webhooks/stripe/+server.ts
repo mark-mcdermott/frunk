@@ -16,6 +16,9 @@ export const POST: RequestHandler = async ({ request }) => {
 		error(500, 'Webhook not configured');
 	}
 
+	console.log('[Webhook] Secret starts with:', webhookSecret?.substring(0, 10));
+	console.log('[Webhook] Secret length:', webhookSecret?.length);
+
 	const stripe = createStripe(stripeSecretKey);
 	const signature = request.headers.get('stripe-signature');
 
