@@ -8,6 +8,7 @@ export interface ProductVariant {
 	colorHex: string;
 	printfulSyncVariantId: string; // Printful's sync variant ID for ordering
 	inStock: boolean;
+	price?: number; // Optional variant-specific price in cents (overrides product price)
 }
 
 export interface Product {
@@ -305,7 +306,7 @@ export const products: Product[] = [
 			// 4"×4"
 			{ id: 'sticker-4x4-white', size: '4"×4"', color: 'White', colorHex: '#ffffff', printfulSyncVariantId: '5118680884', inStock: true },
 			// 5.5"×5.5"
-			{ id: 'sticker-5.5x5.5-white', size: '5.5"×5.5"', color: 'White', colorHex: '#ffffff', printfulSyncVariantId: '5118680885', inStock: true }
+			{ id: 'sticker-5.5x5.5-white', size: '5.5"×5.5"', color: 'White', colorHex: '#ffffff', printfulSyncVariantId: '5118680885', inStock: true, price: 326 }
 		]
 	}
 ];
