@@ -283,6 +283,30 @@ export const products: Product[] = [
 			{ id: 'zip-hoodie-l-charcoal-heather', size: 'L', color: 'Charcoal Heather', colorHex: '#4a4a4a', printfulSyncVariantId: '5118141611', inStock: true },
 			{ id: 'zip-hoodie-xl-charcoal-heather', size: 'XL', color: 'Charcoal Heather', colorHex: '#4a4a4a', printfulSyncVariantId: '5118141612', inStock: true }
 		]
+	},
+	{
+		id: 'frunk-sticker',
+		slug: 'frunk-sticker',
+		name: 'Frunk Robot Sticker',
+		shortName: 'Sticker',
+		description:
+			'A high-quality kiss-cut sticker featuring the Frunk robot. Perfect for laptops, water bottles, notebooks, and more. Available in multiple sizes.',
+		price: 400, // $4.00
+		images: [
+			'https://files.cdn.printful.com/files/31c/31c08f3e6c9fd96f130ae1342c74cb92_preview.png'
+		],
+		colorImages: {
+			'White': 'https://files.cdn.printful.com/files/31c/31c08f3e6c9fd96f130ae1342c74cb92_preview.png'
+		},
+		category: 'sticker',
+		variants: [
+			// 3"×3"
+			{ id: 'sticker-3x3-white', size: '3"×3"', color: 'White', colorHex: '#ffffff', printfulSyncVariantId: '5118680883', inStock: true },
+			// 4"×4"
+			{ id: 'sticker-4x4-white', size: '4"×4"', color: 'White', colorHex: '#ffffff', printfulSyncVariantId: '5118680884', inStock: true },
+			// 5.5"×5.5"
+			{ id: 'sticker-5.5x5.5-white', size: '5.5"×5.5"', color: 'White', colorHex: '#ffffff', printfulSyncVariantId: '5118680885', inStock: true }
+		]
 	}
 ];
 

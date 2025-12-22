@@ -213,10 +213,24 @@
 				<div class="mt-8 p-6 bg-white dark:bg-surface-800 rounded-2xl">
 					<h3 class="font-semibold text-surface-600 dark:text-surface-400 mb-3">Product Details</h3>
 					<ul class="text-sm text-surface-600 dark:text-surface-400 space-y-2">
-						<li>100% ring-spun cotton</li>
-						<li>Pre-shrunk fabric</li>
-						<li>Side-seamed construction</li>
-						<li>Shoulder-to-shoulder taping</li>
+						{#if product.category === 'tshirt'}
+							<li>100% ring-spun cotton</li>
+							<li>Pre-shrunk fabric</li>
+							<li>Side-seamed construction</li>
+							<li>Shoulder-to-shoulder taping</li>
+						{:else if product.category === 'hoodie'}
+							<li>80% ring-spun cotton, 20% polyester</li>
+							<li>Soft fleece interior</li>
+							<li>Double-lined hood</li>
+							<li>Front pouch pocket</li>
+						{:else if product.category === 'sticker'}
+							<li>High-quality kiss-cut vinyl</li>
+							<li>Durable and waterproof</li>
+							<li>Easy peel-and-stick application</li>
+							<li>White border around design</li>
+						{:else}
+							<li>Premium quality materials</li>
+						{/if}
 						<li>Usually ships in 2-5 business days</li>
 					</ul>
 				</div>
