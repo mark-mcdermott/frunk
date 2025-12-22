@@ -16,9 +16,6 @@ export const POST: RequestHandler = async ({ request }) => {
 		error(500, 'Webhook not configured');
 	}
 
-	console.log('[Webhook] Secret starts with:', webhookSecret?.substring(0, 10));
-	console.log('[Webhook] Secret length:', webhookSecret?.length);
-
 	const stripe = createStripe(stripeSecretKey);
 	const signature = request.headers.get('stripe-signature');
 
@@ -86,14 +83,8 @@ export const POST: RequestHandler = async ({ request }) => {
 		console.log('[Webhook] Order updated with payment info');
 
 		// Create Printful order if API key is configured
-		console.log('[Webhook] Printful API key exists:', !!printfulApiKey);
-		console.log('[Webhook] Shipping address exists:', !!shippingAddress);
-		console.log('[Webhook] Shipping details from session:', JSON.stringify(session.shipping_details));
-		console.log('[Webhook] Shipping from session:', JSON.stringify(session.shipping));
 		if (printfulApiKey && shippingAddress) {
 			try {
-				console.log('[Webhook] Creating Printful order for:', order.id);
-				console.log('[Webhook] Order items:', JSON.stringify(order.items));
 				const printfulOrder = await createPrintfulOrder(
 					printfulApiKey,
 					order,
@@ -176,8 +167,6 @@ async function createPrintfulOrder(
 		items: printfulItems
 	};
 
-	console.log('[Webhook] Printful payload:', JSON.stringify(payload, null, 2));
-
 	const response = await fetch('https://api.printful.com/orders', {
 		method: 'POST',
 		headers: {
@@ -195,6 +184,5 @@ async function createPrintfulOrder(
 		throw new Error(result.error?.message || 'Printful order failed');
 	}
 
-	console.log('[Webhook] Printful response:', JSON.stringify(result, null, 2));
 	return result.result;
 }
