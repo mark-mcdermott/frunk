@@ -117,13 +117,13 @@
 					</div>
 					<h3 class="text-lg font-medium text-surface-900 dark:text-white mb-1">Your cart is empty</h3>
 					<p class="text-surface-500 mb-6">Looks like you haven't added anything yet</p>
-					<button
-						type="button"
+					<a
+						href="/merch"
 						onclick={closeCart}
-						class="px-6 py-2.5 bg-primary-500 text-white font-medium rounded-full hover:bg-primary-600 transition-colors cursor-pointer"
+						class="px-6 py-2.5 bg-primary-500 text-white font-medium rounded-full hover:bg-primary-600 transition-colors cursor-pointer inline-block"
 					>
 						Start Shopping
-					</button>
+					</a>
 				</div>
 			{:else}
 				<div class="px-6 py-4 space-y-4">

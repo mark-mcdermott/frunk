@@ -2,6 +2,8 @@
 	import { products, formatPrice } from '$lib/data/products';
 	import { ShoppingBag } from 'lucide-svelte';
 	import Breadcrumbs from '$lib/components/Breadcrumbs.svelte';
+	import Navbar from '$lib/components/Navbar.svelte';
+	import Footer from '$lib/components/Footer.svelte';
 </script>
 
 <svelte:head>
@@ -9,7 +11,10 @@
 	<meta name="description" content="Browse our merchandise" />
 </svelte:head>
 
-<div class="min-h-screen bg-surface-50 dark:bg-surface-900 py-8 px-4 sm:px-6 lg:px-8">
+<div class="min-h-screen bg-surface-50 dark:bg-surface-900 flex flex-col">
+	<Navbar />
+
+	<main class="flex-1 py-8 px-4 sm:px-6 lg:px-8">
 	<div class="max-w-6xl mx-auto">
 		<Breadcrumbs items={[{ label: 'Merch' }]} />
 		<div class="text-center mb-12">
@@ -76,6 +81,9 @@
 			</div>
 		{/if}
 	</div>
+	</main>
+
+	<Footer />
 </div>
 
 <style>
