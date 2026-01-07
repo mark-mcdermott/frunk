@@ -36,7 +36,7 @@
 					</p>
 
 					<div class="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
-						<a href="#showcase" class="btn preset-filled-primary-500 px-6 py-3 rounded-lg font-semibold text-white shadow-lg shadow-primary-500/25 hover:shadow-primary-500/40 transition-all">
+						<a href="/sign-up" class="btn preset-filled-primary-500 px-6 py-3 rounded-lg font-semibold text-white shadow-lg shadow-primary-500/25 hover:shadow-primary-500/40 transition-all">
 							Get Started
 							<svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
 						</a>

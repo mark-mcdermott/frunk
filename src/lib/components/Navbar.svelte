@@ -52,7 +52,6 @@
 					aria-label="Shopping cart"
 				>
 					<ShoppingCart class="w-5 h-5" />
-					<span class="text-sm font-medium">Shopping Cart</span>
 					{#if $cartItemCount > 0}
 						<span class="absolute -top-1 -right-1 w-5 h-5 bg-primary-500 text-white text-xs font-bold rounded-full flex items-center justify-center">
 							{$cartItemCount > 9 ? '9+' : $cartItemCount}
