@@ -3,6 +3,8 @@
 	import { ShoppingBag, Check } from 'lucide-svelte';
 	import { toast } from 'svelte-sonner';
 	import Breadcrumbs from '$lib/components/Breadcrumbs.svelte';
+	import Navbar from '$lib/components/Navbar.svelte';
+	import Footer from '$lib/components/Footer.svelte';
 	import { cart, openCart } from '$lib/stores/cart';
 
 	let { data } = $props();
@@ -72,7 +74,10 @@
 	<meta name="description" content={product.description} />
 </svelte:head>
 
-<div class="min-h-screen bg-surface-50 dark:bg-surface-900 py-8 px-4 sm:px-6 lg:px-8">
+<div class="min-h-screen bg-surface-50 dark:bg-surface-900 flex flex-col">
+	<Navbar />
+
+	<main class="flex-1 py-8 px-4 sm:px-6 lg:px-8">
 	<div class="max-w-6xl mx-auto">
 		<Breadcrumbs items={[{ label: 'Merch', href: '/merch' }, { label: product.name }]} />
 
@@ -240,4 +245,7 @@
 			</div>
 		</div>
 	</div>
+	</main>
+
+	<Footer />
 </div>
