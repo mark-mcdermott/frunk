@@ -6,6 +6,7 @@
 	import Breadcrumbs from '$lib/components/Breadcrumbs.svelte';
 	import { page } from '$app/stores';
 	import type { ActionData } from './$types';
+	import { getRoleNames } from '$lib/roles';
 
 	let { form }: { form: ActionData } = $props();
 	const user = $derived($page.data.user);
@@ -71,11 +72,11 @@
 					{/if}
 				</Avatar>
 				<h1 class="text-sm font-medium text-surface-600 dark:text-surface-400 mb-1">{profileUser.username}</h1>
-				{#if profileUser.admin}
-					<span class="inline-flex items-center px-4 py-1.5 rounded-full text-xs font-medium bg-primary-500/10 text-primary-600 dark:text-primary-400">
-						Admin
+				{#each getRoleNames(profileUser.roles) as roleName}
+					<span class="inline-flex items-center px-4 py-1.5 rounded-full text-xs font-medium {roleName === 'Admin' ? 'bg-primary-500/10 text-primary-600 dark:text-primary-400' : 'bg-surface-500/10 text-surface-600 dark:text-surface-400'} mr-1">
+						{roleName}
 					</span>
-				{/if}
+				{/each}
 			</div>
 
 			{#if user?.uuid === profileUser.uuid}

@@ -1,12 +1,22 @@
 import { pgTable, integer, text, timestamp, jsonb, serial } from 'drizzle-orm/pg-core';
 
+// Roles table - defines available roles and their mutual exclusivity
+export const roles = pgTable('roles', {
+	id: serial('id').primaryKey(),
+	name: text('name').notNull().unique(),
+	mutuallyExclusiveWith: integer('mutually_exclusive_with').array() // array of role IDs that cannot coexist with this role
+});
+
+export type Role = typeof roles.$inferSelect;
+export type NewRole = typeof roles.$inferInsert;
+
 export const user = pgTable('user', {
 	id: serial('id').primaryKey(),
 	uuid: text('uuid').notNull().unique(),
 	age: integer('age'),
 	username: text('username').notNull().unique(),
 	passwordHash: text('password_hash').notNull(),
-	admin: integer('admin').notNull().default(0),
+	roles: integer('roles').array().notNull().default([]), // array of role IDs from roles table
 	avatar: text('avatar'),
 	emailVerified: integer('email_verified').notNull().default(0),
 	emailVerificationToken: text('email_verification_token'),

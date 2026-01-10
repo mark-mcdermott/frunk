@@ -4,6 +4,7 @@ import { db } from '$lib/server/db';
 import * as table from '$lib/server/db/schema';
 import { eq } from 'drizzle-orm';
 import { sendVerificationEmail, generateVerificationToken } from '$lib/server/email';
+import { isAdmin } from '$lib/roles';
 
 export const load: PageServerLoad = async ({ params, locals }) => {
 	if (!locals.user) {
@@ -16,7 +17,7 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 			uuid: table.user.uuid,
 			username: table.user.username,
 			avatar: table.user.avatar,
-			admin: table.user.admin,
+			roles: table.user.roles,
 			emailVerified: table.user.emailVerified
 		})
 		.from(table.user)
@@ -27,7 +28,7 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 	}
 
 	// Only allow viewing own profile or if admin
-	if (locals.user.uuid !== params.id && !locals.user.admin) {
+	if (locals.user.uuid !== params.id && !isAdmin(locals.user.roles)) {
 		throw error(403, 'Forbidden');
 	}
 

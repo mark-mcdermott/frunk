@@ -5,10 +5,14 @@
 	import head from '$lib/assets/head.png';
 	import { page } from '$app/stores';
 	import { cartItemCount, openCart } from '$lib/stores/cart';
+	import { isAdmin, isDemo } from '$lib/roles';
 
 	const user = $derived($page.data.user);
 	const hasNotes = $derived($page.data.hasNotes);
 	const hasRepairs = $derived($page.data.hasRepairs);
+	const userIsAdmin = $derived(isAdmin(user?.roles));
+	const userIsDemo = $derived(isDemo(user?.roles));
+	const basePath = $derived($page.data.basePath || '');
 </script>
 
 <nav class="sticky top-0 z-50 bg-surface-50/80 dark:bg-surface-900/80 backdrop-blur-lg border-b border-surface-200 dark:border-surface-800">
@@ -22,18 +26,18 @@
 				<!-- Nav Links -->
 				<div class="hidden md:flex items-center gap-6">
 					{#if user}
-						<a href="/vehicles" class="text-surface-600 dark:text-surface-400 hover:text-primary-500 font-medium transition-colors">Vehicles</a>
+						<a href="{basePath}/vehicles" class="text-surface-600 dark:text-surface-400 hover:text-primary-500 font-medium transition-colors">Vehicles</a>
 					{/if}
 					{#if hasRepairs}
-						<a href="/repairs" class="text-surface-600 dark:text-surface-400 hover:text-primary-500 font-medium transition-colors">Repairs</a>
+						<a href="{basePath}/repairs" class="text-surface-600 dark:text-surface-400 hover:text-primary-500 font-medium transition-colors">Repairs</a>
 					{/if}
 					{#if hasNotes}
-						<a href="/notes" class="text-surface-600 dark:text-surface-400 hover:text-primary-500 font-medium transition-colors">Notes</a>
+						<a href="{basePath}/notes" class="text-surface-600 dark:text-surface-400 hover:text-primary-500 font-medium transition-colors">Notes</a>
 					{/if}
 					{#if user}
-						<a href="/vendors" class="text-surface-600 dark:text-surface-400 hover:text-primary-500 font-medium transition-colors">Vendors</a>
+						<a href="{basePath}/vendors" class="text-surface-600 dark:text-surface-400 hover:text-primary-500 font-medium transition-colors">Vendors</a>
 					{/if}
-					{#if user?.admin}
+					{#if userIsAdmin}
 						<a href="/merch" class="text-surface-600 dark:text-surface-400 hover:text-primary-500 font-medium transition-colors">Merch</a>
 						<a href="/users" class="text-surface-600 dark:text-surface-400 hover:text-primary-500 font-medium transition-colors">Users</a>
 					{/if}
@@ -91,8 +95,27 @@
 							</Menu.Positioner>
 						</Portal>
 					</Menu>
+				{#if userIsDemo}
+					<form action="/sign-out" method="POST" class="inline">
+						<button
+							type="submit"
+							class="px-3 py-1.5 rounded-full bg-gradient-to-r from-amber-400 to-orange-500 text-white text-sm font-semibold hover:shadow-orange-500/40 hover:scale-105 transition-all duration-200 cursor-pointer"
+						>
+							Exit Demo
+						</button>
+					</form>
+				{/if}
 				{:else}
-					<a href="/sign-in" class="btn btn-sm preset-filled-primary-500 pt-[3px] pb-[5px] border-2 border-[#93c5fd] rounded-lg">Sign In</a>
+					<!-- Try Demo Badge -->
+				<form action="/demo" method="POST" class="inline">
+					<button
+						type="submit"
+						class="group relative flex items-center gap-2 px-3 py-1.5 rounded-full bg-gradient-to-r from-amber-400 to-orange-500 text-white text-sm font-semibold shadow-lg shadow-orange-500/25 hover:shadow-orange-500/40 hover:scale-105 transition-all duration-200 cursor-pointer"
+					>
+						<span class="relative z-10">Try Demo</span>
+					</button>
+				</form>
+				<a href="/sign-in" class="btn btn-sm preset-filled-primary-500 pt-[3px] pb-[5px] border-2 border-[#93c5fd] rounded-lg">Sign In</a>
 				{/if}
 			</div>
 		</div>

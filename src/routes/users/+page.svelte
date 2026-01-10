@@ -7,6 +7,7 @@
 	import Breadcrumbs from '$lib/components/Breadcrumbs.svelte';
 	import ConfirmModal from '$lib/components/ConfirmModal.svelte';
 	import { page } from '$app/stores';
+	import { isAdmin, getRoleNames } from '$lib/roles';
 
 	const user = $derived($page.data.user);
 	const users = $derived($page.data.users);
@@ -115,9 +116,9 @@
 								</button>
 							</th>
 							<th class="text-center py-4 px-6 text-xs font-semibold text-surface-500 uppercase tracking-wider">
-								<button onclick={() => handleSort('admin')} class="flex items-center gap-1 justify-center w-full hover:text-surface-700 dark:hover:text-surface-300 transition-colors">
+								<button onclick={() => handleSort('roles')} class="flex items-center gap-1 justify-center w-full hover:text-surface-700 dark:hover:text-surface-300 transition-colors">
 									Role
-									{#if sortBy === 'admin'}
+									{#if sortBy === 'roles'}
 										<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 											{#if sortOrder === 'asc'}
 												<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"/>
@@ -152,15 +153,15 @@
 									</div>
 								</td>
 								<td class="py-4 px-6 text-center">
-									{#if u.admin}
-										<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary-500/10 text-primary-600 dark:text-primary-400">
-											Admin
+									{#each getRoleNames(u.roles) as roleName}
+										<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {roleName === 'Admin' ? 'bg-primary-500/10 text-primary-600 dark:text-primary-400' : 'bg-surface-500/10 text-surface-600 dark:text-surface-400'} mr-1">
+											{roleName}
 										</span>
 									{:else}
 										<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-surface-500/10 text-surface-600 dark:text-surface-400">
-											User
+											No roles
 										</span>
-									{/if}
+									{/each}
 								</td>
 								<td class="py-4 px-6 text-right">
 									<div class="flex items-center justify-end gap-3">

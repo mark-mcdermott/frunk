@@ -3,13 +3,14 @@ import type { PageServerLoad, Actions } from './$types';
 import { db } from '$lib/server/db';
 import * as table from '$lib/server/db/schema';
 import { eq, count, asc, desc, ilike } from 'drizzle-orm';
+import { isAdmin } from '$lib/roles';
 
 export const load: PageServerLoad = async ({ locals, url }) => {
 	if (!locals.user) {
 		throw error(401, 'Unauthorized');
 	}
 
-	if (!locals.user.admin) {
+	if (!isAdmin(locals.user.roles)) {
 		throw error(403, 'Forbidden');
 	}
 
@@ -34,7 +35,7 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 	const sortColumn = {
 		id: table.user.id,
 		username: table.user.username,
-		admin: table.user.admin
+		roles: table.user.roles
 	}[sortBy] || table.user.id;
 
 	const orderFn = sortOrder === 'desc' ? desc : asc;
@@ -45,7 +46,7 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 			uuid: table.user.uuid,
 			username: table.user.username,
 			avatar: table.user.avatar,
-			admin: table.user.admin
+			roles: table.user.roles
 		})
 		.from(table.user)
 		.where(whereClause)
@@ -62,7 +63,7 @@ export const actions: Actions = {
 			throw error(401, 'Unauthorized');
 		}
 
-		if (!locals.user.admin) {
+		if (!isAdmin(locals.user.roles)) {
 			throw error(403, 'Forbidden');
 		}
 
