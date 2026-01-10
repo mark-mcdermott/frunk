@@ -2,8 +2,9 @@ import type { LayoutServerLoad } from './$types';
 import { db } from '$lib/server/db';
 import * as table from '$lib/server/db/schema';
 import { eq, inArray } from 'drizzle-orm';
+import { isDemo } from '$lib/roles';
 
-export const load: LayoutServerLoad = async ({ locals }) => {
+export const load: LayoutServerLoad = async ({ locals, url }) => {
 	let hasNotes = false;
 	let hasRepairs = false;
 
@@ -37,9 +38,14 @@ export const load: LayoutServerLoad = async ({ locals }) => {
 		}
 	}
 
+	const userIsDemo = isDemo(locals.user?.roles);
+	const basePath = url.pathname.startsWith('/demo') ? '/demo' : '';
+
 	return {
 		user: locals.user,
 		hasNotes,
-		hasRepairs
+		hasRepairs,
+		isDemo: userIsDemo,
+		basePath
 	};
 };

@@ -3,6 +3,7 @@ import type { PageServerLoad, Actions } from './$types';
 import { db } from '$lib/server/db';
 import * as table from '$lib/server/db/schema';
 import { eq } from 'drizzle-orm';
+import { isAdmin } from '$lib/roles';
 
 export const load: PageServerLoad = async ({ params, locals }) => {
 	if (!locals.user) {
@@ -10,7 +11,7 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 	}
 
 	// Only allow editing own profile or if admin
-	if (locals.user.uuid !== params.id && !locals.user.admin) {
+	if (locals.user.uuid !== params.id && !isAdmin(locals.user.roles)) {
 		throw error(403, 'Forbidden');
 	}
 
@@ -20,7 +21,7 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 			uuid: table.user.uuid,
 			username: table.user.username,
 			avatar: table.user.avatar,
-			admin: table.user.admin
+			roles: table.user.roles
 		})
 		.from(table.user)
 		.where(eq(table.user.uuid, params.id));
@@ -29,7 +30,7 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 		throw error(404, 'User not found');
 	}
 
-	const isAdminEditing = locals.user.admin === 1;
+	const isAdminEditing = isAdmin(locals.user.roles);
 
 	return { profileUser, isAdminEditing };
 };
@@ -41,7 +42,7 @@ export const actions: Actions = {
 		}
 
 		// Only allow editing own profile or if admin
-		if (locals.user.uuid !== params.id && !locals.user.admin) {
+		if (locals.user.uuid !== params.id && !isAdmin(locals.user.roles)) {
 			throw error(403, 'Forbidden');
 		}
 
@@ -112,7 +113,7 @@ export const actions: Actions = {
 		}
 
 		// Only admins can delete users
-		if (!locals.user.admin) {
+		if (!isAdmin(locals.user.roles)) {
 			throw error(403, 'Forbidden');
 		}
 

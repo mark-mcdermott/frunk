@@ -2,6 +2,7 @@ import { drizzle } from 'drizzle-orm/neon-http';
 import { neon } from '@neondatabase/serverless';
 import { inArray } from 'drizzle-orm';
 import { user, vehicles, notes, vendors, repairs, session, galleries, vehiclePhotos } from '../src/lib/server/db/schema';
+import { ROLE_IDS } from '../src/lib/roles';
 
 const DATABASE_URL = process.env.DATABASE_URL;
 if (!DATABASE_URL) throw new Error('DATABASE_URL is not set');
@@ -233,7 +234,7 @@ const officeCharacters = [
 	{
 		username: 'michael.scott@dundermifflin.com',
 		age: 46,
-		admin: 1,
+		roles: [ROLE_IDS.ADMIN, ROLE_IDS.USER],
 		avatar: `${AVATAR_BASE}/michael-scott.png`,
 		vehicles: [
 			{ make: 'Chrysler', model: 'Sebring', year: 2004, vin: '1C3EL65R04N123456' },
@@ -243,7 +244,7 @@ const officeCharacters = [
 	{
 		username: 'dwight.schrute@dundermifflin.com',
 		age: 42,
-		admin: 0,
+		roles: [ROLE_IDS.USER],
 		avatar: `${AVATAR_BASE}/dwight-schrute.png`,
 		vehicles: [
 			{ make: 'Pontiac', model: 'Trans Am', year: 1987, vin: '1G2FW87H9HL234567' },
@@ -253,7 +254,7 @@ const officeCharacters = [
 	{
 		username: 'jim.halpert@dundermifflin.com',
 		age: 34,
-		admin: 0,
+		roles: [ROLE_IDS.USER],
 		avatar: `${AVATAR_BASE}/jim-halpert.png`,
 		vehicles: [
 			{ make: 'Subaru', model: 'Outback', year: 2010, vin: '4S4BRBCC8A3456789' },
@@ -263,7 +264,7 @@ const officeCharacters = [
 	{
 		username: 'pam.beesly@dundermifflin.com',
 		age: 33,
-		admin: 0,
+		roles: [ROLE_IDS.USER],
 		avatar: `${AVATAR_BASE}/pam-beesly.png`,
 		vehicles: [
 			{ make: 'Toyota', model: 'Yaris', year: 2007, vin: 'JTDBT923071234567' }
@@ -272,7 +273,7 @@ const officeCharacters = [
 	{
 		username: 'andy.bernard@dundermifflin.com',
 		age: 38,
-		admin: 0,
+		roles: [ROLE_IDS.USER],
 		avatar: `${AVATAR_BASE}/andy-bernard.png`,
 		vehicles: [
 			{ make: 'Toyota', model: 'Prius', year: 2009, vin: 'JTDKN3DU9A0123456' },
@@ -282,7 +283,7 @@ const officeCharacters = [
 	{
 		username: 'angela.martin@dundermifflin.com',
 		age: 40,
-		admin: 0,
+		roles: [ROLE_IDS.USER],
 		avatar: `${AVATAR_BASE}/angela-martin.png`,
 		vehicles: [
 			{ make: 'Volkswagen', model: 'Jetta', year: 2005, vin: '3VWSE69M55M123456' }
@@ -291,7 +292,7 @@ const officeCharacters = [
 	{
 		username: 'kevin.malone@dundermifflin.com',
 		age: 44,
-		admin: 0,
+		roles: [ROLE_IDS.USER],
 		avatar: `${AVATAR_BASE}/kevin-malone.png`,
 		vehicles: [
 			{ make: 'Chevrolet', model: 'Monte Carlo', year: 1999, vin: '2G1WX12K7Y9234567' }
@@ -300,7 +301,7 @@ const officeCharacters = [
 	{
 		username: 'oscar.martinez@dundermifflin.com',
 		age: 41,
-		admin: 0,
+		roles: [ROLE_IDS.USER],
 		avatar: `${AVATAR_BASE}/oscar-martinez.png`,
 		vehicles: [
 			{ make: 'Honda', model: 'Accord', year: 2008, vin: '1HGCP26878A123456' }
@@ -309,7 +310,7 @@ const officeCharacters = [
 	{
 		username: 'stanley.hudson@dundermifflin.com',
 		age: 54,
-		admin: 0,
+		roles: [ROLE_IDS.USER],
 		avatar: `${AVATAR_BASE}/stanley-hudson.png`,
 		vehicles: [
 			{ make: 'Chrysler', model: '300', year: 2006, vin: '2C3KA53G66H789012' },
@@ -319,7 +320,7 @@ const officeCharacters = [
 	{
 		username: 'phyllis.vance@dundermifflin.com',
 		age: 52,
-		admin: 0,
+		roles: [ROLE_IDS.USER],
 		avatar: `${AVATAR_BASE}/phyllis-vance.png`,
 		vehicles: [
 			{ make: 'Buick', model: 'LaCrosse', year: 2010, vin: '1G4GC5GC3AF123456' }
@@ -328,7 +329,7 @@ const officeCharacters = [
 	{
 		username: 'meredith.palmer@dundermifflin.com',
 		age: 48,
-		admin: 0,
+		roles: [ROLE_IDS.USER],
 		avatar: `${AVATAR_BASE}/meredith-palmer.png`,
 		vehicles: [
 			{ make: 'Dodge', model: 'Neon', year: 2002, vin: '1B3ES56C42D654321' }
@@ -337,17 +338,19 @@ const officeCharacters = [
 	{
 		username: 'creed.bratton@dundermifflin.com',
 		age: 65,
-		admin: 0,
+		roles: [ROLE_IDS.DEMO],
 		avatar: `${AVATAR_BASE}/creed-bratton.png`,
+		isDemo: true, // Flag to give this user full data for demo purposes
 		vehicles: [
 			{ make: 'AMC', model: 'Gremlin', year: 1974, vin: 'A4A158A123456' },
-			{ make: 'Ford', model: 'Pinto', year: 1976, vin: '6X11Y123456' }
+			{ make: 'Ford', model: 'Pinto', year: 1976, vin: '6X11Y123456' },
+			{ make: 'Chevrolet', model: 'Corvair', year: 1965, vin: 'W0739W100001' }
 		]
 	},
 	{
 		username: 'toby.flenderson@dundermifflin.com',
 		age: 44,
-		admin: 0,
+		roles: [ROLE_IDS.USER],
 		avatar: `${AVATAR_BASE}/toby-flenderson.png`,
 		vehicles: [
 			{ make: 'Honda', model: 'Civic', year: 2005, vin: '2HGES16505H567890' }
@@ -356,7 +359,7 @@ const officeCharacters = [
 	{
 		username: 'kelly.kapoor@dundermifflin.com',
 		age: 29,
-		admin: 0,
+		roles: [ROLE_IDS.USER],
 		avatar: `${AVATAR_BASE}/kelly-kapoor.png`,
 		vehicles: [
 			{ make: 'Volkswagen', model: 'Beetle', year: 2008, vin: '3VWRG3AG3AM123456' }
@@ -365,7 +368,7 @@ const officeCharacters = [
 	{
 		username: 'ryan.howard@dundermifflin.com',
 		age: 30,
-		admin: 0,
+		roles: [ROLE_IDS.USER],
 		avatar: `${AVATAR_BASE}/ryan-howard.png`,
 		vehicles: [
 			{ make: 'BMW', model: '3 Series', year: 2009, vin: 'WBAPH5C55BA654321' }
@@ -374,7 +377,7 @@ const officeCharacters = [
 	{
 		username: 'darryl.philbin@dundermifflin.com',
 		age: 38,
-		admin: 0,
+		roles: [ROLE_IDS.USER],
 		avatar: `${AVATAR_BASE}/darryl-philbin.png`,
 		vehicles: [
 			{ make: 'Ford', model: 'F-150', year: 2007, vin: '1FTPW14V87KD12345' }
@@ -383,7 +386,7 @@ const officeCharacters = [
 	{
 		username: 'erin.hannon@dundermifflin.com',
 		age: 26,
-		admin: 0,
+		roles: [ROLE_IDS.USER],
 		avatar: `${AVATAR_BASE}/erin-hannon.png`,
 		vehicles: [
 			{ make: 'Kia', model: 'Rio', year: 2010, vin: 'KNADN4A39A6123456' }
@@ -427,15 +430,19 @@ async function seed() {
 			username: character.username,
 			age: character.age,
 			passwordHash: defaultPassword,
-			admin: character.admin,
+			roles: character.roles,
 			avatar: character.avatar,
 			emailVerified: 1
 		}).onConflictDoNothing();
 
 		console.log(`Created user: ${character.username}`);
 
+		// Check if this is the demo template user (gets all data)
+		const isDemo = 'isDemo' in character && character.isDemo;
+
 		// Create vendors for this user
-		const userVendors = getVendorsForUser();
+		// Demo user gets all vendors, others get random subset
+		const userVendors = isDemo ? vendorTemplates : getVendorsForUser();
 		const vendorIds: string[] = [];
 		for (const vendor of userVendors) {
 			const vendorId = crypto.randomUUID();
@@ -466,8 +473,8 @@ async function seed() {
 
 			console.log(`  - Added vehicle: ${vehicle.year} ${vehicle.make} ${vehicle.model}`);
 
-			// Add random notes to this vehicle
-			const vehicleNotes = getNotesForVehicle();
+			// Add notes to this vehicle (demo user gets all, others get random)
+			const vehicleNotes = isDemo ? noteTemplates : getNotesForVehicle();
 			for (const note of vehicleNotes) {
 				await db.insert(notes).values({
 					uuid: crypto.randomUUID(),
@@ -480,8 +487,8 @@ async function seed() {
 				console.log(`    • Added note: ${note.title}`);
 			}
 
-			// Add random repairs to this vehicle
-			const vehicleRepairs = getRepairsForVehicle();
+			// Add repairs to this vehicle (demo user gets more, others get random)
+			const vehicleRepairs = isDemo ? repairTemplates.slice(0, 8) : getRepairsForVehicle();
 			for (const repair of vehicleRepairs) {
 				const repairId = crypto.randomUUID();
 				// Randomly assign a vendor (or none)
@@ -507,8 +514,8 @@ async function seed() {
 				console.log(`    ⚙ Added repair: ${repair.description} (${repair.status})`);
 			}
 
-			// Add random galleries with photos to this vehicle
-			const vehicleGalleries = getGalleriesForVehicle();
+			// Add galleries with photos to this vehicle (demo user gets all, others get random)
+			const vehicleGalleries = isDemo ? galleryTemplates : getGalleriesForVehicle();
 			for (let gi = 0; gi < vehicleGalleries.length; gi++) {
 				const gallery = vehicleGalleries[gi];
 				const galleryId = crypto.randomUUID();
