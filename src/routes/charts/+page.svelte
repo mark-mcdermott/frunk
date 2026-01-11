@@ -59,7 +59,7 @@
 				<h2 class="text-3xl sm:text-4xl font-bold text-black dark:text-white mb-4">
 					Charts
 				</h2>
-				<p class="text-lg text-surface-600 dark:text-surface-400 max-w-2xl mx-auto">
+				<p class="text-lg text-surface-600 dark:text-gray-300 max-w-2xl mx-auto">
 					Explore our collection of pre-built chart components.
 				</p>
 			</div>
@@ -70,7 +70,7 @@
 				<!-- Create Account Card -->
 				<div class="lg:col-span-1 bg-white dark:bg-surface-800 rounded-2xl p-6 shadow-xl shadow-surface-900/5">
 					<h3 class="text-xl font-bold text-black dark:text-white mb-2">Create Account</h3>
-					<p class="text-sm text-surface-500 mb-6">Complete the form to get started.</p>
+					<p class="text-sm text-surface-500 dark:text-gray-300 mb-6">Complete the form to get started.</p>
 
 					<div class="flex gap-3 mb-4">
 						<button class="flex-1 btn preset-outlined-surface-500 py-2 rounded-lg text-sm font-medium">GitHub</button>
@@ -79,11 +79,11 @@
 
 					<div class="space-y-4">
 						<div>
-							<label for="email-input" class="text-xs font-medium text-surface-600 dark:text-surface-400 block mb-1">Email</label>
+							<label for="email-input" class="text-xs font-medium text-surface-600 dark:text-gray-300 block mb-1">Email</label>
 							<input id="email-input" type="email" placeholder="me@example.com" class="w-full px-3 py-2 rounded-lg bg-surface-100 dark:bg-surface-700 border-0 text-sm focus:ring-2 focus:ring-primary-500" />
 						</div>
 						<div>
-							<label for="password-input" class="text-xs font-medium text-surface-600 dark:text-surface-400 block mb-1">Password</label>
+							<label for="password-input" class="text-xs font-medium text-surface-600 dark:text-gray-300 block mb-1">Password</label>
 							<input id="password-input" type="password" placeholder="Enter your password..." class="w-full px-3 py-2 rounded-lg bg-surface-100 dark:bg-surface-700 border-0 text-sm focus:ring-2 focus:ring-primary-500" />
 						</div>
 						<button class="w-full btn preset-filled-primary-500 py-2.5 rounded-lg font-semibold text-white">
@@ -95,27 +95,27 @@
 				<!-- Notifications Card -->
 				<div class="bg-white dark:bg-surface-800 rounded-2xl p-6 shadow-xl shadow-surface-900/5">
 					<h3 class="text-xl font-bold text-black dark:text-white mb-2">Notifications</h3>
-					<p class="text-sm text-surface-500 mb-6">Review each available option.</p>
+					<p class="text-sm text-surface-500 dark:text-gray-300 mb-6">Review each available option.</p>
 
 					<div class="space-y-4">
 						<div class="flex items-center justify-between">
-							<span class="text-sm text-surface-700 dark:text-surface-300">Do Not Disturb</span>
+							<span class="text-sm text-surface-700 dark:text-gray-200">Do Not Disturb</span>
 							<Switch name="dnd" bind:checked={notifyDoNotDisturb} />
 						</div>
 						<div class="flex items-center justify-between">
-							<span class="text-sm text-surface-700 dark:text-surface-300">Global</span>
+							<span class="text-sm text-surface-700 dark:text-gray-200">Global</span>
 							<Switch name="global" bind:checked={notifyGlobal} />
 						</div>
 						<div class="flex items-center justify-between">
-							<span class="text-sm text-surface-700 dark:text-surface-300">Personal</span>
+							<span class="text-sm text-surface-700 dark:text-gray-200">Personal</span>
 							<Switch name="personal" bind:checked={notifyPersonal} />
 						</div>
 						<div class="flex items-center justify-between">
-							<span class="text-sm text-surface-700 dark:text-surface-300">Priority</span>
+							<span class="text-sm text-surface-700 dark:text-gray-200">Priority</span>
 							<Switch name="priority" bind:checked={notifyPriority} />
 						</div>
 						<div class="flex items-center justify-between">
-							<span class="text-sm text-surface-700 dark:text-surface-300">News</span>
+							<span class="text-sm text-surface-700 dark:text-gray-200">News</span>
 							<Switch name="news" bind:checked={notifyNews} />
 						</div>
 					</div>
@@ -124,7 +124,7 @@
 				<!-- Team Card -->
 				<div class="bg-white dark:bg-surface-800 rounded-2xl p-6 shadow-xl shadow-surface-900/5">
 					<h3 class="text-xl font-bold text-black dark:text-white mb-2">Team</h3>
-					<p class="text-sm text-surface-500 mb-4">View all members of the team.</p>
+					<p class="text-sm text-surface-500 dark:text-gray-300 mb-4">View all members of the team.</p>
 
 					<input type="text" placeholder="Search Members..." class="w-full px-3 py-2 rounded-lg bg-surface-100 dark:bg-surface-700 border-0 text-sm mb-4 focus:ring-2 focus:ring-primary-500" />
 
@@ -134,7 +134,7 @@
 								<Avatar name={member.name} class={member.color} />
 								<div class="min-w-0">
 									<p class="text-sm font-medium text-black dark:text-white truncate">{member.name}</p>
-									<p class="text-xs text-surface-500 truncate">{member.email}</p>
+									<p class="text-xs text-surface-500 dark:text-gray-300 truncate">{member.email}</p>
 								</div>
 							</div>
 						{/each}
@@ -145,7 +145,7 @@
 				<div class="lg:row-span-2 bg-white dark:bg-surface-800 rounded-2xl p-6 shadow-xl shadow-surface-900/5 flex flex-col">
 					<div class="flex items-center justify-between mb-4">
 						<span class="text-xl font-bold text-black dark:text-white">Music</span>
-						<span class="text-xs text-surface-500">Harman Kardon Luna</span>
+						<span class="text-xs text-surface-500 dark:text-gray-300">Harman Kardon Luna</span>
 					</div>
 
 					<!-- Album Art -->
@@ -197,7 +197,7 @@
 							</div>
 							<div>
 								<p class="font-bold text-black dark:text-white">Success</p>
-								<p class="text-sm text-surface-500">Task was completed.</p>
+								<p class="text-sm text-surface-500 dark:text-gray-300">Task was completed.</p>
 							</div>
 						</div>
 						<button class="btn preset-outlined-surface-500 px-3 py-1.5 rounded-lg text-sm">Dismiss</button>
@@ -212,7 +212,7 @@
 						{#each stats as stat}
 							<div class="text-center">
 								<p class="text-3xl font-bold text-black dark:text-white">{stat.value}</p>
-								<p class="text-sm text-surface-500">{stat.label}</p>
+								<p class="text-sm text-surface-500 dark:text-gray-300">{stat.label}</p>
 								<span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium mt-2 {stat.positive ? 'bg-success-500/20 text-success-600' : 'bg-error-500/20 text-error-600'}">
 									{stat.change}
 								</span>
@@ -220,7 +220,7 @@
 						{/each}
 					</div>
 
-					<p class="text-xs text-surface-500">Data represents quarterly metrics for the TPS reports. Updates every 24 hours.</p>
+					<p class="text-xs text-surface-500 dark:text-gray-300">Data represents quarterly metrics for the TPS reports. Updates every 24 hours.</p>
 				</div>
 
 				<!-- Circular Progress -->
@@ -229,7 +229,7 @@
 
 					<div class="relative w-32 h-32 mx-auto">
 						<svg class="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
-							<circle cx="50" cy="50" r="40" fill="none" stroke="currentColor" stroke-width="8" class="text-surface-200 dark:text-surface-700"/>
+							<circle cx="50" cy="50" r="40" fill="none" stroke="currentColor" stroke-width="8" class="text-surface-200 dark:text-gray-500"/>
 							<circle cx="50" cy="50" r="40" fill="none" stroke="currentColor" stroke-width="8" stroke-dasharray="251.2" stroke-dashoffset="170.8" class="text-primary-500"/>
 						</svg>
 						<div class="absolute inset-0 flex items-center justify-center">
@@ -237,7 +237,7 @@
 						</div>
 					</div>
 
-					<div class="flex justify-center gap-4 mt-4 text-xs text-surface-500">
+					<div class="flex justify-center gap-4 mt-4 text-xs text-surface-500 dark:text-gray-300">
 						<span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-primary-500"></span> 66%</span>
 						<span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-surface-300"></span> 35%</span>
 					</div>
@@ -272,7 +272,7 @@
 					<div class="flex items-center justify-between mb-6">
 						<div>
 							<h3 class="text-xl font-bold text-black dark:text-white">Revenue</h3>
-							<p class="text-sm text-surface-500">Period: April 1-13</p>
+							<p class="text-sm text-surface-500 dark:text-gray-300">Period: April 1-13</p>
 						</div>
 						<button aria-label="Open in new window" class="p-2 rounded-lg hover:bg-surface-100 dark:hover:bg-surface-700 transition-colors">
 							<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

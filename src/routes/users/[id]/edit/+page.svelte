@@ -74,12 +74,12 @@
 			{#if isAdminEditing}
 				<!-- Admin Edit View -->
 				<h3 class="text-xl font-bold text-black dark:text-white mb-2">Edit User</h3>
-				<p class="text-sm text-surface-500 mb-6">Update user settings.</p>
+				<p class="text-sm text-surface-500 dark:text-gray-300 mb-6">Update user settings.</p>
 
 				<form method="post" action="?/update" use:enhance class="space-y-4">
 					<!-- Avatar Display -->
 					<div>
-						<label class="text-xs font-medium text-surface-600 dark:text-surface-400 block mb-1">Avatar</label>
+						<label class="text-xs font-medium text-surface-600 dark:text-gray-300 block mb-1">Avatar</label>
 						<input
 							type="file"
 							accept="image/*"
@@ -104,19 +104,19 @@
 					</div>
 					<input type="hidden" name="avatarUpload" value={avatarDataUrl} />
 					<div>
-						<label for="id-display" class="text-xs font-medium text-surface-600 dark:text-surface-400 block mb-1">User ID</label>
-						<input id="id-display" type="text" value={profileUser.id} disabled class="w-full px-3 py-2 rounded-lg bg-surface-100 dark:bg-surface-700 border-0 text-sm text-surface-500 cursor-not-allowed" />
+						<label for="id-display" class="text-xs font-medium text-surface-600 dark:text-gray-300 block mb-1">User ID</label>
+						<input id="id-display" type="text" value={profileUser.id} disabled class="w-full px-3 py-2 rounded-lg bg-surface-100 dark:bg-surface-700 border-0 text-sm text-surface-500 dark:text-gray-300 cursor-not-allowed" />
 					</div>
 					<div>
-						<label for="uuid-display" class="text-xs font-medium text-surface-600 dark:text-surface-400 block mb-1">User UUID</label>
-						<input id="uuid-display" type="text" value={profileUser.uuid} disabled class="w-full px-3 py-2 rounded-lg bg-surface-100 dark:bg-surface-700 border-0 text-sm text-surface-500 cursor-not-allowed" />
+						<label for="uuid-display" class="text-xs font-medium text-surface-600 dark:text-gray-300 block mb-1">User UUID</label>
+						<input id="uuid-display" type="text" value={profileUser.uuid} disabled class="w-full px-3 py-2 rounded-lg bg-surface-100 dark:bg-surface-700 border-0 text-sm text-surface-500 dark:text-gray-300 cursor-not-allowed" />
 					</div>
 					<div>
-						<label for="username-input" class="text-xs font-medium text-surface-600 dark:text-surface-400 block mb-1">Email</label>
+						<label for="username-input" class="text-xs font-medium text-surface-600 dark:text-gray-300 block mb-1">Email</label>
 						<input id="username-input" name="username" type="email" value={profileUser.username} placeholder="me@example.com" class="w-full px-3 py-2 rounded-lg bg-surface-100 dark:bg-surface-700 border-0 text-sm focus:ring-2 focus:ring-primary-500" />
 					</div>
 					<div>
-						<label for="avatar-input" class="text-xs font-medium text-surface-600 dark:text-surface-400 block mb-1">Avatar URL</label>
+						<label for="avatar-input" class="text-xs font-medium text-surface-600 dark:text-gray-300 block mb-1">Avatar URL</label>
 						<input id="avatar-input" name="avatar" type="url" value={avatarPreview ? '' : (profileUser.avatar || '')} placeholder="https://example.com/avatar.png" class="w-full px-3 py-2 rounded-lg bg-surface-100 dark:bg-surface-700 border-0 text-sm focus:ring-2 focus:ring-primary-500" />
 					</div>
 					<div class="flex gap-3">
@@ -136,7 +136,7 @@
 			{:else}
 				<!-- User Edit Own Profile View -->
 				<h3 class="text-xl font-bold text-black dark:text-white mb-2">Settings</h3>
-				<p class="text-sm text-surface-500 mb-6">Update your account settings.</p>
+				<p class="text-sm text-surface-500 dark:text-gray-300 mb-6">Update your account settings.</p>
 
 				<!-- Avatar Display -->
 				<div class="flex justify-center mb-6">
@@ -166,11 +166,11 @@
 				<form method="post" action="?/update" use:enhance class="space-y-4">
 					<input type="hidden" name="avatarUpload" value={avatarDataUrl} />
 					<div>
-						<label for="username-input" class="text-xs font-medium text-surface-600 dark:text-surface-400 block mb-1">Email</label>
+						<label for="username-input" class="text-xs font-medium text-surface-600 dark:text-gray-300 block mb-1">Email</label>
 						<input id="username-input" name="username" type="email" value={profileUser.username} placeholder="me@example.com" class="w-full px-3 py-2 rounded-lg bg-surface-100 dark:bg-surface-700 border-0 text-sm focus:ring-2 focus:ring-primary-500" />
 					</div>
 					<div>
-						<label for="avatar-input" class="text-xs font-medium text-surface-600 dark:text-surface-400 block mb-1">Avatar URL</label>
+						<label for="avatar-input" class="text-xs font-medium text-surface-600 dark:text-gray-300 block mb-1">Avatar URL</label>
 						<input id="avatar-input" name="avatar" type="url" value={avatarPreview ? '' : (profileUser.avatar || '')} placeholder="https://example.com/avatar.png" class="w-full px-3 py-2 rounded-lg bg-surface-100 dark:bg-surface-700 border-0 text-sm focus:ring-2 focus:ring-primary-500" />
 					</div>
 					<div class="flex gap-3">
@@ -186,7 +186,7 @@
 				<!-- Delete Account Section -->
 				<div class="mt-8 pt-6 border-t border-surface-200 dark:border-surface-700">
 					<h4 class="text-sm font-semibold text-red-500 mb-2">Danger Zone</h4>
-					<p class="text-xs text-surface-500 mb-4">Permanently delete your account and all associated data.</p>
+					<p class="text-xs text-surface-500 dark:text-gray-300 mb-4">Permanently delete your account and all associated data.</p>
 					<button
 						type="button"
 						class="w-full btn py-2.5 rounded-lg font-semibold border border-red-500 bg-transparent text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10"

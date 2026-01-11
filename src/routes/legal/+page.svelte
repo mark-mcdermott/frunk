@@ -15,8 +15,8 @@
 			<div class="bg-white dark:bg-surface-800 rounded-2xl shadow-xl border border-[#eee] dark:border-surface-700 p-8">
 				<h1 class="text-3xl font-bold text-black dark:text-white mb-8">Terms of Service</h1>
 
-				<div class="prose dark:prose-invert max-w-none space-y-6 text-surface-700 dark:text-surface-300">
-					<p class="text-sm text-surface-500">Last updated: December 2025</p>
+				<div class="prose dark:prose-invert max-w-none space-y-6 text-surface-700 dark:text-gray-200">
+					<p class="text-sm text-surface-500 dark:text-gray-300">Last updated: December 2025</p>
 
 					<section>
 						<h2 class="text-xl font-semibold text-black dark:text-white mt-8 mb-4">1. Acceptance of Terms</h2>

@@ -26,20 +26,20 @@
 				<!-- Nav Links -->
 				<div class="hidden md:flex items-center gap-6">
 					{#if user}
-						<a href="{basePath}/vehicles" class="text-surface-600 dark:text-surface-400 hover:text-primary-500 font-medium transition-colors">Vehicles</a>
+						<a href="{basePath}/vehicles" class="text-surface-600 dark:text-gray-300 hover:text-primary-500 font-medium transition-colors">Vehicles</a>
 					{/if}
 					{#if hasRepairs}
-						<a href="{basePath}/repairs" class="text-surface-600 dark:text-surface-400 hover:text-primary-500 font-medium transition-colors">Repairs</a>
+						<a href="{basePath}/repairs" class="text-surface-600 dark:text-gray-300 hover:text-primary-500 font-medium transition-colors">Repairs</a>
 					{/if}
 					{#if hasNotes}
-						<a href="{basePath}/notes" class="text-surface-600 dark:text-surface-400 hover:text-primary-500 font-medium transition-colors">Notes</a>
+						<a href="{basePath}/notes" class="text-surface-600 dark:text-gray-300 hover:text-primary-500 font-medium transition-colors">Notes</a>
 					{/if}
 					{#if user}
-						<a href="{basePath}/vendors" class="text-surface-600 dark:text-surface-400 hover:text-primary-500 font-medium transition-colors">Vendors</a>
+						<a href="{basePath}/vendors" class="text-surface-600 dark:text-gray-300 hover:text-primary-500 font-medium transition-colors">Vendors</a>
 					{/if}
 					{#if userIsAdmin}
-						<a href="/merch" class="text-surface-600 dark:text-surface-400 hover:text-primary-500 font-medium transition-colors">Merch</a>
-						<a href="/users" class="text-surface-600 dark:text-surface-400 hover:text-primary-500 font-medium transition-colors">Users</a>
+						<a href="/merch" class="text-surface-600 dark:text-gray-300 hover:text-primary-500 font-medium transition-colors">Merch</a>
+						<a href="/users" class="text-surface-600 dark:text-gray-300 hover:text-primary-500 font-medium transition-colors">Users</a>
 					{/if}
 				</div>
 			</div>

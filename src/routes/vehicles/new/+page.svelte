@@ -18,11 +18,11 @@
 	<main class="flex-1 flex items-start justify-center pt-12 px-4 sm:px-6 lg:px-8">
 		<div class="bg-white dark:bg-surface-800 rounded-2xl p-6 shadow-xl shadow-surface-900/5 w-full max-w-sm border border-[#eee]">
 			<h3 class="text-xl font-bold text-black dark:text-white mb-2">Add Vehicle</h3>
-			<p class="text-sm text-surface-500 mb-6">Enter your vehicle's details.</p>
+			<p class="text-sm text-surface-500 dark:text-gray-300 mb-6">Enter your vehicle's details.</p>
 
 			<form method="post" use:enhance class="space-y-4">
 				<div>
-					<label for="year-input" class="text-xs font-medium text-surface-600 dark:text-surface-400 block mb-1">Year</label>
+					<label for="year-input" class="text-xs font-medium text-surface-600 dark:text-gray-300 block mb-1">Year</label>
 					<input
 						id="year-input"
 						name="year"
@@ -36,7 +36,7 @@
 					/>
 				</div>
 				<div>
-					<label for="make-input" class="text-xs font-medium text-surface-600 dark:text-surface-400 block mb-1">Make</label>
+					<label for="make-input" class="text-xs font-medium text-surface-600 dark:text-gray-300 block mb-1">Make</label>
 					<input
 						id="make-input"
 						name="make"
@@ -48,7 +48,7 @@
 					/>
 				</div>
 				<div>
-					<label for="model-input" class="text-xs font-medium text-surface-600 dark:text-surface-400 block mb-1">Model</label>
+					<label for="model-input" class="text-xs font-medium text-surface-600 dark:text-gray-300 block mb-1">Model</label>
 					<input
 						id="model-input"
 						name="model"
@@ -60,7 +60,7 @@
 					/>
 				</div>
 				<div>
-					<label for="vin-input" class="text-xs font-medium text-surface-600 dark:text-surface-400 block mb-1">VIN <span class="text-surface-400">(optional)</span></label>
+					<label for="vin-input" class="text-xs font-medium text-surface-600 dark:text-gray-300 block mb-1">VIN <span class="text-surface-400">(optional)</span></label>
 					<input
 						id="vin-input"
 						name="vin"

@@ -22,11 +22,11 @@
 	<div class="max-w-4xl mx-auto">
 		<Breadcrumbs items={[{ label: 'Team' }]} />
 		<h1 class="text-4xl font-bold text-surface-900 dark:text-white mb-2">The Team</h1>
-		<p class="text-surface-600 dark:text-surface-400 mb-8">Meet the people of Dunder Mifflin Scranton</p>
+		<p class="text-surface-600 dark:text-gray-300 mb-8">Meet the people of Dunder Mifflin Scranton</p>
 
 		{#if data.users.length === 0}
 			<div class="bg-white dark:bg-surface-800 rounded-2xl p-8 shadow-xl">
-				<p class="text-surface-600 dark:text-surface-400">
+				<p class="text-surface-600 dark:text-gray-300">
 					No team members yet. Run <code class="bg-surface-100 dark:bg-surface-700 px-2 py-1 rounded">pnpm db:seed-office</code> to add The Office characters.
 				</p>
 			</div>
@@ -38,7 +38,7 @@
 							{formatName(member.username).charAt(0)}
 						</div>
 						<h3 class="font-semibold text-surface-900 dark:text-white">{formatName(member.username)}</h3>
-						<p class="text-sm text-surface-500">@{member.username}</p>
+						<p class="text-sm text-surface-500 dark:text-gray-300">@{member.username}</p>
 					</div>
 				{/each}
 			</div>

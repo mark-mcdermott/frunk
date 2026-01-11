@@ -25,7 +25,7 @@
 					</svg>
 				</div>
 				<h3 class="text-xl font-bold text-black dark:text-white mb-2">Email Verified!</h3>
-				<p class="text-sm text-surface-500 mb-6">{data.message}</p>
+				<p class="text-sm text-surface-500 dark:text-gray-300 mb-6">{data.message}</p>
 				<a href="/sign-in" class="w-full btn preset-filled-primary-500 py-2.5 rounded-lg font-semibold text-white inline-block">
 					Continue to Sign In
 				</a>
@@ -36,7 +36,7 @@
 					</svg>
 				</div>
 				<h3 class="text-xl font-bold text-black dark:text-white mb-2">Verification Failed</h3>
-				<p class="text-sm text-surface-500 mb-6">{data.message}</p>
+				<p class="text-sm text-surface-500 dark:text-gray-300 mb-6">{data.message}</p>
 				<a href="/sign-up" class="w-full btn preset-filled-primary-500 py-2.5 rounded-lg font-semibold text-white inline-block">
 					Sign Up Again
 				</a>

@@ -31,7 +31,7 @@
 			<div class="flex items-center justify-between mb-8">
 				<div>
 					<h1 class="text-2xl font-bold text-black dark:text-white">All Repairs</h1>
-					<p class="text-surface-500 text-sm mt-1">
+					<p class="text-surface-500 dark:text-gray-300 text-sm mt-1">
 						{repairs.length} repair{repairs.length === 1 ? '' : 's'} across all vehicles
 					</p>
 				</div>
@@ -39,9 +39,9 @@
 
 			{#if repairs.length === 0}
 				<div class="bg-white dark:bg-surface-800 rounded-2xl p-12 shadow-xl shadow-surface-900/5 border border-[#eee] text-center">
-					<Wrench class="w-16 h-16 mx-auto text-surface-300 dark:text-surface-600 mb-4" />
+					<Wrench class="w-16 h-16 mx-auto text-surface-300 dark:text-gray-400 mb-4" />
 					<h2 class="text-xl font-semibold text-black dark:text-white mb-2">No repairs yet</h2>
-					<p class="text-surface-500 mb-6">Add repairs to your vehicles to see them here.</p>
+					<p class="text-surface-500 dark:text-gray-300 mb-6">Add repairs to your vehicles to see them here.</p>
 					<a
 						href="{basePath}/vehicles"
 						class="inline-flex items-center gap-2 btn preset-filled-primary-500 py-2.5 px-6 rounded-lg font-semibold text-white"
@@ -68,11 +68,11 @@
 											<ChevronRight class="w-4 h-4 text-surface-400 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0" />
 										</div>
 										{#if repair.vehicle}
-											<p class="text-sm text-surface-500 mt-1">
+											<p class="text-sm text-surface-500 dark:text-gray-300 mt-1">
 												{repair.vehicle.year} {repair.vehicle.make} {repair.vehicle.model}
 											</p>
 										{/if}
-										<div class="flex flex-wrap items-center gap-3 mt-2 text-xs text-surface-500">
+										<div class="flex flex-wrap items-center gap-3 mt-2 text-xs text-surface-500 dark:text-gray-300">
 											<span class="flex items-center gap-1">
 												<Calendar class="w-3 h-3" />
 												{formatDate(repair.date)}

@@ -92,6 +92,52 @@ a.btn.text-white:hover {
   color: white;
 }
 
+.dark a.btn:hover,
+.dark a.btn.text-white:hover {
+  color: #0f172a;
+}
+
+a.btn.bg-primary-500:hover,
+button.btn.bg-primary-500:hover,
+.btn.bg-primary-500:hover {
+  background-color: var(--color-primary, #3b82f6) !important;
+  filter: none !important;
+  opacity: 1 !important;
+  box-shadow: none !important;
+  --tw-brightness: none !important;
+}
+
+.dark a.btn.bg-primary-500:hover,
+.dark button.btn.bg-primary-500:hover,
+.dark .btn.bg-primary-500:hover {
+  background-color: var(--color-primary, #60A5FA) !important;
+  filter: none !important;
+  opacity: 1 !important;
+  box-shadow: none !important;
+  --tw-brightness: none !important;
+}
+
+/* Skeleton preset-filled buttons */
+.btn.preset-filled-primary-500:hover,
+a.btn.preset-filled-primary-500:hover,
+button.btn.preset-filled-primary-500:hover {
+  background-color: var(--color-primary, #3b82f6) !important;
+  filter: none !important;
+  opacity: 1 !important;
+  box-shadow: none !important;
+  --tw-brightness: none !important;
+}
+
+.dark .btn.preset-filled-primary-500:hover,
+.dark a.btn.preset-filled-primary-500:hover,
+.dark button.btn.preset-filled-primary-500:hover {
+  background-color: var(--color-primary, #60A5FA) !important;
+  filter: none !important;
+  opacity: 1 !important;
+  box-shadow: none !important;
+  --tw-brightness: none !important;
+}
+
 a.btn.preset-outlined-surface-500:hover {
   color: currentColor;
 }

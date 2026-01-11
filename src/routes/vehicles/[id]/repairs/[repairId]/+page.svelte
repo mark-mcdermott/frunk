@@ -68,7 +68,7 @@
 			<!-- Back link -->
 			<a
 				href="/vehicles/{vehicle.id}"
-				class="inline-flex items-center gap-2 text-sm text-surface-500 hover:text-surface-700 dark:hover:text-surface-300 mb-6"
+				class="inline-flex items-center gap-2 text-sm text-surface-500 dark:text-gray-300 hover:text-surface-700 dark:hover:text-surface-300 mb-6"
 			>
 				<ArrowLeft class="w-4 h-4" />
 				Back to vehicle
@@ -103,7 +103,7 @@
 					<div class="flex items-center gap-3 p-3 bg-surface-50 dark:bg-surface-700/50 rounded-lg">
 						<Calendar class="w-5 h-5 text-surface-400" />
 						<div>
-							<p class="text-xs text-surface-500">Date</p>
+							<p class="text-xs text-surface-500 dark:text-gray-300">Date</p>
 							<p class="text-sm font-medium text-black dark:text-white">{formatDate(repair.date)}</p>
 						</div>
 					</div>
@@ -112,7 +112,7 @@
 						<div class="flex items-center gap-3 p-3 bg-surface-50 dark:bg-surface-700/50 rounded-lg">
 							<Hash class="w-5 h-5 text-surface-400" />
 							<div>
-								<p class="text-xs text-surface-500">Mileage</p>
+								<p class="text-xs text-surface-500 dark:text-gray-300">Mileage</p>
 								<p class="text-sm font-medium text-black dark:text-white">{repair.mileage.toLocaleString()} mi</p>
 							</div>
 						</div>
@@ -122,7 +122,7 @@
 						<div class="flex items-center gap-3 p-3 bg-surface-50 dark:bg-surface-700/50 rounded-lg">
 							<DollarSign class="w-5 h-5 text-surface-400" />
 							<div>
-								<p class="text-xs text-surface-500">Cost</p>
+								<p class="text-xs text-surface-500 dark:text-gray-300">Cost</p>
 								<p class="text-sm font-medium text-green-600 dark:text-green-400">{formatCost(repair.cost)}</p>
 							</div>
 						</div>
@@ -135,7 +135,7 @@
 						>
 							<Store class="w-5 h-5 text-surface-400" />
 							<div>
-								<p class="text-xs text-surface-500">Vendor</p>
+								<p class="text-xs text-surface-500 dark:text-gray-300">Vendor</p>
 								<p class="text-sm font-medium text-primary-500 hover:underline">{repair.vendorName}</p>
 							</div>
 						</a>
@@ -152,7 +152,7 @@
 					</h2>
 					<button
 						type="button"
-						class="inline-flex items-center gap-1 px-3 py-1.5 text-sm bg-primary-500 hover:bg-primary-600 text-white rounded-lg transition-colors"
+						class="btn inline-flex items-center gap-1 px-3 py-1.5 text-sm bg-primary-500 text-white rounded-lg transition-colors"
 						onclick={() => noteModalOpen = true}
 					>
 						<Plus class="w-4 h-4" />
@@ -162,8 +162,8 @@
 
 				{#if notes.length === 0}
 					<div class="text-center py-8">
-						<StickyNote class="w-12 h-12 mx-auto text-surface-300 dark:text-surface-600 mb-3" />
-						<p class="text-surface-500 text-sm">No notes yet</p>
+						<StickyNote class="w-12 h-12 mx-auto text-surface-300 dark:text-gray-400 mb-3" />
+						<p class="text-surface-500 dark:text-gray-300 text-sm">No notes yet</p>
 						<p class="text-surface-400 text-xs mt-1">Add receipts, invoices, or other details</p>
 					</div>
 				{:else}
@@ -181,10 +181,10 @@
 												<ChevronRight class="w-4 h-4 text-surface-400 opacity-0 group-hover:opacity-100 transition-opacity" />
 											</div>
 											{#if note.body}
-												<p class="text-sm text-surface-600 dark:text-surface-400 mt-1 line-clamp-2">{note.body}</p>
+												<p class="text-sm text-surface-600 dark:text-gray-300 mt-1 line-clamp-2">{note.body}</p>
 											{/if}
 											{#if note.imageUrl}
-												<div class="mt-3 flex items-center gap-2 text-xs text-surface-500">
+												<div class="mt-3 flex items-center gap-2 text-xs text-surface-500 dark:text-gray-300">
 													<ImageIcon class="w-4 h-4" />
 													<span>Has attachment</span>
 												</div>
@@ -234,7 +234,7 @@
 				class="space-y-4"
 			>
 				<div>
-					<label for="note-title" class="text-xs font-medium text-surface-600 dark:text-surface-400 block mb-1">
+					<label for="note-title" class="text-xs font-medium text-surface-600 dark:text-gray-300 block mb-1">
 						Title <span class="text-red-500">*</span>
 					</label>
 					<input
@@ -249,7 +249,7 @@
 				</div>
 
 				<div>
-					<label for="note-body" class="text-xs font-medium text-surface-600 dark:text-surface-400 block mb-1">
+					<label for="note-body" class="text-xs font-medium text-surface-600 dark:text-gray-300 block mb-1">
 						Note (optional)
 					</label>
 					<textarea
@@ -263,7 +263,7 @@
 				</div>
 
 				<div>
-					<label for="note-image" class="text-xs font-medium text-surface-600 dark:text-surface-400 block mb-1">
+					<label for="note-image" class="text-xs font-medium text-surface-600 dark:text-gray-300 block mb-1">
 						Image (optional)
 					</label>
 					<input

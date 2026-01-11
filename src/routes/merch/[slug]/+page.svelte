@@ -127,7 +127,7 @@
 							onclick={() => (showBack = false)}
 							class="px-4 py-2 text-sm font-medium rounded-lg transition-all cursor-pointer {!showBack
 								? 'bg-primary-500 text-white'
-								: 'bg-surface-200 dark:bg-surface-700 text-surface-700 dark:text-surface-300 hover:bg-surface-300 dark:hover:bg-surface-600'}"
+								: 'bg-surface-200 dark:bg-surface-700 text-surface-700 dark:text-gray-200 hover:bg-surface-300 dark:hover:bg-surface-600'}"
 						>
 							Front
 						</button>
@@ -136,7 +136,7 @@
 							onclick={() => (showBack = true)}
 							class="px-4 py-2 text-sm font-medium rounded-lg transition-all cursor-pointer {showBack
 								? 'bg-primary-500 text-white'
-								: 'bg-surface-200 dark:bg-surface-700 text-surface-700 dark:text-surface-300 hover:bg-surface-300 dark:hover:bg-surface-600'}"
+								: 'bg-surface-200 dark:bg-surface-700 text-surface-700 dark:text-gray-200 hover:bg-surface-300 dark:hover:bg-surface-600'}"
 						>
 							Back
 						</button>
@@ -146,18 +146,18 @@
 
 			<!-- Product Info -->
 			<div>
-				<h1 class="text-3xl sm:text-4xl font-bold text-surface-600 dark:text-surface-400 mb-4">
+				<h1 class="text-3xl sm:text-4xl font-bold text-surface-600 dark:text-gray-300 mb-4">
 					{product.name}
 				</h1>
-				<p class="text-2xl font-bold text-surface-600 dark:text-surface-400 mb-6">
+				<p class="text-2xl font-bold text-surface-600 dark:text-gray-300 mb-6">
 					{formatPrice(currentPrice)}
 				</p>
-				<p class="text-surface-600 dark:text-surface-400 mb-8">{product.description}</p>
+				<p class="text-surface-600 dark:text-gray-300 mb-8">{product.description}</p>
 
 				<!-- Color Selector -->
 				{#if colors.length > 1}
 					<div class="mb-6">
-						<label class="block text-sm font-medium text-surface-700 dark:text-surface-300 mb-3"
+						<label class="block text-sm font-medium text-surface-700 dark:text-gray-200 mb-3"
 							>Color: {selectedColor}</label
 						>
 						<div class="flex gap-3">
@@ -185,7 +185,7 @@
 
 				<!-- Size Selector -->
 				<div class="mb-8">
-					<label class="block text-sm font-medium text-surface-700 dark:text-surface-300 mb-3"
+					<label class="block text-sm font-medium text-surface-700 dark:text-gray-200 mb-3"
 						>Size</label
 					>
 					<div class="flex flex-wrap gap-3">
@@ -196,7 +196,7 @@
 								class="px-4 py-2 border rounded-lg transition-all cursor-pointer {selectedSize ===
 								size
 									? 'bg-primary-500 text-white border-primary-500'
-									: 'border-surface-300 dark:border-surface-600 hover:border-surface-500 dark:hover:border-surface-400 text-surface-700 dark:text-surface-300'}"
+									: 'border-surface-300 dark:border-surface-600 hover:border-surface-500 dark:hover:border-surface-400 text-surface-700 dark:text-gray-200'}"
 							>
 								{size}
 							</button>
@@ -208,19 +208,19 @@
 				<button
 					onclick={handleAddToCart}
 					disabled={!selectedVariant}
-					class="w-full py-4 text-lg font-semibold rounded-lg transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed bg-primary-500 text-white hover:bg-primary-600 shadow-lg shadow-primary-500/25"
+					class="btn w-full py-4 text-lg font-semibold rounded-lg transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed bg-primary-500 text-white shadow-lg shadow-primary-500/25"
 				>
 					Add to Cart · <span class="ml-2">{formatPrice(currentPrice)}</span>
 				</button>
 
-				<p class="text-sm text-surface-500 mt-4 text-center">
+				<p class="text-sm text-surface-500 dark:text-gray-300 mt-4 text-center">
 					Shipping calculated at checkout.
 				</p>
 
 				<!-- Product Details -->
 				<div class="mt-8 p-6 bg-white dark:bg-surface-800 rounded-2xl">
-					<h3 class="font-semibold text-surface-600 dark:text-surface-400 mb-3">Product Details</h3>
-					<ul class="text-sm text-surface-600 dark:text-surface-400 space-y-2">
+					<h3 class="font-semibold text-surface-600 dark:text-gray-300 mb-3">Product Details</h3>
+					<ul class="text-sm text-surface-600 dark:text-gray-300 space-y-2">
 						{#if product.category === 'tshirt'}
 							<li>100% ring-spun cotton</li>
 							<li>Pre-shrunk fabric</li>

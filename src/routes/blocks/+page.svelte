@@ -117,7 +117,7 @@
 					</span>
 				</h1>
 
-				<p class="text-xl text-surface-600 dark:text-surface-400 mb-8 leading-relaxed">
+				<p class="text-xl text-surface-600 dark:text-gray-300 mb-8 leading-relaxed">
 					A passionate team of designers, engineers, and dreamers united by a single mission:
 					making beautiful, accessible interfaces achievable for everyone.
 				</p>
@@ -132,7 +132,7 @@
 				{#each stats as stat}
 					<div class="text-center">
 						<p class="text-4xl lg:text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-primary-500 to-secondary-500">{stat.value}</p>
-						<p class="text-surface-600 dark:text-surface-400 mt-2 font-medium">{stat.label}</p>
+						<p class="text-surface-600 dark:text-gray-300 mt-2 font-medium">{stat.label}</p>
 					</div>
 				{/each}
 			</div>
@@ -148,11 +148,11 @@
 					<h2 class="text-3xl sm:text-4xl font-bold text-black dark:text-white mt-4 mb-6">
 						Democratizing great design
 					</h2>
-					<p class="text-lg text-surface-600 dark:text-surface-400 mb-6 leading-relaxed">
+					<p class="text-lg text-surface-600 dark:text-gray-300 mb-6 leading-relaxed">
 						We believe that every developer should have access to professional-grade design tools.
 						Not everyone has a design team, but everyone deserves a beautiful product.
 					</p>
-					<p class="text-lg text-surface-600 dark:text-surface-400 leading-relaxed">
+					<p class="text-lg text-surface-600 dark:text-gray-300 leading-relaxed">
 						Skeleton bridges the gap between design and development, providing the building blocks
 						that empower teams of any size to create stunning, accessible user interfaces without
 						compromising on quality or performance.
@@ -197,7 +197,7 @@
 				<h2 class="text-3xl sm:text-4xl font-bold text-black dark:text-white mt-4 mb-4">
 					What drives us forward
 				</h2>
-				<p class="text-lg text-surface-600 dark:text-surface-400 max-w-2xl mx-auto">
+				<p class="text-lg text-surface-600 dark:text-gray-300 max-w-2xl mx-auto">
 					These core principles guide every decision we make and every feature we build.
 				</p>
 			</div>
@@ -214,7 +214,7 @@
 							</div>
 							<div>
 								<h3 class="text-xl font-bold text-black dark:text-white mb-2">{value.title}</h3>
-								<p class="text-surface-600 dark:text-surface-400 leading-relaxed">{value.description}</p>
+								<p class="text-surface-600 dark:text-gray-300 leading-relaxed">{value.description}</p>
 							</div>
 						</div>
 					</div>
@@ -231,7 +231,7 @@
 				<h2 class="text-3xl sm:text-4xl font-bold text-black dark:text-white mt-4 mb-4">
 					Meet the people behind Skeleton
 				</h2>
-				<p class="text-lg text-surface-600 dark:text-surface-400 max-w-2xl mx-auto">
+				<p class="text-lg text-surface-600 dark:text-gray-300 max-w-2xl mx-auto">
 					A diverse team of talented individuals passionate about building great developer tools.
 				</p>
 			</div>
@@ -248,7 +248,7 @@
 							</div>
 							<h3 class="text-xl font-bold text-black dark:text-white">{member.name}</h3>
 							<p class="text-primary-500 font-medium text-sm mb-3">{member.role}</p>
-							<p class="text-surface-600 dark:text-surface-400 text-sm leading-relaxed">{member.bio}</p>
+							<p class="text-surface-600 dark:text-gray-300 text-sm leading-relaxed">{member.bio}</p>
 							<div class="flex gap-3 mt-4">
 								<a href="#" class="p-2 rounded-lg bg-surface-100 dark:bg-surface-700 hover:bg-surface-200 dark:hover:bg-surface-600 transition-colors" aria-label="Twitter">
 									<svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
@@ -275,7 +275,7 @@
 				<h2 class="text-3xl sm:text-4xl font-bold text-black dark:text-white mt-4 mb-4">
 					From idea to impact
 				</h2>
-				<p class="text-lg text-surface-600 dark:text-surface-400">
+				<p class="text-lg text-surface-600 dark:text-gray-300">
 					A timeline of milestones that shaped who we are today.
 				</p>
 			</div>
@@ -297,7 +297,7 @@
 										{milestone.year}
 									</span>
 									<h3 class="text-xl font-bold text-black dark:text-white mb-2">{milestone.title}</h3>
-									<p class="text-surface-600 dark:text-surface-400">{milestone.description}</p>
+									<p class="text-surface-600 dark:text-gray-300">{milestone.description}</p>
 								</div>
 							</div>
 						</div>

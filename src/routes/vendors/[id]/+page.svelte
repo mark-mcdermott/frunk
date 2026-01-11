@@ -39,7 +39,7 @@
 			<!-- Back link -->
 			<a
 				href="/vendors"
-				class="inline-flex items-center gap-2 text-sm text-surface-500 hover:text-surface-700 dark:hover:text-surface-300 mb-6"
+				class="inline-flex items-center gap-2 text-sm text-surface-500 dark:text-gray-300 hover:text-surface-700 dark:hover:text-surface-300 mb-6"
 			>
 				<ArrowLeft class="w-4 h-4" />
 				Back to vendors
@@ -72,7 +72,7 @@
 				</div>
 
 				<!-- Contact Info -->
-				<div class="space-y-3 text-surface-600 dark:text-surface-400">
+				<div class="space-y-3 text-surface-600 dark:text-gray-300">
 					{#if vendor.phone}
 						<div class="flex items-center gap-3">
 							<Phone class="w-5 h-5 text-surface-400" />
@@ -115,7 +115,7 @@
 													<h3 class="font-medium text-black dark:text-white">{repair.description}</h3>
 													<ChevronRight class="w-4 h-4 text-surface-400 opacity-0 group-hover:opacity-100 transition-opacity" />
 												</div>
-												<div class="flex items-center gap-4 text-sm text-surface-500 mt-1">
+												<div class="flex items-center gap-4 text-sm text-surface-500 dark:text-gray-300 mt-1">
 													<span>{formatDate(repair.date)}</span>
 													{#if repair.mileage}
 														<span>{repair.mileage.toLocaleString()} mi</span>

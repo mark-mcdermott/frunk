@@ -24,11 +24,11 @@
 			<div class="mb-8 flex items-end justify-between">
 				<div>
 					<h1 class="text-2xl font-bold text-black dark:text-white">My Vehicles</h1>
-					<p class="text-sm text-surface-500 mt-1">Manage your vehicles and their documents.</p>
+					<p class="text-sm text-surface-500 dark:text-gray-300 mt-1">Manage your vehicles and their documents.</p>
 				</div>
 				<a
 					href="{basePath}/vehicles/new"
-					class="inline-flex items-center gap-2 px-4 py-2 bg-primary-500 hover:bg-primary-600 text-white rounded-lg transition-colors"
+					class="btn inline-flex items-center gap-2 px-4 py-2 bg-primary-500 text-white rounded-lg transition-colors"
 				>
 					<Plus class="w-4 h-4" />
 					Add Vehicle
@@ -37,12 +37,12 @@
 
 			{#if vehicles.length === 0}
 				<div class="bg-white dark:bg-surface-800 rounded-2xl shadow-xl shadow-surface-900/5 border border-[#eee] p-12 text-center">
-					<Car class="w-16 h-16 mx-auto text-surface-300 dark:text-surface-600 mb-4" />
+					<Car class="w-16 h-16 mx-auto text-surface-300 dark:text-gray-400 mb-4" />
 					<h2 class="text-lg font-semibold text-black dark:text-white mb-2">No vehicles yet</h2>
-					<p class="text-surface-500 mb-6">Add your first vehicle to get started tracking documents and maintenance.</p>
+					<p class="text-surface-500 dark:text-gray-300 mb-6">Add your first vehicle to get started tracking documents and maintenance.</p>
 					<a
 						href="{basePath}/vehicles/new"
-						class="inline-flex items-center gap-2 px-4 py-2 bg-primary-500 hover:bg-primary-600 text-white rounded-lg transition-colors"
+						class="btn inline-flex items-center gap-2 px-4 py-2 bg-primary-500 text-white rounded-lg transition-colors"
 					>
 						<Plus class="w-4 h-4" />
 						Add Your First Vehicle
@@ -52,7 +52,7 @@
 				<div class="grid gap-4">
 					{#each vehicles as vehicle}
 						<div
-							class="bg-white dark:bg-surface-800 rounded-2xl shadow-xl shadow-surface-900/5 border border-[#eee] p-6 hover:border-primary-200 dark:hover:border-primary-800 transition-colors cursor-pointer"
+							class="group bg-white dark:bg-surface-800 rounded-2xl shadow-xl shadow-surface-900/5 border border-[#eee] p-6 hover:border-primary-200 dark:hover:border-primary-800 transition-colors cursor-pointer"
 							onclick={(e) => { if (e.target.closest('a, button, form')) return; goto(`${basePath}/vehicles/${vehicle.id}`); }}
 							role="button"
 							tabindex="0"
@@ -72,11 +72,11 @@
 										</div>
 									{/if}
 									<div>
-										<h3 class="text-lg font-semibold text-black dark:text-white">
+										<h3 class="text-lg font-semibold text-black dark:text-white group-hover:text-primary-500 transition-colors">
 											{vehicle.year} {vehicle.make} {vehicle.model}
 										</h3>
 										{#if vehicle.vin}
-											<p class="text-sm text-surface-500">VIN: {vehicle.vin}</p>
+											<p class="text-sm text-surface-500 dark:text-gray-300">VIN: {vehicle.vin}</p>
 										{/if}
 									</div>
 								</div>

@@ -79,7 +79,7 @@
 {#if showBanner}
 	<div class="fixed bottom-0 left-0 right-0 z-50 p-4 bg-white dark:bg-surface-800 border-t border-surface-200 dark:border-surface-700 shadow-lg">
 		<div class="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
-			<div class="flex-1 text-sm text-surface-600 dark:text-surface-400">
+			<div class="flex-1 text-sm text-surface-600 dark:text-gray-300">
 				<p>
 					We use cookies to enhance your experience. Essential cookies are required for the site to function.
 					Analytics cookies help us understand how you use the site.
@@ -89,14 +89,14 @@
 			<div class="flex items-center gap-3">
 				<button
 					type="button"
-					class="px-4 py-2 text-sm font-medium text-surface-600 dark:text-surface-400 hover:text-surface-800 dark:hover:text-surface-200 transition-colors"
+					class="px-4 py-2 text-sm font-medium text-surface-600 dark:text-gray-300 hover:text-surface-800 dark:hover:text-surface-200 transition-colors"
 					onclick={acceptEssential}
 				>
 					Essential Only
 				</button>
 				<button
 					type="button"
-					class="px-4 py-2 text-sm font-medium bg-primary-500 text-white rounded-lg hover:bg-primary-600 transition-colors"
+					class="btn px-4 py-2 text-sm font-medium bg-primary-500 text-white rounded-lg transition-colors"
 					onclick={acceptAll}
 				>
 					Accept All

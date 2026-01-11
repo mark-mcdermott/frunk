@@ -67,7 +67,7 @@
 			<div class="mb-8 flex items-end justify-between">
 				<div>
 					<h1 class="text-2xl font-bold text-black dark:text-white">Users</h1>
-					<p class="text-sm text-surface-500 mt-1">Manage all users in the system.</p>
+					<p class="text-sm text-surface-500 dark:text-gray-300 mt-1">Manage all users in the system.</p>
 				</div>
 				<div class="relative">
 					<svg class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-surface-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -87,7 +87,7 @@
 				<table class="w-full">
 					<thead>
 						<tr class="border-b border-surface-200 dark:border-surface-700">
-							<th class="text-left py-4 px-6 text-xs font-semibold text-surface-500 uppercase tracking-wider">
+							<th class="text-left py-4 px-6 text-xs font-semibold text-surface-500 dark:text-gray-300 uppercase tracking-wider">
 								<button onclick={() => handleSort('id')} class="flex items-center gap-1 hover:text-surface-700 dark:hover:text-surface-300 transition-colors">
 									ID
 									{#if sortBy === 'id'}
@@ -101,7 +101,7 @@
 									{/if}
 								</button>
 							</th>
-							<th class="text-left py-4 px-6 text-xs font-semibold text-surface-500 uppercase tracking-wider">
+							<th class="text-left py-4 px-6 text-xs font-semibold text-surface-500 dark:text-gray-300 uppercase tracking-wider">
 								<button onclick={() => handleSort('username')} class="flex items-center gap-1 hover:text-surface-700 dark:hover:text-surface-300 transition-colors">
 									User
 									{#if sortBy === 'username'}
@@ -115,7 +115,7 @@
 									{/if}
 								</button>
 							</th>
-							<th class="text-center py-4 px-6 text-xs font-semibold text-surface-500 uppercase tracking-wider">
+							<th class="text-center py-4 px-6 text-xs font-semibold text-surface-500 dark:text-gray-300 uppercase tracking-wider">
 								<button onclick={() => handleSort('roles')} class="flex items-center gap-1 justify-center w-full hover:text-surface-700 dark:hover:text-surface-300 transition-colors">
 									Role
 									{#if sortBy === 'roles'}
@@ -129,14 +129,14 @@
 									{/if}
 								</button>
 							</th>
-							<th class="text-right py-4 px-6 text-xs font-semibold text-surface-500 tracking-wider">Actions</th>
+							<th class="text-right py-4 px-6 text-xs font-semibold text-surface-500 dark:text-gray-300 tracking-wider">Actions</th>
 						</tr>
 					</thead>
 					<tbody class="divide-y divide-surface-100 dark:divide-surface-700">
 						{#each users as u}
 							<tr class="hover:bg-surface-50 dark:hover:bg-surface-700/50 transition-colors cursor-pointer" onclick={(e) => { if (e.target.closest('a, button, form')) return; goto(`/users/${u.uuid}/edit`); }}>
 								<td class="py-4 px-6">
-									<span class="text-sm text-surface-500">{u.id}</span>
+									<span class="text-sm text-surface-500 dark:text-gray-300">{u.id}</span>
 								</td>
 								<td class="py-4 px-6">
 									<div class="flex items-center gap-3">
@@ -154,11 +154,11 @@
 								</td>
 								<td class="py-4 px-6 text-center">
 									{#each getRoleNames(u.roles) as roleName}
-										<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {roleName === 'Admin' ? 'bg-primary-500/10 text-primary-600 dark:text-primary-400' : 'bg-surface-500/10 text-surface-600 dark:text-surface-400'} mr-1">
+										<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {roleName === 'Admin' ? 'bg-primary-500/10 text-primary-600 dark:text-primary-400' : 'bg-surface-500/10 text-surface-600 dark:text-gray-300'} mr-1">
 											{roleName}
 										</span>
 									{:else}
-										<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-surface-500/10 text-surface-600 dark:text-surface-400">
+										<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-surface-500/10 text-surface-600 dark:text-gray-300">
 											No roles
 										</span>
 									{/each}
@@ -217,7 +217,7 @@
 											{p.value}
 										</Pagination.Item>
 									{:else}
-										<Pagination.Ellipsis {index} class="px-2 py-2 text-surface-500">...</Pagination.Ellipsis>
+										<Pagination.Ellipsis {index} class="px-2 py-2 text-surface-500 dark:text-gray-300">...</Pagination.Ellipsis>
 									{/if}
 								{/each}
 							{/snippet}

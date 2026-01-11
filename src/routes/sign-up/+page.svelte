@@ -20,7 +20,7 @@
 	<main class="flex-1 flex items-start justify-center pt-12 px-4 sm:px-6 lg:px-8">
 		<div class="bg-white dark:bg-surface-800 rounded-2xl p-6 shadow-xl shadow-surface-900/5 w-full max-w-sm border border-[#eee]">
 			<h3 class="text-xl font-bold text-black dark:text-white mb-2">Create Account</h3>
-			<p class="text-sm text-surface-500 mb-6">Complete the form to get started.</p>
+			<p class="text-sm text-surface-500 dark:text-gray-300 mb-6">Complete the form to get started.</p>
 
 			<!-- <div class="flex gap-3 mb-4">
 				<button class="flex-1 btn preset-outlined-surface-500 py-2 rounded-lg text-sm font-medium">GitHub</button>
@@ -29,17 +29,17 @@
 
 			<form method="post" action="?/register" use:enhance class="space-y-4">
 				<div>
-					<label for="email-input" class="text-xs font-medium text-surface-600 dark:text-surface-400 block mb-1">Email</label>
+					<label for="email-input" class="text-xs font-medium text-surface-600 dark:text-gray-300 block mb-1">Email</label>
 					<input id="email-input" name="email" type="email" placeholder="me@example.com" class="w-full px-3 py-2 rounded-lg bg-surface-100 dark:bg-surface-700 border-0 text-sm focus:ring-2 focus:ring-primary-500" />
 				</div>
 				<div>
-					<label for="password-input" class="text-xs font-medium text-surface-600 dark:text-surface-400 block mb-1">Password</label>
+					<label for="password-input" class="text-xs font-medium text-surface-600 dark:text-gray-300 block mb-1">Password</label>
 					<input id="password-input" name="password" type="password" placeholder="Enter your password..." class="w-full px-3 py-2 rounded-lg bg-surface-100 dark:bg-surface-700 border-0 text-sm focus:ring-2 focus:ring-primary-500" />
 				</div>
 				<button type="submit" class="w-full btn preset-filled-primary-500 py-2.5 rounded-lg font-semibold text-white">
 					Create Account
 				</button>
-				<p class="text-xs text-surface-500 text-right">Already have an account? <a href="/sign-in" class="text-primary-500 hover:text-[#93c5fd] transition-colors">Sign in.</a></p>
+				<p class="text-xs text-surface-500 dark:text-gray-300 text-right">Already have an account? <a href="/sign-in" class="text-primary-500 hover:text-[#93c5fd] transition-colors">Sign in.</a></p>
 			</form>
 			{#if form?.message}
 				<p class="text-red-500 text-sm mt-4">{form.message}</p>

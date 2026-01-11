@@ -30,17 +30,17 @@
 			<Breadcrumbs items={[{ label: 'Notes' }]} />
 			<div class="mb-8">
 				<h1 class="text-2xl font-bold text-black dark:text-white">All Notes</h1>
-				<p class="text-sm text-surface-500 mt-1">All notes across your vehicles.</p>
+				<p class="text-sm text-surface-500 dark:text-gray-300 mt-1">All notes across your vehicles.</p>
 			</div>
 
 			{#if notes.length === 0}
 				<div class="bg-white dark:bg-surface-800 rounded-2xl shadow-xl shadow-surface-900/5 border border-[#eee] p-12 text-center">
-					<StickyNote class="w-16 h-16 mx-auto text-surface-300 dark:text-surface-600 mb-4" />
+					<StickyNote class="w-16 h-16 mx-auto text-surface-300 dark:text-gray-400 mb-4" />
 					<h2 class="text-lg font-semibold text-black dark:text-white mb-2">No notes yet</h2>
-					<p class="text-surface-500 mb-6">Add notes to your vehicles to see them here.</p>
+					<p class="text-surface-500 dark:text-gray-300 mb-6">Add notes to your vehicles to see them here.</p>
 					<a
 						href="{basePath}/vehicles"
-						class="inline-flex items-center gap-2 px-4 py-2 bg-primary-500 hover:bg-primary-600 text-white rounded-lg transition-colors"
+						class="btn inline-flex items-center gap-2 px-4 py-2 bg-primary-500 text-white rounded-lg transition-colors"
 					>
 						Go to Vehicles
 					</a>
@@ -66,9 +66,9 @@
 										<ChevronRight class="w-4 h-4 text-surface-400 opacity-0 group-hover:opacity-100 transition-opacity" />
 									</div>
 									{#if note.body}
-										<p class="text-sm text-surface-600 dark:text-surface-400 mt-1 line-clamp-2">{note.body}</p>
+										<p class="text-sm text-surface-600 dark:text-gray-300 mt-1 line-clamp-2">{note.body}</p>
 									{/if}
-									<div class="flex items-center gap-3 mt-2 text-xs text-surface-500">
+									<div class="flex items-center gap-3 mt-2 text-xs text-surface-500 dark:text-gray-300">
 										{#if vehicle}
 											<span>{vehicle.year} {vehicle.make} {vehicle.model}</span>
 										{/if}

@@ -94,8 +94,8 @@
 					<ShoppingCart class="w-5 h-5 text-primary-500" />
 				</div>
 				<div>
-					<h2 class="text-lg font-semibold text-surface-600 dark:text-surface-400">Your Cart</h2>
-					<p class="text-sm text-surface-500">{$cartItemCount} {$cartItemCount === 1 ? 'item' : 'items'}</p>
+					<h2 class="text-lg font-semibold text-surface-600 dark:text-white">Your Cart</h2>
+					<p class="text-sm text-surface-500 dark:text-gray-300 dark:text-white">{$cartItemCount} {$cartItemCount === 1 ? 'item' : 'items'}</p>
 				</div>
 			</div>
 			<button
@@ -104,7 +104,7 @@
 				class="w-10 h-10 rounded-full hover:bg-surface-100 dark:hover:bg-surface-800 transition-colors cursor-pointer flex items-center justify-center"
 				aria-label="Close cart"
 			>
-				<X class="w-5 h-5 text-surface-500" />
+				<X class="w-5 h-5 text-surface-500 dark:text-gray-300 dark:text-white" />
 			</button>
 		</div>
 
@@ -113,14 +113,14 @@
 			{#if $cart.length === 0}
 				<div class="flex flex-col items-center justify-center h-full text-center px-6">
 					<div class="w-20 h-20 rounded-full bg-surface-100 dark:bg-surface-800 flex items-center justify-center mb-4">
-						<ShoppingBag class="w-10 h-10 text-surface-300 dark:text-surface-600" />
+						<ShoppingBag class="w-10 h-10 text-surface-300 dark:text-gray-400" />
 					</div>
 					<h3 class="text-lg font-medium text-surface-900 dark:text-white mb-1">Your cart is empty</h3>
-					<p class="text-surface-500 mb-6">Looks like you haven't added anything yet</p>
+					<p class="text-surface-500 dark:text-gray-300 mb-6">Looks like you haven't added anything yet</p>
 					<a
 						href="/merch"
 						onclick={closeCart}
-						class="px-6 py-2.5 bg-primary-500 text-white font-medium rounded-full hover:bg-primary-600 transition-colors cursor-pointer inline-block"
+						class="btn px-6 py-2.5 bg-primary-500 text-white font-medium rounded-full transition-colors cursor-pointer inline-block"
 					>
 						Start Shopping
 					</a>
@@ -161,17 +161,17 @@
 									</h3>
 
 									<!-- Color & Size -->
-									<p class="text-sm text-surface-600 dark:text-surface-400 mt-0.5">
+									<p class="text-sm text-surface-600 dark:text-white mt-0.5">
 										{item.color} · {item.size}
 									</p>
 
 									<!-- Price -->
 									<div class="flex items-baseline gap-2 mt-1">
-										<span class="text-base font-bold text-surface-600 dark:text-surface-400">
+										<span class="text-base font-bold text-surface-600 dark:text-white">
 											{formatPrice(item.price * item.quantity)}
 										</span>
 										{#if item.quantity > 1}
-											<span class="text-xs text-surface-600 dark:text-surface-400">
+											<span class="text-xs text-surface-600 dark:text-white">
 												({formatPrice(item.price)} each)
 											</span>
 										{/if}
@@ -186,9 +186,9 @@
 												class="w-8 h-8 flex items-center justify-center hover:bg-surface-100 dark:hover:bg-surface-600 rounded-l-full transition-colors cursor-pointer"
 												aria-label="Decrease quantity"
 											>
-												<Minus class="w-3.5 h-3.5 text-surface-600 dark:text-surface-300" />
+												<Minus class="w-3.5 h-3.5 text-surface-600 dark:text-gray-200" />
 											</button>
-											<span class="w-8 text-center text-sm font-semibold text-surface-600 dark:text-surface-400">
+											<span class="w-8 text-center text-sm font-semibold text-surface-600 dark:text-white">
 												{item.quantity}
 											</span>
 											<button
@@ -197,7 +197,7 @@
 												class="w-8 h-8 flex items-center justify-center hover:bg-surface-100 dark:hover:bg-surface-600 rounded-r-full transition-colors cursor-pointer"
 												aria-label="Increase quantity"
 											>
-												<Plus class="w-3.5 h-3.5 text-surface-600 dark:text-surface-300" />
+												<Plus class="w-3.5 h-3.5 text-surface-600 dark:text-gray-200" />
 											</button>
 										</div>
 
@@ -224,17 +224,17 @@
 				<!-- Order Summary -->
 				<div class="space-y-2">
 					<div class="flex justify-between text-sm">
-						<span class="text-surface-600 dark:text-surface-400">Subtotal ({$cartItemCount} {$cartItemCount === 1 ? 'item' : 'items'})</span>
-						<span class="font-medium text-surface-600 dark:text-surface-400">{formatPrice($cartSubtotal)}</span>
+						<span class="text-surface-600 dark:text-white">Subtotal ({$cartItemCount} {$cartItemCount === 1 ? 'item' : 'items'})</span>
+						<span class="font-medium text-surface-600 dark:text-white">{formatPrice($cartSubtotal)}</span>
 					</div>
 					<div class="flex justify-between text-sm">
-						<span class="text-surface-600 dark:text-surface-400">Shipping</span>
-						<span class="text-surface-600 dark:text-surface-400">Calculated at checkout</span>
+						<span class="text-surface-600 dark:text-white">Shipping</span>
+						<span class="text-surface-600 dark:text-white">Calculated at checkout</span>
 					</div>
 					<div class="h-px bg-surface-200 dark:bg-surface-700 my-2"></div>
 					<div class="flex justify-between">
-						<span class="font-semibold text-surface-600 dark:text-surface-400">Total</span>
-						<span class="text-xl font-bold text-surface-600 dark:text-surface-400">{formatPrice($cartSubtotal)}</span>
+						<span class="font-semibold text-surface-600 dark:text-white">Total</span>
+						<span class="text-xl font-bold text-surface-600 dark:text-white">{formatPrice($cartSubtotal)}</span>
 					</div>
 				</div>
 
