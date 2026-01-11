@@ -20,7 +20,7 @@
 		<div class="max-w-3xl mx-auto">
 			<div class="bg-white dark:bg-surface-800 rounded-2xl shadow-xl border border-[#eee] dark:border-surface-700 p-8">
 				<h1 class="text-3xl font-bold text-black dark:text-white mb-4">Contact Us</h1>
-				<p class="text-surface-600 dark:text-surface-400 mb-8">Have questions, feedback, or need support? We'd love to hear from you.</p>
+				<p class="text-surface-600 dark:text-gray-300 mb-8">Have questions, feedback, or need support? We'd love to hear from you.</p>
 
 				<div class="space-y-6">
 					<div class="flex items-start gap-4">
@@ -29,7 +29,7 @@
 						</div>
 						<div>
 							<h3 class="font-semibold text-black dark:text-white">Email</h3>
-							<p class="text-surface-600 dark:text-surface-400 mt-1">For general inquiries and support</p>
+							<p class="text-surface-600 dark:text-gray-300 mt-1">For general inquiries and support</p>
 							<a href="mailto:hello@frunk.cloud" class="text-primary-500 hover:text-[#93c5fd] transition-colors">hello@frunk.cloud</a>
 						</div>
 					</div>
@@ -40,7 +40,7 @@
 						</div>
 						<div>
 							<h3 class="font-semibold text-black dark:text-white">GitHub</h3>
-							<p class="text-surface-600 dark:text-surface-400 mt-1">Report bugs or request features</p>
+							<p class="text-surface-600 dark:text-gray-300 mt-1">Report bugs or request features</p>
 							<a href="https://github.com/mark-mcdermott/frunk/issues" class="text-primary-500 hover:text-[#93c5fd] transition-colors">github.com/mark-mcdermott/frunk</a>
 						</div>
 					</div>
@@ -51,7 +51,7 @@
 						</div>
 						<div>
 							<h3 class="font-semibold text-black dark:text-white">Location</h3>
-							<p class="text-surface-600 dark:text-surface-400 mt-1">Austin, Texas</p>
+							<p class="text-surface-600 dark:text-gray-300 mt-1">Austin, Texas</p>
 						</div>
 					</div>
 				</div>
@@ -83,7 +83,7 @@
 							{/if}
 
 							<div>
-								<label for="name" class="text-sm font-medium text-surface-600 dark:text-surface-400 block mb-1">Name</label>
+								<label for="name" class="text-sm font-medium text-surface-600 dark:text-gray-300 block mb-1">Name</label>
 								<input
 									id="name"
 									name="name"
@@ -95,7 +95,7 @@
 								/>
 							</div>
 							<div>
-								<label for="email" class="text-sm font-medium text-surface-600 dark:text-surface-400 block mb-1">Email</label>
+								<label for="email" class="text-sm font-medium text-surface-600 dark:text-gray-300 block mb-1">Email</label>
 								<input
 									id="email"
 									name="email"
@@ -107,7 +107,7 @@
 								/>
 							</div>
 							<div>
-								<label for="message" class="text-sm font-medium text-surface-600 dark:text-surface-400 block mb-1">Message</label>
+								<label for="message" class="text-sm font-medium text-surface-600 dark:text-gray-300 block mb-1">Message</label>
 								<textarea
 									id="message"
 									name="message"

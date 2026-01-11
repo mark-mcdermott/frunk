@@ -31,7 +31,7 @@
 						<span class="text-transparent bg-clip-text bg-gradient-to-r from-secondary-400 to-secondary-600 text-5xl sm:text-6xl lg:text-7xl block">Glovebox</span>
 					</h1>
 
-					<p class="text-lg text-black/90 dark:text-surface-400 mb-8 max-w-xl mx-auto lg:mx-0">
+					<p class="text-lg text-black/90 dark:text-gray-300 mb-8 max-w-xl mx-auto lg:mx-0">
 						Store your car registration, insurance, maintenance records and more in one secure place. Access everything from your phone, tablet or computer, anytime you need it. It's a transformative experience.
 					</p>
 
@@ -68,7 +68,7 @@
 				<h2 class="text-3xl sm:text-4xl font-bold text-black dark:text-white mb-4 drop-shadow-sm">
 					What The Frunk??
 				</h2>
-				<p class="text-lg text-surface-600 dark:text-surface-400 max-w-2xl mx-auto">
+				<p class="text-lg text-surface-600 dark:text-gray-300 max-w-2xl mx-auto">
 					We got you. Frunk is the trunk that's in the front.<br />
 					Frunk is all your car docs organized, for whenever you need them.
 				</p>
@@ -84,7 +84,7 @@
 						</div>
 						<h3 class="text-xl font-bold text-black dark:text-white">Digital Storage</h3>
 					</div>
-					<p class="text-surface-600 dark:text-surface-400">No more fragile dead tree documents. Your docs are digitally encrypted in the cloud.</p>
+					<p class="text-surface-600 dark:text-gray-300">No more fragile dead tree documents. Your docs are digitally encrypted in the cloud.</p>
 				</div>
 
 				<div class="bg-white dark:bg-surface-800 rounded-2xl p-8 shadow-xl shadow-surface-900/5">
@@ -96,7 +96,7 @@
 						</div>
 						<h3 class="text-xl font-bold text-black dark:text-white">Always Accessible</h3>
 					</div>
-					<p class="text-surface-600 dark:text-surface-400">Your maintenance records, registration and insurance. From your phone, anywhere.</p>
+					<p class="text-surface-600 dark:text-gray-300">Your maintenance records, registration and insurance. From your phone, anywhere.</p>
 				</div>
 
 				<div class="bg-white dark:bg-surface-800 rounded-2xl p-8 shadow-xl shadow-surface-900/5">
@@ -108,7 +108,7 @@
 						</div>
 						<h3 class="text-xl font-bold text-black dark:text-white">Stay Organized</h3>
 					</div>
-					<p class="text-surface-600 dark:text-surface-400">Never scramble for car paperwork again. Everything in one place, snug as a bug.</p>
+					<p class="text-surface-600 dark:text-gray-300">Never scramble for car paperwork again. Everything in one place, snug as a bug.</p>
 				</div>
 			</div>
 		</div>

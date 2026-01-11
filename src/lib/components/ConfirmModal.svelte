@@ -59,13 +59,13 @@
 				<h3 id="confirm-title" class="text-lg font-semibold text-black dark:text-white mb-2">
 					{title}
 				</h3>
-				<p class="text-sm text-surface-600 dark:text-surface-400 mb-6">
+				<p class="text-sm text-surface-600 dark:text-gray-300 mb-6">
 					{message}
 				</p>
 				<div class="flex gap-3 justify-end">
 					<button
 						type="button"
-						class="px-4 py-2 rounded-lg text-sm font-medium bg-surface-100 dark:bg-surface-700 hover:bg-surface-200 dark:hover:bg-surface-600 text-surface-700 dark:text-surface-300 transition-colors"
+						class="px-4 py-2 rounded-lg text-sm font-medium bg-surface-100 dark:bg-surface-700 hover:bg-surface-200 dark:hover:bg-surface-600 text-surface-700 dark:text-gray-200 transition-colors"
 						onclick={onCancel}
 					>
 						{cancelText}

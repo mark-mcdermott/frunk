@@ -101,7 +101,7 @@
 	type="button"
 	onclick={cycleTheme}
 	class={cn(
-		'p-2 rounded-lg text-surface-600 dark:text-surface-400 hover:bg-surface-100 dark:hover:bg-surface-800 transition-colors cursor-pointer',
+		'p-2 rounded-lg text-surface-600 dark:text-gray-300 hover:bg-surface-100 dark:hover:bg-surface-800 transition-colors cursor-pointer',
 		className
 	)}
 	title={tooltip()}

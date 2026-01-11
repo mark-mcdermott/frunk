@@ -30,7 +30,7 @@
 	<main class="flex-1 flex items-start justify-center pt-12 px-4 sm:px-6 lg:px-8">
 		<div class="bg-white dark:bg-surface-800 rounded-2xl p-6 shadow-xl shadow-surface-900/5 w-full max-w-sm border border-[#eee]">
 			<h3 class="text-xl font-bold text-black dark:text-white mb-2">Edit Vendor</h3>
-			<p class="text-sm text-surface-500 mb-6">Update vendor details.</p>
+			<p class="text-sm text-surface-500 dark:text-gray-300 mb-6">Update vendor details.</p>
 
 			<form
 				method="post"
@@ -45,7 +45,7 @@
 				class="space-y-4"
 			>
 				<div>
-					<label for="name-input" class="text-xs font-medium text-surface-600 dark:text-surface-400 block mb-1">
+					<label for="name-input" class="text-xs font-medium text-surface-600 dark:text-gray-300 block mb-1">
 						Name <span class="text-red-500">*</span>
 					</label>
 					<input
@@ -59,7 +59,7 @@
 					/>
 				</div>
 				<div>
-					<label for="phone-input" class="text-xs font-medium text-surface-600 dark:text-surface-400 block mb-1">
+					<label for="phone-input" class="text-xs font-medium text-surface-600 dark:text-gray-300 block mb-1">
 						Phone <span class="text-surface-400">(optional)</span>
 					</label>
 					<input
@@ -72,7 +72,7 @@
 					/>
 				</div>
 				<div>
-					<label for="address-input" class="text-xs font-medium text-surface-600 dark:text-surface-400 block mb-1">
+					<label for="address-input" class="text-xs font-medium text-surface-600 dark:text-gray-300 block mb-1">
 						Address <span class="text-surface-400">(optional)</span>
 					</label>
 					<input
@@ -85,7 +85,7 @@
 					/>
 				</div>
 				<div>
-					<label for="website-input" class="text-xs font-medium text-surface-600 dark:text-surface-400 block mb-1">
+					<label for="website-input" class="text-xs font-medium text-surface-600 dark:text-gray-300 block mb-1">
 						Website <span class="text-surface-400">(optional)</span>
 					</label>
 					<input

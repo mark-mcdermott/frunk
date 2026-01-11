@@ -24,11 +24,11 @@
 			<div class="mb-8 flex items-end justify-between">
 				<div>
 					<h1 class="text-2xl font-bold text-black dark:text-white">My Vendors</h1>
-					<p class="text-sm text-surface-500 mt-1">Manage your repair shops and service providers.</p>
+					<p class="text-sm text-surface-500 dark:text-gray-300 mt-1">Manage your repair shops and service providers.</p>
 				</div>
 				<a
 					href="{basePath}/vendors/new"
-					class="inline-flex items-center gap-2 px-4 py-2 bg-primary-500 hover:bg-primary-600 text-white rounded-lg transition-colors"
+					class="btn inline-flex items-center gap-2 px-4 py-2 bg-primary-500 text-white rounded-lg transition-colors"
 				>
 					<Plus class="w-4 h-4" />
 					Add Vendor
@@ -37,12 +37,12 @@
 
 			{#if vendors.length === 0}
 				<div class="bg-white dark:bg-surface-800 rounded-2xl shadow-xl shadow-surface-900/5 border border-[#eee] p-12 text-center">
-					<Store class="w-16 h-16 mx-auto text-surface-300 dark:text-surface-600 mb-4" />
+					<Store class="w-16 h-16 mx-auto text-surface-300 dark:text-gray-400 mb-4" />
 					<h2 class="text-lg font-semibold text-black dark:text-white mb-2">No vendors yet</h2>
-					<p class="text-surface-500 mb-6">Add your first vendor to track repair shops and service providers.</p>
+					<p class="text-surface-500 dark:text-gray-300 mb-6">Add your first vendor to track repair shops and service providers.</p>
 					<a
 						href="{basePath}/vendors/new"
-						class="inline-flex items-center gap-2 px-4 py-2 bg-primary-500 hover:bg-primary-600 text-white rounded-lg transition-colors"
+						class="btn inline-flex items-center gap-2 px-4 py-2 bg-primary-500 text-white rounded-lg transition-colors"
 					>
 						<Plus class="w-4 h-4" />
 						Add Your First Vendor
@@ -67,7 +67,7 @@
 										<h3 class="text-lg font-semibold text-black dark:text-white">
 											{vendor.name}
 										</h3>
-										<div class="flex items-center gap-4 text-sm text-surface-500 mt-1">
+										<div class="flex items-center gap-4 text-sm text-surface-500 dark:text-gray-300 mt-1">
 											{#if vendor.phone}
 												<span class="flex items-center gap-1">
 													<Phone class="w-3 h-3" />

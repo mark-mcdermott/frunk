@@ -96,7 +96,7 @@
 			<!-- Back link -->
 			<a
 				href="{basePath}/vehicles/{vehicle.id}/notes/{note.uuid}"
-				class="inline-flex items-center gap-2 text-sm text-surface-500 hover:text-surface-700 dark:hover:text-surface-300 mb-6"
+				class="inline-flex items-center gap-2 text-sm text-surface-500 dark:text-gray-300 hover:text-surface-700 dark:hover:text-surface-300 mb-6"
 			>
 				<ArrowLeft class="w-4 h-4" />
 				Back to note
@@ -139,7 +139,7 @@
 					class="space-y-4"
 				>
 					<div>
-						<label for="note-title" class="text-xs font-medium text-surface-600 dark:text-surface-400 block mb-1">
+						<label for="note-title" class="text-xs font-medium text-surface-600 dark:text-gray-300 block mb-1">
 							Title <span class="text-red-500">*</span>
 						</label>
 						<input
@@ -154,7 +154,7 @@
 					</div>
 
 					<div>
-						<label for="note-body" class="text-xs font-medium text-surface-600 dark:text-surface-400 block mb-1">
+						<label for="note-body" class="text-xs font-medium text-surface-600 dark:text-gray-300 block mb-1">
 							Note (optional)
 						</label>
 						<textarea
@@ -168,7 +168,7 @@
 					</div>
 
 					<div>
-						<label class="text-xs font-medium text-surface-600 dark:text-surface-400 block mb-1">
+						<label class="text-xs font-medium text-surface-600 dark:text-gray-300 block mb-1">
 							Image (optional)
 						</label>
 
@@ -197,7 +197,7 @@
 								<button
 									type="button"
 									onclick={() => fileInput.click()}
-									class="px-4 py-2 rounded-lg bg-primary-500 hover:bg-primary-600 text-white text-sm font-medium cursor-pointer transition-colors"
+									class="btn px-4 py-2 rounded-lg bg-primary-500 text-white text-sm font-medium cursor-pointer transition-colors"
 								>
 									Change Image
 								</button>
@@ -218,7 +218,7 @@
 								<button
 									type="button"
 									onclick={() => fileInput.click()}
-									class="px-4 py-2 rounded-lg bg-primary-500 hover:bg-primary-600 text-white text-sm font-medium cursor-pointer transition-colors"
+									class="btn px-4 py-2 rounded-lg bg-primary-500 text-white text-sm font-medium cursor-pointer transition-colors"
 								>
 									Change Image
 								</button>
@@ -227,7 +227,7 @@
 							<button
 								type="button"
 								onclick={() => fileInput.click()}
-								class="px-4 py-2 rounded-lg bg-primary-500 hover:bg-primary-600 text-white text-sm font-medium cursor-pointer transition-colors"
+								class="btn px-4 py-2 rounded-lg bg-primary-500 text-white text-sm font-medium cursor-pointer transition-colors"
 							>
 								Add Image
 							</button>
@@ -257,10 +257,10 @@
 													<ChevronRight class="w-3 h-3 text-surface-400 opacity-0 group-hover:opacity-100 transition-opacity" />
 												</div>
 												{#if childNote.body}
-													<p class="text-xs text-surface-600 dark:text-surface-400 mt-1 line-clamp-1">{childNote.body}</p>
+													<p class="text-xs text-surface-600 dark:text-gray-300 mt-1 line-clamp-1">{childNote.body}</p>
 												{/if}
 												{#if childNote.imageUrl}
-													<div class="mt-1 flex items-center gap-1 text-xs text-surface-500">
+													<div class="mt-1 flex items-center gap-1 text-xs text-surface-500 dark:text-gray-300">
 														<ImageIcon class="w-3 h-3" />
 														<span>Has attachment</span>
 													</div>
@@ -351,7 +351,7 @@
 				class="space-y-4"
 			>
 				<div>
-					<label for="child-note-title" class="text-xs font-medium text-surface-600 dark:text-surface-400 block mb-1">
+					<label for="child-note-title" class="text-xs font-medium text-surface-600 dark:text-gray-300 block mb-1">
 						Title <span class="text-red-500">*</span>
 					</label>
 					<input
@@ -366,7 +366,7 @@
 				</div>
 
 				<div>
-					<label for="child-note-body" class="text-xs font-medium text-surface-600 dark:text-surface-400 block mb-1">
+					<label for="child-note-body" class="text-xs font-medium text-surface-600 dark:text-gray-300 block mb-1">
 						Note (optional)
 					</label>
 					<textarea
@@ -380,7 +380,7 @@
 				</div>
 
 				<div>
-					<label for="child-note-image" class="text-xs font-medium text-surface-600 dark:text-surface-400 block mb-1">
+					<label for="child-note-image" class="text-xs font-medium text-surface-600 dark:text-gray-300 block mb-1">
 						Image (optional)
 					</label>
 					<input

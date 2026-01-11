@@ -257,7 +257,7 @@
 					<div class="flex items-center gap-3 p-3 bg-surface-50 dark:bg-surface-700/50 rounded-lg">
 						<Calendar class="w-5 h-5 text-surface-400" />
 						<div>
-							<p class="text-xs text-surface-500">Year</p>
+							<p class="text-xs text-surface-500 dark:text-gray-300">Year</p>
 							<p class="text-sm font-medium text-black dark:text-white">{vehicle.year}</p>
 						</div>
 					</div>
@@ -265,7 +265,7 @@
 					<div class="flex items-center gap-3 p-3 bg-surface-50 dark:bg-surface-700/50 rounded-lg">
 						<Car class="w-5 h-5 text-surface-400" />
 						<div>
-							<p class="text-xs text-surface-500">Make & Model</p>
+							<p class="text-xs text-surface-500 dark:text-gray-300">Make & Model</p>
 							<p class="text-sm font-medium text-black dark:text-white">{vehicle.make} {vehicle.model}</p>
 						</div>
 					</div>
@@ -274,7 +274,7 @@
 						<div class="flex items-center gap-3 p-3 bg-surface-50 dark:bg-surface-700/50 rounded-lg">
 							<Hash class="w-5 h-5 text-surface-400" />
 							<div>
-								<p class="text-xs text-surface-500">VIN</p>
+								<p class="text-xs text-surface-500 dark:text-gray-300">VIN</p>
 								<p class="text-sm font-medium text-black dark:text-white font-mono">{vehicle.vin}</p>
 							</div>
 						</div>
@@ -301,7 +301,7 @@
 					</h2>
 					<button
 						type="button"
-						class="inline-flex items-center gap-1 px-3 py-1.5 text-sm bg-primary-500 hover:bg-primary-600 text-white rounded-lg transition-colors"
+						class="btn inline-flex items-center gap-1 px-3 py-1.5 text-sm bg-primary-500 text-white rounded-lg transition-colors"
 						onclick={() => noteModalOpen = true}
 					>
 						<Plus class="w-4 h-4" />
@@ -311,8 +311,8 @@
 
 				{#if notes.length === 0}
 					<div class="text-center py-8">
-						<StickyNote class="w-12 h-12 mx-auto text-surface-300 dark:text-surface-600 mb-3" />
-						<p class="text-surface-500 text-sm">No notes yet</p>
+						<StickyNote class="w-12 h-12 mx-auto text-surface-300 dark:text-gray-400 mb-3" />
+						<p class="text-surface-500 dark:text-gray-300 text-sm">No notes yet</p>
 						<p class="text-surface-400 text-xs mt-1">Add notes about your vehicle</p>
 					</div>
 				{:else}
@@ -330,10 +330,10 @@
 												<ChevronRight class="w-4 h-4 text-surface-400 opacity-0 group-hover:opacity-100 transition-opacity" />
 											</div>
 											{#if note.body}
-												<p class="text-sm text-surface-600 dark:text-surface-400 mt-1 line-clamp-2">{note.body}</p>
+												<p class="text-sm text-surface-600 dark:text-gray-300 mt-1 line-clamp-2">{note.body}</p>
 											{/if}
 											{#if note.imageUrl}
-												<div class="mt-3 flex items-center gap-2 text-xs text-surface-500">
+												<div class="mt-3 flex items-center gap-2 text-xs text-surface-500 dark:text-gray-300">
 													<ImageIcon class="w-4 h-4" />
 													<span>Has attachment</span>
 												</div>
@@ -374,7 +374,7 @@
 					</h2>
 					<button
 						type="button"
-						class="inline-flex items-center gap-1 px-3 py-1.5 text-sm bg-primary-500 hover:bg-primary-600 text-white rounded-lg transition-colors"
+						class="btn inline-flex items-center gap-1 px-3 py-1.5 text-sm bg-primary-500 text-white rounded-lg transition-colors"
 						onclick={() => repairModalOpen = true}
 					>
 						<Plus class="w-4 h-4" />
@@ -384,8 +384,8 @@
 
 				{#if repairs.length === 0}
 					<div class="text-center py-8">
-						<Wrench class="w-12 h-12 mx-auto text-surface-300 dark:text-surface-600 mb-3" />
-						<p class="text-surface-500 text-sm">No repairs yet</p>
+						<Wrench class="w-12 h-12 mx-auto text-surface-300 dark:text-gray-400 mb-3" />
+						<p class="text-surface-500 dark:text-gray-300 text-sm">No repairs yet</p>
 						<p class="text-surface-400 text-xs mt-1">Track your vehicle repairs</p>
 					</div>
 				{:else}
@@ -402,7 +402,7 @@
 												<h3 class="font-medium text-black dark:text-white">{repair.description}</h3>
 												<ChevronRight class="w-4 h-4 text-surface-400 opacity-0 group-hover:opacity-100 transition-opacity" />
 											</div>
-											<div class="flex flex-wrap items-center gap-2 text-xs text-surface-500 mt-1">
+											<div class="flex flex-wrap items-center gap-2 text-xs text-surface-500 dark:text-gray-300 mt-1">
 												<span>{formatDate(repair.date)}</span>
 												{#if repair.mileage}
 													<span class="text-surface-300">|</span>
@@ -414,7 +414,7 @@
 												{/if}
 											</div>
 											{#if repair.vendorName}
-												<div class="flex items-center gap-1 text-xs text-surface-500 mt-1">
+												<div class="flex items-center gap-1 text-xs text-surface-500 dark:text-gray-300 mt-1">
 													<Store class="w-3 h-3" />
 													<span>{repair.vendorName}</span>
 												</div>
@@ -460,7 +460,7 @@
 					</h2>
 					<button
 						type="button"
-						class="inline-flex items-center gap-1 px-3 py-1.5 text-sm bg-primary-500 hover:bg-primary-600 text-white rounded-lg transition-colors"
+						class="btn inline-flex items-center gap-1 px-3 py-1.5 text-sm bg-primary-500 text-white rounded-lg transition-colors"
 						onclick={() => galleryModalOpen = true}
 					>
 						<Plus class="w-4 h-4" />
@@ -470,8 +470,8 @@
 
 				{#if galleries.length === 0}
 					<div class="text-center py-12">
-						<Camera class="w-16 h-16 mx-auto text-surface-300 dark:text-surface-600 mb-4" />
-						<p class="text-surface-500">No galleries yet</p>
+						<Camera class="w-16 h-16 mx-auto text-surface-300 dark:text-gray-400 mb-4" />
+						<p class="text-surface-500 dark:text-gray-300">No galleries yet</p>
 						<p class="text-surface-400 text-sm mt-1">Create a gallery to organize your vehicle photos</p>
 					</div>
 				{:else}
@@ -482,7 +482,7 @@
 									<div>
 										<h3 class="font-semibold text-black dark:text-white">{gallery.name}</h3>
 										{#if gallery.description}
-											<p class="text-sm text-surface-500 mt-0.5">{gallery.description}</p>
+											<p class="text-sm text-surface-500 dark:text-gray-300 mt-0.5">{gallery.description}</p>
 										{/if}
 									</div>
 									<div class="flex items-center gap-1">
@@ -515,8 +515,8 @@
 
 								{#if gallery.photos.length === 0}
 									<div class="text-center py-8 bg-surface-50 dark:bg-surface-700/30 rounded-xl">
-										<ImageIcon class="w-10 h-10 mx-auto text-surface-300 dark:text-surface-600 mb-2" />
-										<p class="text-surface-500 text-sm">No photos in this gallery</p>
+										<ImageIcon class="w-10 h-10 mx-auto text-surface-300 dark:text-gray-400 mb-2" />
+										<p class="text-surface-500 dark:text-gray-300 text-sm">No photos in this gallery</p>
 									</div>
 								{:else}
 									<div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
@@ -593,7 +593,7 @@
 				class="space-y-4"
 			>
 				<div>
-					<label for="note-title" class="text-xs font-medium text-surface-600 dark:text-surface-400 block mb-1">
+					<label for="note-title" class="text-xs font-medium text-surface-600 dark:text-gray-300 block mb-1">
 						Title <span class="text-red-500">*</span>
 					</label>
 					<input
@@ -608,7 +608,7 @@
 				</div>
 
 				<div>
-					<label for="note-body" class="text-xs font-medium text-surface-600 dark:text-surface-400 block mb-1">
+					<label for="note-body" class="text-xs font-medium text-surface-600 dark:text-gray-300 block mb-1">
 						Note (optional)
 					</label>
 					<textarea
@@ -622,7 +622,7 @@
 				</div>
 
 				<div>
-					<label for="note-image" class="text-xs font-medium text-surface-600 dark:text-surface-400 block mb-1">
+					<label for="note-image" class="text-xs font-medium text-surface-600 dark:text-gray-300 block mb-1">
 						Image (optional)
 					</label>
 					<input
@@ -717,7 +717,7 @@
 				class="space-y-4"
 			>
 				<div>
-					<label for="repair-description" class="text-xs font-medium text-surface-600 dark:text-surface-400 block mb-1">
+					<label for="repair-description" class="text-xs font-medium text-surface-600 dark:text-gray-300 block mb-1">
 						Description <span class="text-red-500">*</span>
 					</label>
 					<input
@@ -733,7 +733,7 @@
 
 				<div class="grid grid-cols-2 gap-4">
 					<div>
-						<label for="repair-date" class="text-xs font-medium text-surface-600 dark:text-surface-400 block mb-1">
+						<label for="repair-date" class="text-xs font-medium text-surface-600 dark:text-gray-300 block mb-1">
 							Date <span class="text-red-500">*</span>
 						</label>
 						<input
@@ -746,7 +746,7 @@
 						/>
 					</div>
 					<div>
-						<label for="repair-mileage" class="text-xs font-medium text-surface-600 dark:text-surface-400 block mb-1">
+						<label for="repair-mileage" class="text-xs font-medium text-surface-600 dark:text-gray-300 block mb-1">
 							Mileage
 						</label>
 						<input
@@ -762,7 +762,7 @@
 
 				<div class="grid grid-cols-2 gap-4">
 					<div>
-						<label for="repair-cost" class="text-xs font-medium text-surface-600 dark:text-surface-400 block mb-1">
+						<label for="repair-cost" class="text-xs font-medium text-surface-600 dark:text-gray-300 block mb-1">
 							Cost
 						</label>
 						<input
@@ -777,7 +777,7 @@
 						/>
 					</div>
 					<div>
-						<label for="repair-status" class="text-xs font-medium text-surface-600 dark:text-surface-400 block mb-1">
+						<label for="repair-status" class="text-xs font-medium text-surface-600 dark:text-gray-300 block mb-1">
 							Status
 						</label>
 						<select
@@ -794,7 +794,7 @@
 				</div>
 
 				<div>
-					<label for="repair-vendor" class="text-xs font-medium text-surface-600 dark:text-surface-400 block mb-1">
+					<label for="repair-vendor" class="text-xs font-medium text-surface-600 dark:text-gray-300 block mb-1">
 						Vendor
 					</label>
 					<select
@@ -809,7 +809,7 @@
 						{/each}
 					</select>
 					{#if vendors.length === 0}
-						<p class="text-xs text-surface-500 mt-1">
+						<p class="text-xs text-surface-500 dark:text-gray-300 mt-1">
 							<a href="/vendors/new" class="text-primary-500 hover:underline">Add a vendor</a> to track where repairs are done
 						</p>
 					{/if}
@@ -884,7 +884,7 @@
 				class="space-y-4"
 			>
 				<div>
-					<label for="gallery-name" class="text-xs font-medium text-surface-600 dark:text-surface-400 block mb-1">
+					<label for="gallery-name" class="text-xs font-medium text-surface-600 dark:text-gray-300 block mb-1">
 						Gallery Name <span class="text-red-500">*</span>
 					</label>
 					<input
@@ -899,7 +899,7 @@
 				</div>
 
 				<div>
-					<label for="gallery-description" class="text-xs font-medium text-surface-600 dark:text-surface-400 block mb-1">
+					<label for="gallery-description" class="text-xs font-medium text-surface-600 dark:text-gray-300 block mb-1">
 						Description (optional)
 					</label>
 					<input
@@ -954,7 +954,7 @@
 				class="space-y-4"
 			>
 				<div>
-					<label for="edit-gallery-name" class="text-xs font-medium text-surface-600 dark:text-surface-400 block mb-1">
+					<label for="edit-gallery-name" class="text-xs font-medium text-surface-600 dark:text-gray-300 block mb-1">
 						Gallery Name <span class="text-red-500">*</span>
 					</label>
 					<input
@@ -969,7 +969,7 @@
 				</div>
 
 				<div>
-					<label for="edit-gallery-description" class="text-xs font-medium text-surface-600 dark:text-surface-400 block mb-1">
+					<label for="edit-gallery-description" class="text-xs font-medium text-surface-600 dark:text-gray-300 block mb-1">
 						Description (optional)
 					</label>
 					<input
@@ -986,8 +986,8 @@
 					<div>
 						<div class="flex items-center justify-between mb-2">
 							<div>
-								<span class="text-xs font-medium text-surface-600 dark:text-surface-400 block">Gallery Images</span>
-								<span class="text-xs text-surface-400 dark:text-surface-500">(Drag images to rearrange order)</span>
+								<span class="text-xs font-medium text-surface-600 dark:text-gray-300 block">Gallery Images</span>
+								<span class="text-xs text-surface-400 dark:text-gray-400">(Drag images to rearrange order)</span>
 							</div>
 							<button
 								type="button"
@@ -1048,7 +1048,7 @@
 				{:else}
 					<div>
 						<div class="flex items-center justify-between mb-2">
-							<span class="text-xs font-medium text-surface-600 dark:text-surface-400">Gallery Images</span>
+							<span class="text-xs font-medium text-surface-600 dark:text-gray-300">Gallery Images</span>
 							<button
 								type="button"
 								class="p-2 text-primary-500 hover:text-[#93c5fd] hover:bg-primary-50 dark:hover:bg-primary-900/20 rounded-lg transition-colors"
@@ -1059,8 +1059,8 @@
 							</button>
 						</div>
 						<div class="text-center py-6 bg-surface-50 dark:bg-surface-700/30 rounded-xl">
-							<ImageIcon class="w-8 h-8 mx-auto text-surface-300 dark:text-surface-600 mb-2" />
-							<p class="text-surface-500 text-sm">No photos in this gallery</p>
+							<ImageIcon class="w-8 h-8 mx-auto text-surface-300 dark:text-gray-400 mb-2" />
+							<p class="text-surface-500 dark:text-gray-300 text-sm">No photos in this gallery</p>
 						</div>
 					</div>
 				{/if}
@@ -1110,7 +1110,7 @@
 				class="space-y-4"
 			>
 				<div>
-					<label for="photo-file" class="text-xs font-medium text-surface-600 dark:text-surface-400 block mb-1">
+					<label for="photo-file" class="text-xs font-medium text-surface-600 dark:text-gray-300 block mb-1">
 						Photo <span class="text-red-500">*</span>
 					</label>
 					<input
@@ -1136,7 +1136,7 @@
 				</div>
 
 				<div>
-					<label for="photo-caption" class="text-xs font-medium text-surface-600 dark:text-surface-400 block mb-1">
+					<label for="photo-caption" class="text-xs font-medium text-surface-600 dark:text-gray-300 block mb-1">
 						Caption (optional)
 					</label>
 					<input
@@ -1214,7 +1214,7 @@
 						</div>
 					{/if}
 
-					<label for="edit-photo-file" class="text-xs font-medium text-surface-600 dark:text-surface-400 block mb-1">
+					<label for="edit-photo-file" class="text-xs font-medium text-surface-600 dark:text-gray-300 block mb-1">
 						{editPhotoRemoved ? 'New Photo' : 'Replace Photo'} {editPhotoRemoved ? '' : '(optional)'}
 						{#if editPhotoRemoved}<span class="text-red-500">*</span>{/if}
 					</label>
@@ -1228,7 +1228,7 @@
 				</div>
 
 				<div>
-					<label for="edit-photo-caption" class="text-xs font-medium text-surface-600 dark:text-surface-400 block mb-1">
+					<label for="edit-photo-caption" class="text-xs font-medium text-surface-600 dark:text-gray-300 block mb-1">
 						Caption (optional)
 					</label>
 					<input

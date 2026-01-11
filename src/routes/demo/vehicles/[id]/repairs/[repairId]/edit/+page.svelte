@@ -45,7 +45,7 @@
 	<main class="flex-1 flex items-start justify-center pt-12 px-4 sm:px-6 lg:px-8">
 		<div class="bg-white dark:bg-surface-800 rounded-2xl p-6 shadow-xl shadow-surface-900/5 w-full max-w-sm border border-[#eee]">
 			<h3 class="text-xl font-bold text-black dark:text-white mb-2">Edit Repair</h3>
-			<p class="text-sm text-surface-500 mb-6">Update repair details.</p>
+			<p class="text-sm text-surface-500 dark:text-gray-300 mb-6">Update repair details.</p>
 
 			<form
 				method="post"
@@ -60,7 +60,7 @@
 				class="space-y-4"
 			>
 				<div>
-					<label for="description-input" class="text-xs font-medium text-surface-600 dark:text-surface-400 block mb-1">
+					<label for="description-input" class="text-xs font-medium text-surface-600 dark:text-gray-300 block mb-1">
 						Description <span class="text-red-500">*</span>
 					</label>
 					<input
@@ -75,7 +75,7 @@
 				</div>
 				<div class="grid grid-cols-2 gap-4">
 					<div>
-						<label for="date-input" class="text-xs font-medium text-surface-600 dark:text-surface-400 block mb-1">
+						<label for="date-input" class="text-xs font-medium text-surface-600 dark:text-gray-300 block mb-1">
 							Date <span class="text-red-500">*</span>
 						</label>
 						<input
@@ -88,7 +88,7 @@
 						/>
 					</div>
 					<div>
-						<label for="mileage-input" class="text-xs font-medium text-surface-600 dark:text-surface-400 block mb-1">
+						<label for="mileage-input" class="text-xs font-medium text-surface-600 dark:text-gray-300 block mb-1">
 							Mileage
 						</label>
 						<input
@@ -103,7 +103,7 @@
 				</div>
 				<div class="grid grid-cols-2 gap-4">
 					<div>
-						<label for="cost-input" class="text-xs font-medium text-surface-600 dark:text-surface-400 block mb-1">
+						<label for="cost-input" class="text-xs font-medium text-surface-600 dark:text-gray-300 block mb-1">
 							Cost
 						</label>
 						<input
@@ -118,7 +118,7 @@
 						/>
 					</div>
 					<div>
-						<label for="status-input" class="text-xs font-medium text-surface-600 dark:text-surface-400 block mb-1">
+						<label for="status-input" class="text-xs font-medium text-surface-600 dark:text-gray-300 block mb-1">
 							Status
 						</label>
 						<select
@@ -133,7 +133,7 @@
 					</div>
 				</div>
 				<div>
-					<label for="vendor-input" class="text-xs font-medium text-surface-600 dark:text-surface-400 block mb-1">
+					<label for="vendor-input" class="text-xs font-medium text-surface-600 dark:text-gray-300 block mb-1">
 						Vendor
 					</label>
 					<select

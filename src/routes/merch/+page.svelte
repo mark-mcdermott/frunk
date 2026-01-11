@@ -19,7 +19,7 @@
 		<Breadcrumbs items={[{ label: 'Merch' }]} />
 		<div class="text-center mb-12">
 			<h1 class="text-4xl sm:text-5xl font-bold text-surface-900 dark:text-white mb-4">Merch</h1>
-			<p class="text-lg text-surface-600 dark:text-surface-400 max-w-2xl mx-auto">
+			<p class="text-lg text-surface-600 dark:text-gray-300 max-w-2xl mx-auto">
 				Browse our fashionable Frunk attire and stickers.<br />All t-shirts and hoodies have the Frunk robot small on the front and the large Frunk robot illustration with logo on the back.
 			</p>
 		</div>
@@ -56,14 +56,14 @@
 							>
 								{product.name}
 							</h2>
-							<p class="text-surface-500 text-sm mb-4 line-clamp-2">
+							<p class="text-surface-500 dark:text-gray-300 text-sm mb-4 line-clamp-2">
 								{product.description}
 							</p>
 							<div class="flex items-center justify-between">
-								<span class="text-lg font-bold text-surface-600 dark:text-surface-400"
+								<span class="text-lg font-bold text-surface-600 dark:text-gray-300"
 									>{formatPrice(product.price)}</span
 								>
-								<span class="text-sm text-surface-500">
+								<span class="text-sm text-surface-500 dark:text-gray-300">
 									{[...new Set(product.variants.filter((v) => v.inStock).map((v) => v.color))].length} colors available
 								</span>
 							</div>
@@ -77,7 +77,7 @@
 			<div class="text-center py-16">
 				<ShoppingBag class="w-16 h-16 text-surface-400 mx-auto mb-4" />
 				<h2 class="text-xl font-semibold text-surface-900 dark:text-white mb-2">Coming Soon</h2>
-				<p class="text-surface-500">Our store is being set up. Check back soon!</p>
+				<p class="text-surface-500 dark:text-gray-300">Our store is being set up. Check back soon!</p>
 			</div>
 		{/if}
 	</div>

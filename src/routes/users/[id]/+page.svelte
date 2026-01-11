@@ -71,9 +71,9 @@
 						<Avatar.Fallback class="preset-filled-primary-500 rounded-full text-2xl">{profileUser.username?.charAt(0).toUpperCase()}</Avatar.Fallback>
 					{/if}
 				</Avatar>
-				<h1 class="text-sm font-medium text-surface-600 dark:text-surface-400 mb-1">{profileUser.username}</h1>
+				<h1 class="text-sm font-medium text-surface-600 dark:text-gray-300 mb-1">{profileUser.username}</h1>
 				{#each getRoleNames(profileUser.roles) as roleName}
-					<span class="inline-flex items-center px-4 py-1.5 rounded-full text-xs font-medium {roleName === 'Admin' ? 'bg-primary-500/10 text-primary-600 dark:text-primary-400' : 'bg-surface-500/10 text-surface-600 dark:text-surface-400'} mr-1">
+					<span class="inline-flex items-center px-4 py-1.5 rounded-full text-xs font-medium {roleName === 'Admin' ? 'bg-primary-500/10 text-primary-600 dark:text-primary-400' : 'bg-surface-500/10 text-surface-600 dark:text-gray-300'} mr-1">
 						{roleName}
 					</span>
 				{/each}

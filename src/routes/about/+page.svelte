@@ -16,7 +16,7 @@
 			<!-- Hero Section -->
 			<div class="text-center mb-12">
 				<h1 class="text-4xl font-bold text-black dark:text-white mb-4">About Frunk</h1>
-				<p class="text-xl text-surface-600 dark:text-surface-400 max-w-2xl mx-auto">
+				<p class="text-xl text-surface-600 dark:text-gray-300 max-w-2xl mx-auto">
 					Your personal vehicle management companion. Keep track of everything about your cars in one place.
 				</p>
 			</div>
@@ -24,11 +24,11 @@
 			<!-- What is Frunk -->
 			<div class="bg-white dark:bg-surface-800 rounded-2xl shadow-xl border border-[#eee] dark:border-surface-700 p-8 mb-8">
 				<h2 class="text-2xl font-bold text-black dark:text-white mb-4">What is Frunk?</h2>
-				<p class="text-surface-600 dark:text-surface-400 mb-4">
+				<p class="text-surface-600 dark:text-gray-300 mb-4">
 					Frunk is a modern vehicle management application designed for car enthusiasts and everyday drivers alike.
 					Whether you own one car or a whole collection, Frunk helps you stay organized and on top of maintenance.
 				</p>
-				<p class="text-surface-600 dark:text-surface-400">
+				<p class="text-surface-600 dark:text-gray-300">
 					The name "Frunk" comes from "front trunk" - the storage compartment found in electric vehicles and some sports cars.
 					Just like a frunk stores your essentials, our app stores everything important about your vehicles.
 				</p>
@@ -44,7 +44,7 @@
 						</div>
 						<div>
 							<h3 class="font-semibold text-black dark:text-white mb-1">Vehicle Profiles</h3>
-							<p class="text-sm text-surface-600 dark:text-surface-400">Store details about all your vehicles including make, model, year, VIN, and photos.</p>
+							<p class="text-sm text-surface-600 dark:text-gray-300">Store details about all your vehicles including make, model, year, VIN, and photos.</p>
 						</div>
 					</div>
 
@@ -54,7 +54,7 @@
 						</div>
 						<div>
 							<h3 class="font-semibold text-black dark:text-white mb-1">Repair Tracking</h3>
-							<p class="text-sm text-surface-600 dark:text-surface-400">Log maintenance and repairs with dates, costs, mileage, and vendor information.</p>
+							<p class="text-sm text-surface-600 dark:text-gray-300">Log maintenance and repairs with dates, costs, mileage, and vendor information.</p>
 						</div>
 					</div>
 
@@ -64,7 +64,7 @@
 						</div>
 						<div>
 							<h3 class="font-semibold text-black dark:text-white mb-1">Notes & Documents</h3>
-							<p class="text-sm text-surface-600 dark:text-surface-400">Attach notes and documents to vehicles, repairs, or vendors for easy reference.</p>
+							<p class="text-sm text-surface-600 dark:text-gray-300">Attach notes and documents to vehicles, repairs, or vendors for easy reference.</p>
 						</div>
 					</div>
 
@@ -74,7 +74,7 @@
 						</div>
 						<div>
 							<h3 class="font-semibold text-black dark:text-white mb-1">Photo Galleries</h3>
-							<p class="text-sm text-surface-600 dark:text-surface-400">Create galleries to showcase your vehicles with organized photo collections.</p>
+							<p class="text-sm text-surface-600 dark:text-gray-300">Create galleries to showcase your vehicles with organized photo collections.</p>
 						</div>
 					</div>
 				</div>
@@ -83,19 +83,19 @@
 			<!-- Tech Stack -->
 			<div class="bg-white dark:bg-surface-800 rounded-2xl shadow-xl border border-[#eee] dark:border-surface-700 p-8 mb-8">
 				<h2 class="text-2xl font-bold text-black dark:text-white mb-4">Built With</h2>
-				<p class="text-surface-600 dark:text-surface-400 mb-4">
+				<p class="text-surface-600 dark:text-gray-300 mb-4">
 					Frunk is built with modern, reliable technologies:
 				</p>
 				<div class="flex flex-wrap gap-2">
-					<span class="px-3 py-1 bg-surface-100 dark:bg-surface-700 rounded-full text-sm text-surface-600 dark:text-surface-400">SvelteKit</span>
-					<span class="px-3 py-1 bg-surface-100 dark:bg-surface-700 rounded-full text-sm text-surface-600 dark:text-surface-400">Svelte 5</span>
-					<span class="px-3 py-1 bg-surface-100 dark:bg-surface-700 rounded-full text-sm text-surface-600 dark:text-surface-400">TypeScript</span>
-					<span class="px-3 py-1 bg-surface-100 dark:bg-surface-700 rounded-full text-sm text-surface-600 dark:text-surface-400">Tailwind CSS</span>
-					<span class="px-3 py-1 bg-surface-100 dark:bg-surface-700 rounded-full text-sm text-surface-600 dark:text-surface-400">Drizzle ORM</span>
-					<span class="px-3 py-1 bg-surface-100 dark:bg-surface-700 rounded-full text-sm text-surface-600 dark:text-surface-400">Neon PostgreSQL</span>
-					<span class="px-3 py-1 bg-surface-100 dark:bg-surface-700 rounded-full text-sm text-surface-600 dark:text-surface-400">Cloudflare</span>
+					<span class="px-3 py-1 bg-surface-100 dark:bg-surface-700 rounded-full text-sm text-surface-600 dark:text-gray-300">SvelteKit</span>
+					<span class="px-3 py-1 bg-surface-100 dark:bg-surface-700 rounded-full text-sm text-surface-600 dark:text-gray-300">Svelte 5</span>
+					<span class="px-3 py-1 bg-surface-100 dark:bg-surface-700 rounded-full text-sm text-surface-600 dark:text-gray-300">TypeScript</span>
+					<span class="px-3 py-1 bg-surface-100 dark:bg-surface-700 rounded-full text-sm text-surface-600 dark:text-gray-300">Tailwind CSS</span>
+					<span class="px-3 py-1 bg-surface-100 dark:bg-surface-700 rounded-full text-sm text-surface-600 dark:text-gray-300">Drizzle ORM</span>
+					<span class="px-3 py-1 bg-surface-100 dark:bg-surface-700 rounded-full text-sm text-surface-600 dark:text-gray-300">Neon PostgreSQL</span>
+					<span class="px-3 py-1 bg-surface-100 dark:bg-surface-700 rounded-full text-sm text-surface-600 dark:text-gray-300">Cloudflare</span>
 				</div>
-				<p class="text-surface-600 dark:text-surface-400 mt-4">
+				<p class="text-surface-600 dark:text-gray-300 mt-4">
 					The project is open source and available on <a href="https://github.com/mark-mcdermott/frunk" class="text-primary-500 hover:text-[#93c5fd] transition-colors">GitHub</a>.
 				</p>
 			</div>
@@ -103,10 +103,10 @@
 			<!-- The Frunk Story -->
 			<div class="bg-white dark:bg-surface-800 rounded-2xl shadow-xl border border-[#eee] dark:border-surface-700 p-8 mb-8">
 				<h2 class="text-2xl font-bold text-black dark:text-white mb-4">The Frunk Story</h2>
-				<p class="text-surface-600 dark:text-surface-400 mb-4">
+				<p class="text-surface-600 dark:text-gray-300 mb-4">
 					This app has been a dream of mine for a few years now. It started as sort of fake app project just for me to work on my webdev skills. After a while I realized it was actually a decent idea and decided to try to build it for real.
 				</p>
-				<p class="text-surface-600 dark:text-surface-400 mb-4">
+				<p class="text-surface-600 dark:text-gray-300 mb-4">
 					For whatever reason, over the years I would build this app until it was about 75% done, then put it down for about 9 months and not touch it. Then I would decide to build it in a different framework and would get it to 75% done and the cycle would repeat. But recently when I realized how powerful Claude Code was, I decided to finish it for real.
 				</p>
 			</div>
@@ -114,10 +114,10 @@
 			<!-- Roadmap -->
 			<div class="bg-white dark:bg-surface-800 rounded-2xl shadow-xl border border-[#eee] dark:border-surface-700 p-8">
 				<h2 class="text-2xl font-bold text-black dark:text-white mb-4">Roadmap</h2>
-				<p class="text-surface-600 dark:text-surface-400 mb-4">
+				<p class="text-surface-600 dark:text-gray-300 mb-4">
 					Nothing is set in stone here, but here are my loose goals for this app, in this order:
 				</p>
-				<ul class="list-disc list-inside text-surface-600 dark:text-surface-400 space-y-2">
+				<ul class="list-disc list-inside text-surface-600 dark:text-gray-300 space-y-2">
 					<li>Get the merch store running</li>
 					<li>Scheduled maintenance feature (probably for pay-tier only, likely a flat one-time $5)</li>
 					<li>Maybe add more pay-tier features</li>

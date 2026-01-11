@@ -18,22 +18,22 @@
 			>
 				<CheckCircle class="w-8 h-8 text-success-500" />
 			</div>
-			<h1 class="text-3xl font-bold text-surface-600 dark:text-surface-400 mb-2">Order Confirmed!</h1>
-			<p class="text-surface-600 dark:text-surface-400">
+			<h1 class="text-3xl font-bold text-surface-600 dark:text-gray-300 mb-2">Order Confirmed!</h1>
+			<p class="text-surface-600 dark:text-gray-300">
 				Thank you for your purchase. Your order is being processed.
 			</p>
 		</div>
 
 		<div class="bg-white dark:bg-surface-800 rounded-2xl p-6 shadow-xl mb-6">
 			<div class="flex items-center justify-between mb-4">
-				<span class="text-sm text-surface-600 dark:text-surface-400">Order Number</span>
-				<span class="font-mono font-semibold text-surface-600 dark:text-surface-400"
+				<span class="text-sm text-surface-600 dark:text-gray-300">Order Number</span>
+				<span class="font-mono font-semibold text-surface-600 dark:text-gray-300"
 					>{data.orderNumber}</span
 				>
 			</div>
 			<div class="flex items-center justify-between">
-				<span class="text-sm text-surface-600 dark:text-surface-400">Total</span>
-				<span class="text-xl font-bold text-surface-600 dark:text-surface-400"
+				<span class="text-sm text-surface-600 dark:text-gray-300">Total</span>
+				<span class="text-xl font-bold text-surface-600 dark:text-gray-300"
 					>${data.total.toFixed(2)}</span
 				>
 			</div>
@@ -42,30 +42,30 @@
 		<div class="grid gap-6 md:grid-cols-2">
 			<div class="bg-white dark:bg-surface-800 rounded-2xl p-6 shadow-xl">
 				<div class="flex items-center gap-2 mb-4">
-					<Mail class="w-4 h-4 text-surface-600 dark:text-surface-400" />
-					<h2 class="font-semibold text-surface-600 dark:text-surface-400">Confirmation Email</h2>
+					<Mail class="w-4 h-4 text-surface-600 dark:text-gray-300" />
+					<h2 class="font-semibold text-surface-600 dark:text-gray-300">Confirmation Email</h2>
 				</div>
-				<p class="text-sm text-surface-600 dark:text-surface-400">A confirmation email has been sent to:</p>
-				<p class="font-medium text-surface-600 dark:text-surface-400 mt-1">{data.email}</p>
+				<p class="text-sm text-surface-600 dark:text-gray-300">A confirmation email has been sent to:</p>
+				<p class="font-medium text-surface-600 dark:text-gray-300 mt-1">{data.email}</p>
 			</div>
 
 			{#if data.shippingAddress}
 				<div class="bg-white dark:bg-surface-800 rounded-2xl p-6 shadow-xl">
 					<div class="flex items-center gap-2 mb-4">
-						<MapPin class="w-4 h-4 text-surface-600 dark:text-surface-400" />
-						<h2 class="font-semibold text-surface-600 dark:text-surface-400">Shipping Address</h2>
+						<MapPin class="w-4 h-4 text-surface-600 dark:text-gray-300" />
+						<h2 class="font-semibold text-surface-600 dark:text-gray-300">Shipping Address</h2>
 					</div>
 					<div class="text-sm">
-						<p class="font-medium text-surface-600 dark:text-surface-400">{data.shippingAddress.name}</p>
-						<p class="text-surface-600 dark:text-surface-400">{data.shippingAddress.line1}</p>
+						<p class="font-medium text-surface-600 dark:text-gray-300">{data.shippingAddress.name}</p>
+						<p class="text-surface-600 dark:text-gray-300">{data.shippingAddress.line1}</p>
 						{#if data.shippingAddress.line2}
-							<p class="text-surface-600 dark:text-surface-400">{data.shippingAddress.line2}</p>
+							<p class="text-surface-600 dark:text-gray-300">{data.shippingAddress.line2}</p>
 						{/if}
-						<p class="text-surface-600 dark:text-surface-400">
+						<p class="text-surface-600 dark:text-gray-300">
 							{data.shippingAddress.city}, {data.shippingAddress.state}
 							{data.shippingAddress.postalCode}
 						</p>
-						<p class="text-surface-600 dark:text-surface-400">{data.shippingAddress.country}</p>
+						<p class="text-surface-600 dark:text-gray-300">{data.shippingAddress.country}</p>
 					</div>
 				</div>
 			{/if}
@@ -74,19 +74,19 @@
 		{#if data.items && data.items.length > 0}
 			<div class="bg-white dark:bg-surface-800 rounded-2xl p-6 shadow-xl mt-6">
 				<div class="flex items-center gap-2 mb-4">
-					<Package class="w-4 h-4 text-surface-600 dark:text-surface-400" />
-					<h2 class="font-semibold text-surface-600 dark:text-surface-400">Order Items</h2>
+					<Package class="w-4 h-4 text-surface-600 dark:text-gray-300" />
+					<h2 class="font-semibold text-surface-600 dark:text-gray-300">Order Items</h2>
 				</div>
 				<ul class="divide-y divide-surface-200 dark:divide-surface-700">
 					{#each data.items as item}
 						<li class="py-3 flex justify-between">
 							<div>
-								<p class="font-medium text-surface-600 dark:text-surface-400">{item.name}</p>
-								<p class="text-sm text-surface-600 dark:text-surface-400">
+								<p class="font-medium text-surface-600 dark:text-gray-300">{item.name}</p>
+								<p class="text-sm text-surface-600 dark:text-gray-300">
 									{item.color} / {item.size} × {item.quantity}
 								</p>
 							</div>
-							<p class="font-medium text-surface-600 dark:text-surface-400">
+							<p class="font-medium text-surface-600 dark:text-gray-300">
 								${((item.price * item.quantity) / 100).toFixed(2)}
 							</p>
 						</li>
@@ -96,8 +96,8 @@
 		{/if}
 
 		<div class="mt-8 p-6 bg-surface-100 dark:bg-surface-800 rounded-2xl">
-			<h3 class="font-semibold text-surface-600 dark:text-surface-400 mb-2">What's Next?</h3>
-			<ul class="text-sm text-surface-600 dark:text-surface-400 space-y-2">
+			<h3 class="font-semibold text-surface-600 dark:text-gray-300 mb-2">What's Next?</h3>
+			<ul class="text-sm text-surface-600 dark:text-gray-300 space-y-2">
 				<li>• Your order will be printed and shipped within 2-5 business days</li>
 				<li>• You'll receive a tracking number via email once shipped</li>
 				<li>• Estimated delivery: 5-10 business days after shipping</li>
