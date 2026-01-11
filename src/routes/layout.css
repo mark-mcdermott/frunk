@@ -87,13 +87,20 @@ a:hover {
   color: #93c5fd;
 }
 
-a.btn:hover,
-a.btn.text-white:hover {
+a.btn.bg-primary-500:hover,
+a.btn.bg-primary-500.text-white:hover,
+button.btn.bg-primary-500:hover,
+a.btn.preset-filled-primary-500:hover,
+button.btn.preset-filled-primary-500:hover {
   color: white;
 }
 
-.dark a.btn:hover,
-.dark a.btn.text-white:hover {
+.dark a.btn.bg-primary-500:hover,
+.dark a.btn.bg-primary-500.text-white:hover,
+.dark button.btn.bg-primary-500:hover,
+.dark button.btn.bg-primary-500.text-white:hover,
+.dark a.btn.preset-filled-primary-500:hover,
+.dark button.btn.preset-filled-primary-500:hover {
   color: #0f172a;
 }
 
