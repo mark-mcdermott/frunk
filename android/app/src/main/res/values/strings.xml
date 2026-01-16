@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Frunk</string>
+    <string name="title_activity_main">Frunk</string>
+    <string name="package_name">app.frunk.mobile</string>
+    <string name="custom_url_scheme">app.frunk.mobile</string>
+</resources>

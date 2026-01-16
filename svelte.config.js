@@ -1,5 +1,9 @@
-import adapter from '@sveltejs/adapter-cloudflare';
+import adapterCloudflare from '@sveltejs/adapter-cloudflare';
+import adapterStatic from '@sveltejs/adapter-static';
 import { vitePreprocess } from '@sveltejs/vite-plugin-svelte';
+
+// Use static adapter for desktop/mobile builds, Cloudflare for web
+const isStatic = process.env.ADAPTER === 'static';
 
 /** @type {import('@sveltejs/kit').Config} */
 const config = {
@@ -7,7 +11,17 @@ const config = {
 	// for more information about preprocessors
 	preprocess: vitePreprocess(),
 
-	kit: { adapter: adapter() }
+	kit: {
+		adapter: isStatic
+			? adapterStatic({
+					pages: 'build',
+					assets: 'build',
+					fallback: 'index.html', // SPA fallback for client-side routing
+					precompress: false,
+					strict: true
+				})
+			: adapterCloudflare()
+	}
 };
 
 export default config;
