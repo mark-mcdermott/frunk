@@ -65,11 +65,76 @@ export const vehicles = pgTable('vehicles', {
 	userId: text('user_id')
 		.notNull()
 		.references(() => user.uuid, { onDelete: 'cascade' }),
+
+	// Basic Vehicle Info (required)
 	make: text('make').notNull(),
 	model: text('model').notNull(),
 	year: integer('year').notNull(),
+
+	// Basic Vehicle Info (optional)
 	vin: text('vin'),
 	image: text('image'),
+	trim: text('trim'),
+	bodyStyle: text('body_style'),
+	color: text('color'),
+	interiorColor: text('interior_color'),
+	drivetrain: text('drivetrain'),
+	transmission: text('transmission'),
+	engineType: text('engine_type'),
+	engineSize: text('engine_size'),
+	fuelType: text('fuel_type'),
+
+	// Ownership & Status
+	nickname: text('nickname'),
+	purchaseDate: timestamp('purchase_date', { withTimezone: true, mode: 'date' }),
+	purchasePrice: integer('purchase_price'), // in cents
+	purchaseMileage: integer('purchase_mileage'),
+	currentMileage: integer('current_mileage'),
+	ownershipStatus: text('ownership_status'), // owned, leased, financed
+	licensePlate: text('license_plate'),
+	licensePlateState: text('license_plate_state'),
+	isActive: integer('is_active').default(1), // 1 = active, 0 = sold/inactive
+
+	// Registration & Legal
+	registrationExpiration: timestamp('registration_expiration', { withTimezone: true, mode: 'date' }),
+	inspectionExpiration: timestamp('inspection_expiration', { withTimezone: true, mode: 'date' }),
+	emissionsExpiration: timestamp('emissions_expiration', { withTimezone: true, mode: 'date' }),
+
+	// Insurance
+	insuranceProvider: text('insurance_provider'),
+	insurancePolicyNumber: text('insurance_policy_number'),
+	insuranceExpiration: timestamp('insurance_expiration', { withTimezone: true, mode: 'date' }),
+
+	// Financial (for financed/leased)
+	lienHolder: text('lien_holder'),
+	loanAccountNumber: text('loan_account_number'),
+	monthlyPayment: integer('monthly_payment'), // in cents
+	payoffDate: timestamp('payoff_date', { withTimezone: true, mode: 'date' }),
+	leaseEndDate: timestamp('lease_end_date', { withTimezone: true, mode: 'date' }),
+	leaseAnnualMileage: integer('lease_annual_mileage'),
+
+	// Maintenance Tracking
+	lastOilChangeDate: timestamp('last_oil_change_date', { withTimezone: true, mode: 'date' }),
+	lastOilChangeMileage: integer('last_oil_change_mileage'),
+	oilChangeIntervalMiles: integer('oil_change_interval_miles'),
+	tireRotationDueMileage: integer('tire_rotation_due_mileage'),
+	nextServiceDueMileage: integer('next_service_due_mileage'),
+
+	// Technical Specs
+	seatingCapacity: integer('seating_capacity'),
+	doors: integer('doors'),
+	mpgCity: integer('mpg_city'),
+	mpgHighway: integer('mpg_highway'),
+	fuelTankCapacity: integer('fuel_tank_capacity'), // in tenths of gallons (e.g., 155 = 15.5 gal)
+	towingCapacity: integer('towing_capacity'), // in lbs
+	horsepower: integer('horsepower'),
+	torque: integer('torque'),
+
+	// Electric/Hybrid
+	batteryCapacity: integer('battery_capacity'), // in kWh
+	evRange: integer('ev_range'), // in miles
+	chargerType: text('charger_type'),
+
 	createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
 	updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow()
 });
