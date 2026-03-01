@@ -36,6 +36,7 @@ export const actions: Actions = {
 			}
 
 			// Create a new temporary demo user
+			const now = new Date();
 			const demoUuid = crypto.randomUUID();
 			const demoUsername = `demo-${demoUuid.slice(0, 8)}@frunk.app`;
 			const demoPassword = await hashPassword(crypto.randomUUID()); // Random password they can't use
@@ -69,7 +70,9 @@ export const actions: Actions = {
 					name: vendor.name,
 					address: vendor.address,
 					phone: vendor.phone,
-					website: vendor.website
+					website: vendor.website,
+					createdAt: now,
+					updatedAt: now
 				});
 			}
 
@@ -90,7 +93,9 @@ export const actions: Actions = {
 					model: vehicle.model,
 					year: vehicle.year,
 					vin: vehicle.vin,
-					image: vehicle.image
+					image: vehicle.image,
+					createdAt: now,
+					updatedAt: now
 				});
 			}
 
@@ -113,7 +118,9 @@ export const actions: Actions = {
 						date: repair.date,
 						mileage: repair.mileage,
 						cost: repair.cost,
-						status: repair.status
+						status: repair.status,
+						createdAt: now,
+						updatedAt: now
 					});
 				}
 			}
@@ -134,7 +141,9 @@ export const actions: Actions = {
 						vehicleId: newVehicleId,
 						name: gallery.name,
 						description: gallery.description,
-						order: gallery.order
+						order: gallery.order,
+						createdAt: now,
+						updatedAt: now
 					});
 				}
 			}
@@ -152,7 +161,9 @@ export const actions: Actions = {
 						galleryId: newGalleryId,
 						imageUrl: photo.imageUrl,
 						caption: photo.caption,
-						order: photo.order
+						order: photo.order,
+						createdAt: now,
+						updatedAt: now
 					});
 				}
 			}
@@ -192,7 +203,9 @@ export const actions: Actions = {
 					userId: note.userId === templateUser.uuid ? demoUuid : null,
 					vehicleId: note.vehicleId ? vehicleIdMap.get(note.vehicleId) || null : null,
 					repairId: note.repairId ? repairIdMap.get(note.repairId) || null : null,
-					vendorId: note.vendorId ? vendorIdMap.get(note.vendorId) || null : null
+					vendorId: note.vendorId ? vendorIdMap.get(note.vendorId) || null : null,
+					createdAt: now,
+					updatedAt: now
 				});
 			}
 
