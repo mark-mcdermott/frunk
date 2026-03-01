@@ -27,7 +27,7 @@
 					<img src={wordmark} alt="Frunk" class="h-28 w-auto mb-4 mx-auto lg:ml-10 lg:mr-auto xl:ml-11" />
 
 					<h1 class="text-4xl sm:text-5xl lg:text-6xl font-bold text-surface-900 dark:text-white mb-6 leading-tight animate-shadow">
-						Your <span class="text-transparent bg-clip-text bg-gradient-to-r from-[#012dab] to-[#012dab]/70 dark:from-[#1e6597] dark:to-[#1e6597]/70">Digital</span>
+						Your <span class="text-transparent bg-clip-text bg-gradient-to-r from-[#012dab] to-[#012dab]/70 dark:from-[#4da8da] dark:to-[#4da8da]/70">Digital</span>
 						<span class="text-transparent bg-clip-text bg-gradient-to-r from-secondary-400 to-secondary-600 text-5xl sm:text-6xl lg:text-7xl block">Glovebox</span>
 					</h1>
 

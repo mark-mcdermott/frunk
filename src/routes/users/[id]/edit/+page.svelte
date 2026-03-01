@@ -6,12 +6,15 @@
 	import Breadcrumbs from '$lib/components/Breadcrumbs.svelte';
 	import ConfirmModal from '$lib/components/ConfirmModal.svelte';
 	import { page } from '$app/stores';
+	import { toast } from 'svelte-sonner';
+	import { isDemo } from '$lib/roles';
 	import type { ActionData } from './$types';
 
 	let { form }: { form: ActionData } = $props();
 	const user = $derived($page.data.user);
 	const profileUser = $derived($page.data.profileUser);
 	const isAdminEditing = $derived($page.data.isAdminEditing);
+	const userIsDemo = $derived(isDemo(user?.roles));
 
 	let fileInputAdmin: HTMLInputElement;
 	let fileInputUser: HTMLInputElement;
@@ -167,16 +170,35 @@
 					<input type="hidden" name="avatarUpload" value={avatarDataUrl} />
 					<div>
 						<label for="username-input" class="text-xs font-medium text-surface-600 dark:text-gray-300 block mb-1">Email</label>
-						<input id="username-input" name="username" type="email" value={profileUser.username} placeholder="me@example.com" class="w-full px-3 py-2 rounded-lg bg-surface-100 dark:bg-surface-700 border-0 text-sm focus:ring-2 focus:ring-primary-500" />
+						<input
+							id="username-input"
+							name="username"
+							type="email"
+							value={profileUser.username}
+							placeholder="me@example.com"
+							class="w-full px-3 py-2 rounded-lg bg-surface-100 dark:bg-surface-700 border-0 text-sm focus:ring-2 focus:ring-primary-500 {userIsDemo ? 'opacity-50 cursor-not-allowed' : ''}"
+							disabled={userIsDemo}
+							onclick={() => { if (userIsDemo) toast.info('Editing the user email address is restricted in demo mode.'); }}
+						/>
 					</div>
 					<div>
 						<label for="avatar-input" class="text-xs font-medium text-surface-600 dark:text-gray-300 block mb-1">Avatar URL</label>
 						<input id="avatar-input" name="avatar" type="url" value={avatarPreview ? '' : (profileUser.avatar || '')} placeholder="https://example.com/avatar.png" class="w-full px-3 py-2 rounded-lg bg-surface-100 dark:bg-surface-700 border-0 text-sm focus:ring-2 focus:ring-primary-500" />
 					</div>
 					<div class="flex gap-3">
-						<button type="submit" class="flex-1 btn preset-filled-primary-500 py-2.5 rounded-lg font-semibold text-white">
-							Save Changes
-						</button>
+						{#if userIsDemo}
+							<button
+								type="button"
+								class="flex-1 btn preset-filled-primary-500 py-2.5 rounded-lg font-semibold text-white opacity-50 cursor-not-allowed"
+								onclick={() => toast.info('Editing user profile is restricted in demo mode.')}
+							>
+								Save Changes
+							</button>
+						{:else}
+							<button type="submit" class="flex-1 btn preset-filled-primary-500 py-2.5 rounded-lg font-semibold text-white">
+								Save Changes
+							</button>
+						{/if}
 						<a href="/users/{profileUser.uuid}" class="flex-1 btn preset-outlined-surface-500 py-2.5 rounded-lg font-semibold block text-center">
 							Cancel
 						</a>
@@ -187,13 +209,23 @@
 				<div class="mt-8 pt-6 border-t border-surface-200 dark:border-surface-700">
 					<h4 class="text-sm font-semibold text-red-500 mb-2">Danger Zone</h4>
 					<p class="text-xs text-surface-500 dark:text-gray-300 mb-4">Permanently delete your account and all associated data.</p>
-					<button
-						type="button"
-						class="w-full btn py-2.5 rounded-lg font-semibold border border-red-500 bg-transparent text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10"
-						onclick={() => deleteAccountModalOpen = true}
-					>
-						Delete Account
-					</button>
+					{#if userIsDemo}
+						<button
+							type="button"
+							class="w-full btn py-2.5 rounded-lg font-semibold border border-red-500 bg-transparent text-red-500 opacity-50 cursor-not-allowed"
+							onclick={() => toast.info('Deleting your account is restricted in demo mode.')}
+						>
+							Delete Account
+						</button>
+					{:else}
+						<button
+							type="button"
+							class="w-full btn py-2.5 rounded-lg font-semibold border border-red-500 bg-transparent text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10"
+							onclick={() => deleteAccountModalOpen = true}
+						>
+							Delete Account
+						</button>
+					{/if}
 				</div>
 				<form method="POST" action="?/deleteAccount" bind:this={deleteAccountFormEl} class="hidden"></form>
 			{/if}

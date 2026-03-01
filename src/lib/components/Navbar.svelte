@@ -4,6 +4,7 @@
 	import { ShoppingCart } from 'lucide-svelte';
 	import head from '$lib/assets/head.png';
 	import { page } from '$app/stores';
+	import { goto } from '$app/navigation';
 	import { cartItemCount, openCart } from '$lib/stores/cart';
 	import { isAdmin, isDemo } from '$lib/roles';
 
@@ -61,7 +62,7 @@
 				<!-- Cart -->
 				<button
 					type="button"
-					onclick={openCart}
+					onclick={() => { if ($cartItemCount > 0) openCart(); else goto('/merch'); }}
 					class="relative flex items-center gap-2 p-2 rounded-lg hover:bg-surface-100 dark:hover:bg-surface-800 transition-colors cursor-pointer"
 					aria-label="Shopping cart"
 				>
@@ -109,7 +110,7 @@
 					<form action="/sign-out" method="POST" class="inline">
 						<button
 							type="submit"
-							class="px-3 py-1.5 rounded-full bg-gradient-to-r from-amber-400 to-orange-500 text-white text-sm font-semibold hover:shadow-orange-500/40 hover:scale-105 transition-all duration-200 cursor-pointer"
+							class="exit-demo-btn relative px-3 py-1.5 rounded-full bg-gradient-to-r from-amber-400 to-orange-500 text-white text-sm font-semibold hover:shadow-orange-500/40 hover:scale-105 transition-all duration-200 cursor-pointer"
 						>
 							Exit Demo
 						</button>
@@ -131,3 +132,31 @@
 		</div>
 	</div>
 </nav>
+
+<style>
+	.exit-demo-btn {
+		--shimmer-size: 4px;
+	}
+
+	.exit-demo-btn::before {
+		content: '';
+		position: absolute;
+		inset: calc(-1 * var(--shimmer-size));
+		border-radius: 9999px;
+		background: conic-gradient(from 0deg, transparent 0deg, transparent 300deg, #fff 330deg, transparent 360deg);
+		z-index: -1;
+		opacity: 0;
+		animation: shimmer-rotate 1.5s linear forwards, shimmer-trigger 20s 1.5s infinite;
+	}
+
+	@keyframes shimmer-rotate {
+		0% { opacity: 0.8; transform: rotate(0deg); }
+		100% { opacity: 0; transform: rotate(360deg); }
+	}
+
+	@keyframes shimmer-trigger {
+		0% { opacity: 0.8; transform: rotate(0deg); }
+		7.5% { opacity: 0; transform: rotate(360deg); }
+		100% { opacity: 0; transform: rotate(360deg); }
+	}
+</style>

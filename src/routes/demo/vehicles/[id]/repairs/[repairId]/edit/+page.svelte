@@ -149,6 +149,11 @@
 							<option value={vendor.id} selected={repair.vendorId === vendor.id}>{vendor.name}</option>
 						{/each}
 					</select>
+					{#if vendors.length === 0}
+						<p class="text-xs text-surface-500 dark:text-gray-300 mt-1">
+							<a href="{basePath}/vendors/new" class="text-primary-500 hover:underline">Add a vendor</a> to track where repairs are done
+						</p>
+					{/if}
 				</div>
 				<div class="flex gap-3">
 					<button
