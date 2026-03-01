@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
-	import { ArrowLeft, Pencil, Trash2, Wrench, Calendar, Hash, DollarSign, Store, StickyNote, Plus, ImageIcon, ChevronRight } from 'lucide-svelte';
+	import { ArrowLeft, Pencil, Trash2, Wrench, Calendar, Gauge, DollarSign, Store, StickyNote, Plus, ImageIcon, ChevronRight } from 'lucide-svelte';
 	import Navbar from '$lib/components/Navbar.svelte';
 	import Footer from '$lib/components/Footer.svelte';
 	import Breadcrumbs from '$lib/components/Breadcrumbs.svelte';
@@ -48,7 +48,7 @@
 	}
 
 	function formatDate(date: Date | string): string {
-		return new Date(date).toLocaleDateString();
+		return new Date(date).toLocaleDateString(undefined, { timeZone: 'UTC' });
 	}
 </script>
 
@@ -110,7 +110,7 @@
 
 					{#if repair.mileage}
 						<div class="flex items-center gap-3 p-3 bg-surface-50 dark:bg-surface-700/50 rounded-lg">
-							<Hash class="w-5 h-5 text-surface-400" />
+							<Gauge class="w-5 h-5 text-surface-400" />
 							<div>
 								<p class="text-xs text-surface-500 dark:text-gray-300">Mileage</p>
 								<p class="text-sm font-medium text-black dark:text-white">{repair.mileage.toLocaleString()} mi</p>

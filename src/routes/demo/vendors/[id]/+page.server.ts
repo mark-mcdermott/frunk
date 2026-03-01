@@ -52,7 +52,7 @@ export const actions: Actions = {
 		throw redirect(302, '/demo/vendors');
 	},
 
-	deleteRepair: async ({ request, locals }) => {
+	deleteRepair: async ({ request, params, locals }) => {
 		if (!locals.user) {
 			throw error(401, 'Unauthorized');
 		}
@@ -81,6 +81,6 @@ export const actions: Actions = {
 
 		await db.delete(table.repairs).where(eq(table.repairs.id, repairId));
 
-		return { success: true };
+		throw redirect(302, `/demo/vendors/${params.id}`);
 	}
 };

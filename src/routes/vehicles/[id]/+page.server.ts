@@ -242,7 +242,7 @@ export const actions: Actions = {
 			vehicleId: params.id,
 			vendorId: vendorId || null,
 			description: description.trim(),
-			date: new Date(dateStr),
+			date: new Date(dateStr + 'T12:00:00Z'),
 			mileage,
 			cost,
 			status
