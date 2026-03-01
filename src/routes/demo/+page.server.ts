@@ -1,5 +1,5 @@
 import { isRedirect, redirect } from '@sveltejs/kit';
-import { eq } from 'drizzle-orm';
+import { eq, inArray } from 'drizzle-orm';
 import * as auth from '$lib/server/auth';
 import { db } from '$lib/server/db';
 import * as table from '$lib/server/db/schema';
@@ -31,16 +31,15 @@ export const actions: Actions = {
 				.where(eq(table.user.username, DEMO_TEMPLATE_USERNAME));
 
 			if (!templateUser) {
-				// If no template user exists, just redirect to sign-in
 				return redirect(302, '/sign-in');
 			}
 
-			// Create a new temporary demo user
 			const now = new Date();
 			const demoUuid = crypto.randomUUID();
 			const demoUsername = `demo-${demoUuid.slice(0, 8)}@frunk.app`;
-			const demoPassword = await hashPassword(crypto.randomUUID()); // Random password they can't use
+			const demoPassword = await hashPassword(crypto.randomUUID());
 
+			// Create demo user
 			await db.insert(table.user).values({
 				uuid: demoUuid,
 				username: demoUsername,
@@ -51,162 +50,165 @@ export const actions: Actions = {
 				emailVerified: 1
 			});
 
-			// Copy all of Creed's data to the new demo user
-			// We need to maintain ID mappings for relationships
+			// Fetch all template data in parallel (3 queries instead of many)
+			const [templateVendors, templateVehicles] = await Promise.all([
+				db.select().from(table.vendors).where(eq(table.vendors.userId, templateUser.uuid)),
+				db.select().from(table.vehicles).where(eq(table.vehicles.userId, templateUser.uuid))
+			]);
 
-			// 1. Copy vendors
-			const templateVendors = await db
-				.select()
-				.from(table.vendors)
-				.where(eq(table.vendors.userId, templateUser.uuid));
-
+			// Build ID mappings
 			const vendorIdMap = new Map<string, string>();
 			for (const vendor of templateVendors) {
-				const newVendorId = crypto.randomUUID();
-				vendorIdMap.set(vendor.id, newVendorId);
-				await db.insert(table.vendors).values({
-					id: newVendorId,
-					userId: demoUuid,
-					name: vendor.name,
-					address: vendor.address,
-					phone: vendor.phone,
-					website: vendor.website,
-					createdAt: now,
-					updatedAt: now
-				});
+				vendorIdMap.set(vendor.id, crypto.randomUUID());
 			}
-
-			// 2. Copy vehicles
-			const templateVehicles = await db
-				.select()
-				.from(table.vehicles)
-				.where(eq(table.vehicles.userId, templateUser.uuid));
 
 			const vehicleIdMap = new Map<string, string>();
 			for (const vehicle of templateVehicles) {
-				const newVehicleId = crypto.randomUUID();
-				vehicleIdMap.set(vehicle.id, newVehicleId);
-				await db.insert(table.vehicles).values({
-					id: newVehicleId,
-					userId: demoUuid,
-					make: vehicle.make,
-					model: vehicle.model,
-					year: vehicle.year,
-					vin: vehicle.vin,
-					image: vehicle.image,
-					createdAt: now,
-					updatedAt: now
-				});
+				vehicleIdMap.set(vehicle.id, crypto.randomUUID());
 			}
 
-			// 3. Copy repairs (need vehicle and vendor mappings)
-			const repairIdMap = new Map<string, string>();
-			for (const [oldVehicleId, newVehicleId] of vehicleIdMap) {
-				const templateRepairs = await db
-					.select()
-					.from(table.repairs)
-					.where(eq(table.repairs.vehicleId, oldVehicleId));
+			const oldVehicleIds = [...vehicleIdMap.keys()];
 
-				for (const repair of templateRepairs) {
-					const newRepairId = crypto.randomUUID();
-					repairIdMap.set(repair.id, newRepairId);
-					await db.insert(table.repairs).values({
-						id: newRepairId,
-						vehicleId: newVehicleId,
-						vendorId: repair.vendorId ? vendorIdMap.get(repair.vendorId) || null : null,
-						description: repair.description,
-						date: repair.date,
-						mileage: repair.mileage,
-						cost: repair.cost,
-						status: repair.status,
+			// Batch insert vendors and vehicles
+			if (templateVendors.length > 0) {
+				await db.insert(table.vendors).values(
+					templateVendors.map((v) => ({
+						id: vendorIdMap.get(v.id)!,
+						userId: demoUuid,
+						name: v.name,
+						address: v.address,
+						phone: v.phone,
+						website: v.website,
 						createdAt: now,
 						updatedAt: now
-					});
-				}
+					}))
+				);
 			}
 
-			// 4. Copy galleries (linked to vehicles)
-			const galleryIdMap = new Map<string, string>();
-			for (const [oldVehicleId, newVehicleId] of vehicleIdMap) {
-				const templateGalleries = await db
-					.select()
-					.from(table.galleries)
-					.where(eq(table.galleries.vehicleId, oldVehicleId));
-
-				for (const gallery of templateGalleries) {
-					const newGalleryId = crypto.randomUUID();
-					galleryIdMap.set(gallery.id, newGalleryId);
-					await db.insert(table.galleries).values({
-						id: newGalleryId,
-						vehicleId: newVehicleId,
-						name: gallery.name,
-						description: gallery.description,
-						order: gallery.order,
+			if (templateVehicles.length > 0) {
+				await db.insert(table.vehicles).values(
+					templateVehicles.map((v) => ({
+						id: vehicleIdMap.get(v.id)!,
+						userId: demoUuid,
+						make: v.make,
+						model: v.model,
+						year: v.year,
+						vin: v.vin,
+						image: v.image,
 						createdAt: now,
 						updatedAt: now
-					});
-				}
+					}))
+				);
 			}
 
-			// 5. Copy vehicle photos (linked to galleries)
-			for (const [oldGalleryId, newGalleryId] of galleryIdMap) {
-				const templatePhotos = await db
-					.select()
-					.from(table.vehiclePhotos)
-					.where(eq(table.vehiclePhotos.galleryId, oldGalleryId));
+			// Fetch repairs, galleries, and notes in parallel (3 queries)
+			const [templateRepairs, templateGalleries, templateNotes] = oldVehicleIds.length > 0
+				? await Promise.all([
+						db.select().from(table.repairs).where(inArray(table.repairs.vehicleId, oldVehicleIds)),
+						db.select().from(table.galleries).where(inArray(table.galleries.vehicleId, oldVehicleIds)),
+						db.select().from(table.notes).where(inArray(table.notes.vehicleId, oldVehicleIds))
+					])
+				: [[], [], []];
 
-				for (const photo of templatePhotos) {
-					await db.insert(table.vehiclePhotos).values({
-						id: crypto.randomUUID(),
-						galleryId: newGalleryId,
-						imageUrl: photo.imageUrl,
-						caption: photo.caption,
-						order: photo.order,
-						createdAt: now,
-						updatedAt: now
-					});
-				}
-			}
-
-			// 6. Copy notes (can be linked to user, vehicles, repairs, or vendors)
-			const templateNotes = await db.select().from(table.notes).where(
-				eq(table.notes.userId, templateUser.uuid)
-			);
-
-			// Also get notes linked to template vehicles
+			// Also fetch user-level notes
+			const userNotes = await db.select().from(table.notes).where(eq(table.notes.userId, templateUser.uuid));
 			const seenNoteIds = new Set(templateNotes.map((n) => n.id));
-			for (const [oldVehicleId] of vehicleIdMap) {
-				const vehicleNotes = await db
-					.select()
-					.from(table.notes)
-					.where(eq(table.notes.vehicleId, oldVehicleId));
-				for (const note of vehicleNotes) {
-					if (!seenNoteIds.has(note.id)) {
-						seenNoteIds.add(note.id);
-						templateNotes.push(note);
-					}
+			for (const note of userNotes) {
+				if (!seenNoteIds.has(note.id)) {
+					templateNotes.push(note);
 				}
 			}
 
-			const noteUuidMap = new Map<string, string>();
-			for (const note of templateNotes) {
-				const newNoteUuid = crypto.randomUUID();
-				noteUuidMap.set(note.uuid, newNoteUuid);
-				await db.insert(table.notes).values({
-					uuid: newNoteUuid,
-					title: note.title,
-					body: note.body,
-					imageUrl: note.imageUrl,
-					type: note.type,
-					order: note.order,
-					parentNoteId: note.parentNoteId ? noteUuidMap.get(note.parentNoteId) || null : null,
-					userId: note.userId === templateUser.uuid ? demoUuid : null,
-					vehicleId: note.vehicleId ? vehicleIdMap.get(note.vehicleId) || null : null,
-					repairId: note.repairId ? repairIdMap.get(note.repairId) || null : null,
-					vendorId: note.vendorId ? vendorIdMap.get(note.vendorId) || null : null,
-					createdAt: now,
-					updatedAt: now
-				});
+			// Build repair ID mappings
+			const repairIdMap = new Map<string, string>();
+			for (const repair of templateRepairs) {
+				repairIdMap.set(repair.id, crypto.randomUUID());
+			}
+
+			// Batch insert repairs
+			if (templateRepairs.length > 0) {
+				await db.insert(table.repairs).values(
+					templateRepairs.map((r) => ({
+						id: repairIdMap.get(r.id)!,
+						vehicleId: vehicleIdMap.get(r.vehicleId)!,
+						vendorId: r.vendorId ? vendorIdMap.get(r.vendorId) || null : null,
+						description: r.description,
+						date: r.date,
+						mileage: r.mileage,
+						cost: r.cost,
+						status: r.status,
+						createdAt: now,
+						updatedAt: now
+					}))
+				);
+			}
+
+			// Build gallery ID mappings
+			const galleryIdMap = new Map<string, string>();
+			for (const gallery of templateGalleries) {
+				galleryIdMap.set(gallery.id, crypto.randomUUID());
+			}
+
+			// Batch insert galleries
+			if (templateGalleries.length > 0) {
+				await db.insert(table.galleries).values(
+					templateGalleries.map((g) => ({
+						id: galleryIdMap.get(g.id)!,
+						vehicleId: vehicleIdMap.get(g.vehicleId)!,
+						name: g.name,
+						description: g.description,
+						order: g.order,
+						createdAt: now,
+						updatedAt: now
+					}))
+				);
+			}
+
+			// Fetch and batch insert vehicle photos
+			const oldGalleryIds = [...galleryIdMap.keys()];
+			if (oldGalleryIds.length > 0) {
+				const templatePhotos = await db.select().from(table.vehiclePhotos)
+					.where(inArray(table.vehiclePhotos.galleryId, oldGalleryIds));
+
+				if (templatePhotos.length > 0) {
+					await db.insert(table.vehiclePhotos).values(
+						templatePhotos.map((p) => ({
+							id: crypto.randomUUID(),
+							galleryId: galleryIdMap.get(p.galleryId)!,
+							imageUrl: p.imageUrl,
+							caption: p.caption,
+							order: p.order,
+							createdAt: now,
+							updatedAt: now
+						}))
+					);
+				}
+			}
+
+			// Batch insert notes
+			if (templateNotes.length > 0) {
+				const noteUuidMap = new Map<string, string>();
+				for (const note of templateNotes) {
+					noteUuidMap.set(note.uuid, crypto.randomUUID());
+				}
+
+				await db.insert(table.notes).values(
+					templateNotes.map((n) => ({
+						uuid: noteUuidMap.get(n.uuid)!,
+						title: n.title,
+						body: n.body,
+						imageUrl: n.imageUrl,
+						type: n.type,
+						order: n.order,
+						parentNoteId: n.parentNoteId ? noteUuidMap.get(n.parentNoteId) || null : null,
+						userId: n.userId === templateUser.uuid ? demoUuid : null,
+						vehicleId: n.vehicleId ? vehicleIdMap.get(n.vehicleId) || null : null,
+						repairId: n.repairId ? repairIdMap.get(n.repairId) || null : null,
+						vendorId: n.vendorId ? vendorIdMap.get(n.vendorId) || null : null,
+						createdAt: now,
+						updatedAt: now
+					}))
+				);
 			}
 
 			// Create session for the demo user
