@@ -6,6 +6,7 @@
 	import Navbar from '$lib/components/Navbar.svelte';
 	import Footer from '$lib/components/Footer.svelte';
 	import { cart, openCart } from '$lib/stores/cart';
+	import { page } from '$app/stores';
 
 	let { data } = $props();
 	const product = data.product;
@@ -13,8 +14,12 @@
 	const sizes = getAvailableSizes(product);
 	const colors = getAvailableColors(product);
 
+	// Check URL for a pre-selected color (e.g. from cart item click)
+	const urlColor = $page.url.searchParams.get('color');
+	const initialColor = urlColor && colors.some(c => c.color === urlColor) ? urlColor : (colors[0]?.color || '');
+
 	let selectedSize = $state(sizes.includes('M') ? 'M' : sizes[0] || '');
-	let selectedColor = $state(colors[0]?.color || '');
+	let selectedColor = $state(initialColor);
 	let showBack = $state(false);
 
 	// Zoom state
@@ -165,7 +170,7 @@
 								<button
 									type="button"
 									onclick={() => (selectedColor = color)}
-									class="w-10 h-10 rounded-full border-2 transition-all flex items-center justify-center cursor-pointer"
+									class="w-10 h-10 aspect-square flex-shrink-0 rounded-full border-2 transition-all flex items-center justify-center cursor-pointer"
 									style="background-color: {hex}; border-color: {selectedColor === color
 										? 'var(--color-primary, #3b82f6)'
 										: 'transparent'};"

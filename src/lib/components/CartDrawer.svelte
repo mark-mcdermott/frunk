@@ -152,7 +152,7 @@
 									<!-- Product Name -->
 									<h3 class="font-semibold">
 										<a
-											href="/merch/{item.productId}"
+											href="/merch/{item.productId}?color={encodeURIComponent(item.color)}"
 											onclick={closeCart}
 											class="text-primary-500 hover:text-[#93c5fd] transition-colors"
 										>
@@ -204,7 +204,7 @@
 										<button
 											type="button"
 											onclick={() => removeItem(item.productId, item.variantId, item.name)}
-											class="w-8 h-8 flex items-center justify-center text-surface-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-full transition-all cursor-pointer"
+											class="w-8 h-8 flex items-center justify-center text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-full transition-all cursor-pointer"
 											aria-label="Remove item"
 										>
 											<Trash2 class="w-4 h-4" />

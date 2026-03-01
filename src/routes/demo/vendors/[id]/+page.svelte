@@ -116,6 +116,9 @@
 													<h3 class="font-medium text-black dark:text-white">{repair.description}</h3>
 													<ChevronRight class="w-4 h-4 text-surface-400 opacity-0 group-hover:opacity-100 transition-opacity" />
 												</div>
+												{#if repair.vehicleName}
+													<p class="text-sm text-surface-500 dark:text-gray-300 mt-0.5">{repair.vehicleName}</p>
+												{/if}
 												<div class="flex items-center gap-4 text-sm text-surface-500 dark:text-gray-300 mt-1">
 													<span>{formatDate(repair.date)}</span>
 													{#if repair.mileage}

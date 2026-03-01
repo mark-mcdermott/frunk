@@ -22,12 +22,33 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 		throw error(403, 'Forbidden');
 	}
 
-	// Get repairs associated with this vendor
-	const repairs = await db
-		.select()
+	// Get repairs associated with this vendor, with vehicle info
+	const repairsRaw = await db
+		.select({
+			id: table.repairs.id,
+			vehicleId: table.repairs.vehicleId,
+			vendorId: table.repairs.vendorId,
+			description: table.repairs.description,
+			date: table.repairs.date,
+			mileage: table.repairs.mileage,
+			cost: table.repairs.cost,
+			status: table.repairs.status,
+			createdAt: table.repairs.createdAt,
+			vehicleYear: table.vehicles.year,
+			vehicleMake: table.vehicles.make,
+			vehicleModel: table.vehicles.model
+		})
 		.from(table.repairs)
+		.leftJoin(table.vehicles, eq(table.repairs.vehicleId, table.vehicles.id))
 		.where(eq(table.repairs.vendorId, params.id))
 		.orderBy(desc(table.repairs.date));
+
+	const repairs = repairsRaw.map(r => ({
+		...r,
+		vehicleName: r.vehicleYear && r.vehicleMake && r.vehicleModel
+			? `${r.vehicleYear} ${r.vehicleMake} ${r.vehicleModel}`
+			: null
+	}));
 
 	return { vendor, repairs };
 };
