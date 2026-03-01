@@ -204,8 +204,9 @@ export const actions: Actions = {
 			return redirect(302, '/demo/vehicles');
 		} catch (err) {
 			if (isRedirect(err)) throw err;
+			const message = err instanceof Error ? err.message : 'Unknown error';
 			console.error('Demo creation failed:', err);
-			return redirect(302, '/?demo-error=true');
+			return redirect(302, `/?demo-error=${encodeURIComponent(message)}`);
 		}
 	}
 };
