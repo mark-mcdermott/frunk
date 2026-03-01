@@ -217,9 +217,11 @@ export const actions: Actions = {
 			return redirect(302, '/demo/vehicles');
 		} catch (err) {
 			if (isRedirect(err)) throw err;
+			const cause = err instanceof Error && 'cause' in err && err.cause instanceof Error ? err.cause.message : '';
 			const message = err instanceof Error ? err.message : 'Unknown error';
+			const fullMessage = cause ? `${message} | Cause: ${cause}` : message;
 			console.error('Demo creation failed:', err);
-			return redirect(302, `/?demo-error=${encodeURIComponent(message)}`);
+			return redirect(302, `/?demo-error=${encodeURIComponent(fullMessage)}`);
 		}
 	}
 };
