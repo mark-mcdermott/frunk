@@ -69,7 +69,7 @@
 										<div class="flex items-center gap-4 text-sm text-surface-500 dark:text-gray-300 mt-1">
 											{#if vendor.phone}
 												<span class="flex items-center gap-1">
-													<Phone class="w-3 h-3" />
+													<Phone class="w-3 h-3 relative top-[1px] -left-[1px]" />
 													{vendor.phone}
 												</span>
 											{/if}

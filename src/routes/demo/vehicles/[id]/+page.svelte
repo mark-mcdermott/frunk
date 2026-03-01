@@ -125,7 +125,7 @@
 	}
 
 	function formatDate(date: Date | string): string {
-		return new Date(date).toLocaleDateString();
+		return new Date(date).toLocaleDateString(undefined, { timeZone: 'UTC' });
 	}
 
 	function handleImageSelect(e: Event) {
@@ -420,7 +420,7 @@
 												</div>
 											{/if}
 										</div>
-										<span class="text-xs px-2 py-0.5 rounded-full {repair.status === 'completed' ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' : repair.status === 'scheduled' ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400' : 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400'}">
+										<span class="text-xs px-2 py-0.5 rounded-full -mt-0.5 {repair.status === 'completed' ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' : repair.status === 'scheduled' ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400' : 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400'}">
 											{repair.status}
 										</span>
 									</div>
@@ -784,7 +784,7 @@
 							id="repair-status"
 							name="status"
 							bind:value={repairStatus}
-							class="w-full px-3 py-2 rounded-lg bg-surface-100 dark:bg-surface-700 border-0 text-sm focus:ring-2 focus:ring-primary-500"
+							class="w-full pl-3 pr-8 py-2 rounded-lg bg-surface-100 dark:bg-surface-700 border-0 text-sm focus:ring-2 focus:ring-primary-500"
 						>
 							<option value="completed">Completed</option>
 							<option value="scheduled">Scheduled</option>
@@ -801,7 +801,7 @@
 						id="repair-vendor"
 						name="vendorId"
 						bind:value={repairVendorId}
-						class="w-full px-3 py-2 rounded-lg bg-surface-100 dark:bg-surface-700 border-0 text-sm focus:ring-2 focus:ring-primary-500"
+						class="w-full pl-3 pr-8 py-2 rounded-lg bg-surface-100 dark:bg-surface-700 border-0 text-sm focus:ring-2 focus:ring-primary-500"
 					>
 						<option value="">No vendor</option>
 						{#each vendors as vendor}

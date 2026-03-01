@@ -13,6 +13,16 @@
 	const userIsAdmin = $derived(isAdmin(user?.roles));
 	const userIsDemo = $derived(isDemo(user?.roles));
 	const basePath = $derived($page.data.basePath || '');
+	const pathname = $derived($page.url.pathname);
+
+	function isActive(section: string): boolean {
+		const path = basePath ? pathname.replace(basePath, '') : pathname;
+		return path.startsWith(`/${section}`);
+	}
+
+	const navClass = 'font-medium transition-colors';
+	const activeClass = 'text-primary-500 dark:text-primary-400';
+	const inactiveClass = 'text-surface-600 dark:text-gray-300 hover:text-primary-500';
 </script>
 
 <nav class="sticky top-0 z-50 bg-surface-50/80 dark:bg-surface-900/80 backdrop-blur-lg border-b border-surface-200 dark:border-surface-800">
@@ -26,20 +36,20 @@
 				<!-- Nav Links -->
 				<div class="hidden md:flex items-center gap-6">
 					{#if user}
-						<a href="{basePath}/vehicles" class="text-surface-600 dark:text-gray-300 hover:text-primary-500 font-medium transition-colors">Vehicles</a>
+						<a href="{basePath}/vehicles" class="{navClass} {isActive('vehicles') ? activeClass : inactiveClass}">Vehicles</a>
 					{/if}
 					{#if hasRepairs}
-						<a href="{basePath}/repairs" class="text-surface-600 dark:text-gray-300 hover:text-primary-500 font-medium transition-colors">Repairs</a>
+						<a href="{basePath}/repairs" class="{navClass} {isActive('repairs') ? activeClass : inactiveClass}">Repairs</a>
 					{/if}
 					{#if hasNotes}
-						<a href="{basePath}/notes" class="text-surface-600 dark:text-gray-300 hover:text-primary-500 font-medium transition-colors">Notes</a>
+						<a href="{basePath}/notes" class="{navClass} {isActive('notes') ? activeClass : inactiveClass}">Notes</a>
 					{/if}
 					{#if user}
-						<a href="{basePath}/vendors" class="text-surface-600 dark:text-gray-300 hover:text-primary-500 font-medium transition-colors">Vendors</a>
+						<a href="{basePath}/vendors" class="{navClass} {isActive('vendors') ? activeClass : inactiveClass}">Vendors</a>
 					{/if}
 					{#if userIsAdmin}
-						<a href="/merch" class="text-surface-600 dark:text-gray-300 hover:text-primary-500 font-medium transition-colors">Merch</a>
-						<a href="/users" class="text-surface-600 dark:text-gray-300 hover:text-primary-500 font-medium transition-colors">Users</a>
+						<a href="/merch" class="{navClass} {isActive('merch') ? activeClass : inactiveClass}">Merch</a>
+						<a href="/users" class="{navClass} {isActive('users') ? activeClass : inactiveClass}">Users</a>
 					{/if}
 				</div>
 			</div>

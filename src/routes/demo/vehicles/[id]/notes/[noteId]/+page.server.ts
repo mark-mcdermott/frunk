@@ -33,6 +33,16 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 		throw error(403, 'Forbidden');
 	}
 
+	// If note belongs to a repair, load the repair for breadcrumbs
+	let repair = null;
+	if (note.repairId) {
+		const [r] = await db
+			.select()
+			.from(table.repairs)
+			.where(eq(table.repairs.id, note.repairId));
+		repair = r || null;
+	}
+
 	// Get child notes
 	const childNotes = await db
 		.select()
@@ -40,7 +50,7 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 		.where(eq(table.notes.parentNoteId, params.noteId))
 		.orderBy(desc(table.notes.createdAt));
 
-	return { note, vehicle, childNotes };
+	return { note, vehicle, repair, childNotes };
 };
 
 export const actions: Actions = {
@@ -155,10 +165,15 @@ export const actions: Actions = {
 			}
 		}
 
+		// Determine redirect target before deleting
+		const redirectUrl = note.repairId
+			? `/demo/vehicles/${params.id}/repairs/${note.repairId}`
+			: `/demo/vehicles/${params.id}`;
+
 		// Delete note record
 		await db.delete(table.notes).where(eq(table.notes.uuid, params.noteId));
 
-		throw redirect(302, `/demo/vehicles/${params.id}`);
+		throw redirect(302, redirectUrl);
 	},
 
 	deleteChildNote: async ({ request, params, locals, platform }) => {

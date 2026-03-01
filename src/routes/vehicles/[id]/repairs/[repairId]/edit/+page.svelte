@@ -16,10 +16,13 @@
 	let deleteFormEl: HTMLFormElement | null = $state(null);
 	let saving = $state(false);
 
-	// Format date for input
+	// Format date for input (use UTC to avoid timezone day-shift)
 	function formatDateForInput(date: Date | string): string {
 		const d = new Date(date);
-		return d.toISOString().split('T')[0];
+		const year = d.getUTCFullYear();
+		const month = String(d.getUTCMonth() + 1).padStart(2, '0');
+		const day = String(d.getUTCDate()).padStart(2, '0');
+		return `${year}-${month}-${day}`;
 	}
 
 	// Format cost from cents to dollars
@@ -123,7 +126,7 @@
 						<select
 							id="status-input"
 							name="status"
-							class="w-full px-3 py-2 rounded-lg bg-surface-100 dark:bg-surface-700 border-0 text-sm focus:ring-2 focus:ring-primary-500"
+							class="w-full pl-3 pr-8 py-2 rounded-lg bg-surface-100 dark:bg-surface-700 border-0 text-sm focus:ring-2 focus:ring-primary-500"
 						>
 							<option value="completed" selected={repair.status === 'completed'}>Completed</option>
 							<option value="scheduled" selected={repair.status === 'scheduled'}>Scheduled</option>
@@ -138,7 +141,7 @@
 					<select
 						id="vendor-input"
 						name="vendorId"
-						class="w-full px-3 py-2 rounded-lg bg-surface-100 dark:bg-surface-700 border-0 text-sm focus:ring-2 focus:ring-primary-500"
+						class="w-full pl-3 pr-8 py-2 rounded-lg bg-surface-100 dark:bg-surface-700 border-0 text-sm focus:ring-2 focus:ring-primary-500"
 					>
 						<option value="">No vendor</option>
 						{#each vendors as vendor}

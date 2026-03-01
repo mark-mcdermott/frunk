@@ -9,6 +9,7 @@
 
 	const note = $derived($page.data.note);
 	const vehicle = $derived($page.data.vehicle);
+	const repair = $derived($page.data.repair);
 	const childNotes = $derived($page.data.childNotes);
 
 	let downloading = $state(false);
@@ -81,6 +82,7 @@
 		<Breadcrumbs items={[
 			{ label: 'Vehicles', href: '/vehicles' },
 			{ label: `${vehicle.year} ${vehicle.make} ${vehicle.model}`, href: `/vehicles/${vehicle.id}` },
+			...(repair ? [{ label: repair.description, href: `/vehicles/${vehicle.id}/repairs/${repair.id}` }] : []),
 			{ label: note.title }
 		]} />
 	</div>
@@ -89,11 +91,11 @@
 		<div class="max-w-3xl mx-auto">
 			<!-- Back link -->
 			<a
-				href="/vehicles/{vehicle.id}"
+				href={repair ? `/vehicles/${vehicle.id}/repairs/${repair.id}` : `/vehicles/${vehicle.id}`}
 				class="inline-flex items-center gap-2 text-sm text-surface-500 dark:text-gray-300 hover:text-surface-700 dark:hover:text-surface-300 mb-6"
 			>
 				<ArrowLeft class="w-4 h-4" />
-				Back to vehicle
+				{repair ? `Back to ${repair.description}` : 'Back to vehicle'}
 			</a>
 
 			<!-- Note Card -->

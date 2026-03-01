@@ -85,7 +85,7 @@ export const actions: Actions = {
 			.update(table.repairs)
 			.set({
 				description: description.trim(),
-				date: new Date(dateStr),
+				date: new Date(dateStr + 'T12:00:00Z'),
 				mileage,
 				cost,
 				vendorId: vendorId || null,
