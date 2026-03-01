@@ -63,6 +63,7 @@
 					{message}
 				</p>
 				<div class="flex gap-3 justify-end">
+					{#if cancelText}
 					<button
 						type="button"
 						class="px-4 py-2 rounded-lg text-sm font-medium bg-surface-100 dark:bg-surface-700 hover:bg-surface-200 dark:hover:bg-surface-600 text-surface-700 dark:text-gray-200 transition-colors"
@@ -70,6 +71,7 @@
 					>
 						{cancelText}
 					</button>
+					{/if}
 					<button
 						type="button"
 						class="px-4 py-2 rounded-lg text-sm font-medium {confirmClass} transition-colors"
