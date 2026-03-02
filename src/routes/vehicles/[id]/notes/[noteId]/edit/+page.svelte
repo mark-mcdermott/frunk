@@ -81,16 +81,15 @@
 <div class="min-h-screen bg-surface-50 dark:bg-surface-900 flex flex-col">
 	<Navbar />
 
-	<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6">
-		<Breadcrumbs items={[
-			{ label: 'Vehicles', href: '/vehicles' },
-			{ label: `${vehicle.year} ${vehicle.make} ${vehicle.model}`, href: `/vehicles/${vehicle.id}` },
-			{ label: note.title, href: `/vehicles/${vehicle.id}/notes/${note.uuid}` },
-			{ label: 'Edit' }
-		]} />
-	</div>
-
 	<main class="flex-1 px-4 sm:px-6 lg:px-8 py-12">
+		<div class="max-w-xl mx-auto">
+			<Breadcrumbs items={[
+				{ label: 'Vehicles', href: '/vehicles' },
+				{ label: `${vehicle.year} ${vehicle.make} ${vehicle.model}`, href: `/vehicles/${vehicle.id}` },
+				{ label: note.title, href: `/vehicles/${vehicle.id}/notes/${note.uuid}` },
+				{ label: 'Edit' }
+			]} />
+		</div>
 		<div class="max-w-xl mx-auto">
 			<!-- Back link -->
 			<a

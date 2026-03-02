@@ -35,17 +35,16 @@
 <div class="min-h-screen bg-surface-50 dark:bg-surface-900 flex flex-col">
 	<Navbar />
 
-	<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6">
-		<Breadcrumbs items={[
-			{ label: 'Vehicles', href: '/vehicles' },
-			{ label: `${vehicle.year} ${vehicle.make} ${vehicle.model}`, href: `/vehicles/${vehicle.id}` },
-			{ label: repair.description, href: `/vehicles/${vehicle.id}/repairs/${repair.id}` },
-			{ label: 'Edit' }
-		]} />
-	</div>
-
-	<main class="flex-1 flex items-start justify-center pt-12 px-4 sm:px-6 lg:px-8">
-		<div class="bg-white dark:bg-surface-800 rounded-2xl p-6 shadow-xl shadow-surface-900/5 w-full max-w-sm border border-[#eee]">
+	<main class="flex-1 py-12 px-4 sm:px-6 lg:px-8">
+		<div class="max-w-sm mx-auto">
+			<Breadcrumbs items={[
+				{ label: 'Vehicles', href: '/vehicles' },
+				{ label: `${vehicle.year} ${vehicle.make} ${vehicle.model}`, href: `/vehicles/${vehicle.id}` },
+				{ label: repair.description, href: `/vehicles/${vehicle.id}/repairs/${repair.id}` },
+				{ label: 'Edit' }
+			]} />
+		</div>
+		<div class="bg-white dark:bg-surface-800 rounded-2xl p-6 shadow-xl shadow-surface-900/5 w-full max-w-sm mx-auto border border-[#eee]">
 			<h3 class="text-xl font-bold text-black dark:text-white mb-2">Edit Repair</h3>
 			<p class="text-sm text-surface-500 dark:text-gray-300 mb-6">Update repair details.</p>
 
@@ -148,11 +147,9 @@
 							<option value={vendor.id} selected={repair.vendorId === vendor.id}>{vendor.name}</option>
 						{/each}
 					</select>
-					{#if vendors.length === 0}
 						<p class="text-xs text-surface-500 dark:text-gray-300 mt-1">
 							<a href="/vendors/new" class="text-primary-500 hover:underline">Add a vendor</a> to track where repairs are done
 						</p>
-					{/if}
 				</div>
 				<div class="flex gap-3">
 					<button

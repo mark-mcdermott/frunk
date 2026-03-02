@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
-	import { ArrowLeft, Pencil, Trash2, Wrench, Calendar, Gauge, DollarSign, Store, StickyNote, Plus, ImageIcon, ChevronRight } from 'lucide-svelte';
+	import { ArrowLeft, Pencil, Trash2, Wrench, Calendar, Gauge, Receipt, Store, StickyNote, Plus, ImageIcon, ChevronRight } from 'lucide-svelte';
 	import Navbar from '$lib/components/Navbar.svelte';
 	import Footer from '$lib/components/Footer.svelte';
 	import Breadcrumbs from '$lib/components/Breadcrumbs.svelte';
@@ -56,15 +56,14 @@
 <div class="min-h-screen bg-surface-50 dark:bg-surface-900 flex flex-col">
 	<Navbar />
 
-	<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6">
-		<Breadcrumbs items={[
-			{ label: 'Vehicles', href: `${basePath}/vehicles` },
-			{ label: `${vehicle.year} ${vehicle.make} ${vehicle.model}`, href: `${basePath}/vehicles/${vehicle.id}` },
-			{ label: repair.description }
-		]} />
-	</div>
-
 	<main class="flex-1 px-4 sm:px-6 lg:px-8 py-12">
+		<div class="max-w-3xl mx-auto">
+			<Breadcrumbs items={[
+				{ label: 'Vehicles', href: `${basePath}/vehicles` },
+				{ label: `${vehicle.year} ${vehicle.make} ${vehicle.model}`, href: `${basePath}/vehicles/${vehicle.id}` },
+				{ label: repair.description }
+			]} />
+		</div>
 		<div class="max-w-3xl mx-auto">
 			<!-- Back link -->
 			<a
@@ -121,7 +120,7 @@
 
 					{#if repair.cost}
 						<div class="flex items-center gap-3 p-3 bg-surface-50 dark:bg-surface-700/50 rounded-lg">
-							<DollarSign class="w-5 h-5 text-surface-400" />
+							<Receipt class="w-5 h-5 text-surface-400" />
 							<div>
 								<p class="text-xs text-surface-500 dark:text-gray-300">Cost</p>
 								<p class="text-sm font-medium text-green-600 dark:text-green-400">{formatCost(repair.cost)}</p>

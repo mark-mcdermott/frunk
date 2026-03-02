@@ -11,13 +11,11 @@
 	<Navbar />
 
 	<!-- Breadcrumbs -->
-	<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6">
-		<Breadcrumbs items={[{ label: 'Email Verification' }]} />
-	</div>
-
-	<!-- Main Content -->
-	<main class="flex-1 flex items-start justify-center pt-12 px-4 sm:px-6 lg:px-8">
-		<div class="bg-white dark:bg-surface-800 rounded-2xl p-6 shadow-xl shadow-surface-900/5 w-full max-w-sm border border-[#eee] text-center">
+	<main class="flex-1 py-12 px-4 sm:px-6 lg:px-8">
+		<div class="max-w-sm mx-auto">
+			<Breadcrumbs items={[{ label: 'Email Verification' }]} />
+		</div>
+		<div class="bg-white dark:bg-surface-800 rounded-2xl p-6 shadow-xl shadow-surface-900/5 w-full max-w-sm mx-auto border border-[#eee] text-center">
 			{#if data.success}
 				<div class="w-16 h-16 mx-auto mb-4 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
 					<svg class="w-8 h-8 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">

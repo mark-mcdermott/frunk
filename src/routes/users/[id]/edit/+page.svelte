@@ -63,17 +63,15 @@
 	<Navbar />
 
 	<!-- Breadcrumbs -->
-	<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6">
-		{#if isAdminEditing}
-			<Breadcrumbs items={[{ label: 'Users', href: '/users' }, { label: 'Edit User' }]} />
-		{:else}
-			<Breadcrumbs items={[{ label: 'Settings' }]} />
-		{/if}
-	</div>
-
-	<!-- Main Content -->
-	<main class="flex-1 flex items-start justify-center pt-12 px-4 sm:px-6 lg:px-8">
-		<div class="bg-white dark:bg-surface-800 rounded-2xl p-6 shadow-xl shadow-surface-900/5 w-full max-w-sm border border-[#eee]">
+	<main class="flex-1 py-12 px-4 sm:px-6 lg:px-8">
+		<div class="max-w-sm mx-auto">
+			{#if isAdminEditing}
+				<Breadcrumbs items={[{ label: 'Users', href: '/users' }, { label: 'Edit User' }]} />
+			{:else}
+				<Breadcrumbs items={[{ label: 'Settings' }]} />
+			{/if}
+		</div>
+		<div class="bg-white dark:bg-surface-800 rounded-2xl p-6 shadow-xl shadow-surface-900/5 w-full max-w-sm mx-auto border border-[#eee]">
 			{#if isAdminEditing}
 				<!-- Admin Edit View -->
 				<h3 class="text-xl font-bold text-black dark:text-white mb-2">Edit User</h3>
@@ -117,10 +115,6 @@
 					<div>
 						<label for="username-input" class="text-xs font-medium text-surface-600 dark:text-gray-300 block mb-1">Email</label>
 						<input id="username-input" name="username" type="email" value={profileUser.username} placeholder="me@example.com" class="w-full px-3 py-2 rounded-lg bg-surface-100 dark:bg-surface-700 border-0 text-sm focus:ring-2 focus:ring-primary-500" />
-					</div>
-					<div>
-						<label for="avatar-input" class="text-xs font-medium text-surface-600 dark:text-gray-300 block mb-1">Avatar URL</label>
-						<input id="avatar-input" name="avatar" type="url" value={avatarPreview ? '' : (profileUser.avatar || '')} placeholder="https://example.com/avatar.png" class="w-full px-3 py-2 rounded-lg bg-surface-100 dark:bg-surface-700 border-0 text-sm focus:ring-2 focus:ring-primary-500" />
 					</div>
 					<div class="flex gap-3">
 						<button type="submit" class="flex-1 btn preset-filled-primary-500 py-2.5 rounded-lg font-semibold text-white">
@@ -180,10 +174,6 @@
 							disabled={userIsDemo}
 							onclick={() => { if (userIsDemo) toast.info('Editing the user email address is restricted in demo mode.'); }}
 						/>
-					</div>
-					<div>
-						<label for="avatar-input" class="text-xs font-medium text-surface-600 dark:text-gray-300 block mb-1">Avatar URL</label>
-						<input id="avatar-input" name="avatar" type="url" value={avatarPreview ? '' : (profileUser.avatar || '')} placeholder="https://example.com/avatar.png" class="w-full px-3 py-2 rounded-lg bg-surface-100 dark:bg-surface-700 border-0 text-sm focus:ring-2 focus:ring-primary-500" />
 					</div>
 					<div class="flex gap-3">
 						{#if userIsDemo}
