@@ -229,9 +229,7 @@
 	<Navbar />
 
 	<main class="flex-1 px-4 sm:px-6 lg:px-8 py-12">
-		<div class="max-w-5xl mx-auto">
-			<Breadcrumbs items={[{ label: 'Vehicles', href: '/vehicles' }, { label: `${vehicle.year} ${vehicle.make} ${vehicle.model}` }]} />
-		</div>
+		<Breadcrumbs items={[{ label: 'Vehicles', href: '/vehicles' }, { label: `${vehicle.year} ${vehicle.make} ${vehicle.model}` }]} />
 		<div class="max-w-5xl mx-auto grid md:grid-cols-3 gap-6">
 			<!-- Vehicle Info Card -->
 			<div class="bg-white dark:bg-surface-800 rounded-2xl p-6 shadow-xl shadow-surface-900/5 border border-[#eee]">

@@ -45,7 +45,7 @@ async function hashPassword(password: string): Promise<string> {
 // Avatar images stored on R2
 const AVATAR_BASE = 'https://pub-8578b5b18a5e41269fa51ae28e78a0a8.r2.dev/headshots';
 const VEHICLE_BASE = 'https://pub-8578b5b18a5e41269fa51ae28e78a0a8.r2.dev/vehicles';
-const DOC_BASE = 'https://pub-8578b5b18a5e41269fa51ae28e78a0a8.r2.dev/documents/samples';
+const DOC_BASE = '/documents/samples';
 const GALLERY_BASE = 'https://pub-8578b5b18a5e41269fa51ae28e78a0a8.r2.dev/gallery';
 
 // Helper to generate vehicle image filename
@@ -59,22 +59,22 @@ const noteTemplates = [
 	{
 		title: 'Vehicle Title',
 		body: 'Original title document for this vehicle.',
-		imageUrl: `${DOC_BASE}/sample-title.jpg`
+		imageUrl: `${DOC_BASE}/sample-title.svg`
 	},
 	{
 		title: 'Registration',
 		body: 'Current registration card - expires December 2025.',
-		imageUrl: `${DOC_BASE}/sample-registration.jpg`
+		imageUrl: `${DOC_BASE}/sample-registration.svg`
 	},
 	{
 		title: 'Insurance Policy',
 		body: 'Full coverage with State Farm. Policy #12345.',
-		imageUrl: `${DOC_BASE}/sample-insurance.jpg`
+		imageUrl: `${DOC_BASE}/sample-insurance.svg`
 	},
 	{
 		title: 'Oil Change Receipt',
 		body: 'Last oil change performed at Jiffy Lube. Next due at 85,000 miles.',
-		imageUrl: `${DOC_BASE}/sample-receipt.jpg`
+		imageUrl: `${DOC_BASE}/sample-receipt.svg`
 	},
 	{
 		title: 'Purchase Notes',

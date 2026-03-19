@@ -20,13 +20,11 @@
 
 	<!-- Breadcrumbs -->
 	<main class="flex-1 py-12 px-4 sm:px-6 lg:px-8">
-		<div class="max-w-sm mx-auto">
-			{#if isOwnProfile}
-				<Breadcrumbs items={[{ label: 'Profile' }]} />
-			{:else}
-				<Breadcrumbs items={[{ label: 'Users', href: '/users' }, { label: profileUser.username }]} />
-			{/if}
-		</div>
+		{#if isOwnProfile}
+			<Breadcrumbs items={[{ label: 'Profile' }]} />
+		{:else}
+			<Breadcrumbs items={[{ label: 'Users', href: '/users' }, { label: profileUser.username }]} />
+		{/if}
 		<div class="relative bg-white dark:bg-surface-800 rounded-2xl p-6 shadow-xl shadow-surface-900/5 w-full max-w-sm mx-auto border border-[#eee]">
 			<!-- Role Badges (top-right) -->
 			{#if getRoleNames(profileUser.roles).length > 0}

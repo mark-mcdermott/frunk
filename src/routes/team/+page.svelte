@@ -19,8 +19,8 @@
 </svelte:head>
 
 <div class="min-h-screen bg-surface-50 dark:bg-surface-900 py-8 px-4 sm:px-6 lg:px-8">
+	<Breadcrumbs items={[{ label: 'Team' }]} />
 	<div class="max-w-4xl mx-auto">
-		<Breadcrumbs items={[{ label: 'Team' }]} />
 		<h1 class="text-4xl font-bold text-surface-900 dark:text-white mb-2">The Team</h1>
 		<p class="text-surface-600 dark:text-gray-300 mb-8">Meet the people of Dunder Mifflin Scranton</p>
 

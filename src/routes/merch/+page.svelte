@@ -15,8 +15,8 @@
 	<Navbar />
 
 	<main class="flex-1 py-8 px-4 sm:px-6 lg:px-8">
+	<Breadcrumbs items={[{ label: 'Merch' }]} />
 	<div class="max-w-6xl mx-auto">
-		<Breadcrumbs items={[{ label: 'Merch' }]} />
 		<div class="text-center mb-12">
 			<h1 class="text-4xl sm:text-5xl font-bold text-surface-900 dark:text-white mb-4">Merch</h1>
 			<p class="text-lg text-surface-600 dark:text-gray-300 max-w-2xl mx-auto">
