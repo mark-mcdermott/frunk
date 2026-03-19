@@ -10,8 +10,8 @@
 </svelte:head>
 
 <div class="min-h-screen bg-surface-50 dark:bg-surface-900 py-8 px-4 sm:px-6 lg:px-8">
+	<Breadcrumbs items={[{ label: 'Merch', href: '/merch' }, { label: 'Order Confirmation' }]} />
 	<div class="max-w-2xl mx-auto">
-		<Breadcrumbs items={[{ label: 'Merch', href: '/merch' }, { label: 'Order Confirmation' }]} />
 		<div class="text-center mb-8">
 			<div
 				class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-success-500/20 mb-4"

@@ -7,8 +7,8 @@
 </script>
 
 <div class="min-h-screen bg-surface-50 dark:bg-surface-900 py-8 px-4 sm:px-6 lg:px-8">
+	<Breadcrumbs items={[{ label: 'Demo', href: '/demo' }, { label: 'Lucia' }]} />
 	<div class="max-w-4xl mx-auto">
-		<Breadcrumbs items={[{ label: 'Demo', href: '/demo' }, { label: 'Lucia' }]} />
 		<h1>Hi, {data.user.username}!</h1>
 		<p>Your user ID is {data.user.uuid}.</p>
 		<form method="post" action="?/logout" use:enhance>

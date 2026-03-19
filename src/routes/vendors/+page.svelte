@@ -18,8 +18,8 @@
 	<Navbar />
 
 	<main class="flex-1 px-4 sm:px-6 lg:px-8 py-12">
+		<Breadcrumbs items={[{ label: 'Vendors' }]} />
 		<div class="max-w-4xl mx-auto">
-			<Breadcrumbs items={[{ label: 'Vendors' }]} />
 			<div class="mb-8 flex items-end justify-between">
 				<div>
 					<h1 class="text-2xl font-bold text-black dark:text-white">My Vendors</h1>
