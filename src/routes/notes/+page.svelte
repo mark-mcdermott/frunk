@@ -25,8 +25,8 @@
 	<Navbar />
 
 	<main class="flex-1 px-4 sm:px-6 lg:px-8 py-12">
+		<Breadcrumbs items={[{ label: 'Notes' }]} />
 		<div class="max-w-4xl mx-auto">
-			<Breadcrumbs items={[{ label: 'Notes' }]} />
 			<div class="mb-8">
 				<h1 class="text-2xl font-bold text-black dark:text-white">All Notes</h1>
 				<p class="text-sm text-surface-500 dark:text-gray-300 mt-1">All notes across your vehicles.</p>

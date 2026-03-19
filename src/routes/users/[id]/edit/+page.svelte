@@ -64,13 +64,11 @@
 
 	<!-- Breadcrumbs -->
 	<main class="flex-1 py-12 px-4 sm:px-6 lg:px-8">
-		<div class="max-w-sm mx-auto">
-			{#if isAdminEditing}
-				<Breadcrumbs items={[{ label: 'Users', href: '/users' }, { label: 'Edit User' }]} />
-			{:else}
-				<Breadcrumbs items={[{ label: 'Settings' }]} />
-			{/if}
-		</div>
+		{#if isAdminEditing}
+			<Breadcrumbs items={[{ label: 'Users', href: '/users' }, { label: 'Edit User' }]} />
+		{:else}
+			<Breadcrumbs items={[{ label: 'Settings' }]} />
+		{/if}
 		<div class="bg-white dark:bg-surface-800 rounded-2xl p-6 shadow-xl shadow-surface-900/5 w-full max-w-sm mx-auto border border-[#eee]">
 			{#if isAdminEditing}
 				<!-- Admin Edit View -->
