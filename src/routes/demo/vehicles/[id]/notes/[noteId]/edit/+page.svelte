@@ -83,14 +83,12 @@
 	<Navbar />
 
 	<main class="flex-1 px-4 sm:px-6 lg:px-8 py-12">
-		<div class="max-w-xl mx-auto">
-			<Breadcrumbs items={[
+		<Breadcrumbs items={[
 				{ label: 'Vehicles', href: `${basePath}/vehicles` },
 				{ label: `${vehicle.year} ${vehicle.make} ${vehicle.model}`, href: `${basePath}/vehicles/${vehicle.id}` },
 				{ label: note.title, href: `${basePath}/vehicles/${vehicle.id}/notes/${note.uuid}` },
 				{ label: 'Edit' }
 			]} />
-		</div>
 		<div class="max-w-xl mx-auto">
 			<!-- Back link -->
 			<a

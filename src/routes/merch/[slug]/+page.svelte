@@ -83,8 +83,8 @@
 	<Navbar />
 
 	<main class="flex-1 py-8 px-4 sm:px-6 lg:px-8">
+	<Breadcrumbs items={[{ label: 'Merch', href: '/merch' }, { label: product.name }]} />
 	<div class="max-w-6xl mx-auto">
-		<Breadcrumbs items={[{ label: 'Merch', href: '/merch' }, { label: product.name }]} />
 
 		<div class="grid md:grid-cols-2 gap-12">
 			<!-- Product Image -->

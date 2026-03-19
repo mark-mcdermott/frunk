@@ -51,13 +51,11 @@
 	<Navbar />
 
 	<main class="flex-1 py-12 px-4 sm:px-6 lg:px-8">
-		<div class="max-w-sm mx-auto">
-			<Breadcrumbs items={[
+		<Breadcrumbs items={[
 				{ label: 'Vehicles', href: '/vehicles' },
 				{ label: `${vehicle.year} ${vehicle.make} ${vehicle.model}`, href: `/vehicles/${vehicle.id}` },
 				{ label: 'Edit' }
 			]} />
-		</div>
 		<div class="bg-white dark:bg-surface-800 rounded-2xl p-6 shadow-xl shadow-surface-900/5 w-full max-w-sm mx-auto border border-[#eee]">
 			<h3 class="text-xl font-bold text-black dark:text-white mb-2">Edit Vehicle</h3>
 			<p class="text-sm text-surface-500 dark:text-gray-300 mb-6">Update your vehicle's details.</p>
