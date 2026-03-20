@@ -116,7 +116,7 @@ pnpm test
 pnpm test:e2e
 ```
 
-The test suite has 18 tests across unit and e2e. The e2e tests (`e2e/core-flows.test.ts`) provide solid coverage of auth flows — sign up, sign in, sign out, profile access, and protected route enforcement. Unit test coverage is minimal and focused on smoke tests for now.
+The test suite has 50 tests across unit and e2e. The e2e tests cover auth flows, vehicle CRUD, vendor CRUD, repairs, notes, merch store browsing, and demo mode. Unit test coverage is minimal and focused on smoke tests for now.
 
 ### Deployment
 
