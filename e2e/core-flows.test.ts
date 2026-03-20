@@ -1,4 +1,5 @@
 import { expect, test } from '@playwright/test';
+import { signUpTestUser, signOut } from './helpers';
 
 // Generate unique test user credentials for each run
 const testEmail = `test-${Date.now()}@example.com`;
@@ -16,14 +17,14 @@ test.describe('Navigation', () => {
 	test('sign in page is accessible', async ({ page }) => {
 		await page.goto('/sign-in');
 		await expect(page.locator('h3')).toContainText('Sign In');
-		await expect(page.locator('input[name="username"]')).toBeVisible();
+		await expect(page.locator('input[name="email"]')).toBeVisible();
 		await expect(page.locator('input[name="password"]')).toBeVisible();
 	});
 
 	test('sign up page is accessible', async ({ page }) => {
 		await page.goto('/sign-up');
 		await expect(page.locator('h3')).toContainText('Create Account');
-		await expect(page.locator('input[name="username"]')).toBeVisible();
+		await expect(page.locator('input[name="email"]')).toBeVisible();
 		await expect(page.locator('input[name="password"]')).toBeVisible();
 	});
 
@@ -49,11 +50,11 @@ test.describe('Sign Up Flow', () => {
 	test('form has required fields', async ({ page }) => {
 		await page.goto('/sign-up');
 		// Verify form elements exist
-		await expect(page.locator('input[name="username"]')).toBeVisible();
+		await expect(page.locator('input[name="email"]')).toBeVisible();
 		await expect(page.locator('input[name="password"]')).toBeVisible();
-		await expect(page.locator('button[type="submit"]')).toBeVisible();
+		await expect(page.getByRole('button', { name: 'Create Account' })).toBeVisible();
 		// Email input should have type="email" for validation
-		await expect(page.locator('input[name="username"]')).toHaveAttribute('type', 'email');
+		await expect(page.locator('input[name="email"]')).toHaveAttribute('type', 'email');
 	});
 
 	test('form shows link to sign in', async ({ page }) => {
@@ -64,9 +65,9 @@ test.describe('Sign Up Flow', () => {
 
 	test('successful sign up redirects to profile', async ({ page }) => {
 		await page.goto('/sign-up');
-		await page.fill('input[name="username"]', testEmail);
+		await page.fill('input[name="email"]', testEmail);
 		await page.fill('input[name="password"]', testPassword);
-		await page.click('button[type="submit"]');
+		await page.getByRole('button', { name: 'Create Account' }).click();
 		// Should redirect to user profile page
 		await page.waitForURL(/\/users\/[a-z0-9]+$/);
 		// Should show email verification banner
@@ -77,59 +78,40 @@ test.describe('Sign Up Flow', () => {
 test.describe('Sign In Flow', () => {
 	test('shows error for invalid credentials', async ({ page }) => {
 		await page.goto('/sign-in');
-		await page.fill('input[name="username"]', 'nonexistent@example.com');
+		await page.fill('input[name="email"]', 'nonexistent@example.com');
 		await page.fill('input[name="password"]', 'wrongpassword');
-		await page.click('button[type="submit"]');
+		await page.getByRole('button', { name: 'Sign In' }).click();
 		// Should show error message (actual message is "Incorrect email or password")
 		await expect(page.locator('text=Incorrect email or password')).toBeVisible();
 	});
 
 	test('successful sign in redirects appropriately', async ({ page }) => {
 		// First create a user by signing up
-		const loginEmail = `login-${Date.now()}@example.com`;
-		await page.goto('/sign-up');
-		await page.fill('input[name="username"]', loginEmail);
-		await page.fill('input[name="password"]', testPassword);
-		await page.click('button[type="submit"]');
-		await page.waitForURL(/\/users\/[a-z0-9]+$/);
+		const loginEmail = await signUpTestUser(page, 'login');
 
 		// Sign out
-		await page.click('[data-testid="avatar-menu"], .cursor-pointer:has(img[alt="Avatar"]), .cursor-pointer:has(.preset-filled-primary-500)');
-		await page.click('text=Sign Out');
-		await page.waitForURL('/');
+		await signOut(page);
 
 		// Now sign in
 		await page.goto('/sign-in');
-		await page.fill('input[name="username"]', loginEmail);
+		await page.fill('input[name="email"]', loginEmail);
 		await page.fill('input[name="password"]', testPassword);
-		await page.click('button[type="submit"]');
-		// Should redirect to user profile
-		await page.waitForURL(/\/users\/[a-z0-9]+$/);
+		await page.getByRole('button', { name: 'Sign In' }).click();
+		// Should redirect to vehicles page after login
+		await page.waitForURL('/vehicles');
 	});
 });
 
 test.describe('User Profile', () => {
 	test('authenticated user can view own profile', async ({ page }) => {
-		// Sign up a new user
-		const profileEmail = `profile-${Date.now()}@example.com`;
-		await page.goto('/sign-up');
-		await page.fill('input[name="username"]', profileEmail);
-		await page.fill('input[name="password"]', testPassword);
-		await page.click('button[type="submit"]');
-		await page.waitForURL(/\/users\/([a-z0-9]+)$/);
+		const profileEmail = await signUpTestUser(page, 'profile');
 
 		// Should see username on profile
 		await expect(page.locator(`text=${profileEmail}`)).toBeVisible();
 	});
 
 	test('authenticated user can access edit page', async ({ page }) => {
-		// Sign up a new user
-		const editEmail = `edit-${Date.now()}@example.com`;
-		await page.goto('/sign-up');
-		await page.fill('input[name="username"]', editEmail);
-		await page.fill('input[name="password"]', testPassword);
-		await page.click('button[type="submit"]');
-		await page.waitForURL(/\/users\/([a-z0-9]+)$/);
+		const editEmail = await signUpTestUser(page, 'edit');
 
 		// Get the user UUID from URL
 		const url = page.url();
@@ -152,37 +134,19 @@ test.describe('User Profile', () => {
 
 test.describe('Sign Out', () => {
 	test('user can sign out', async ({ page }) => {
-		// Sign up
-		const signoutEmail = `signout-${Date.now()}@example.com`;
-		await page.goto('/sign-up');
-		await page.fill('input[name="username"]', signoutEmail);
-		await page.fill('input[name="password"]', testPassword);
-		await page.click('button[type="submit"]');
-		await page.waitForURL(/\/users\/[a-z0-9]+$/);
+		await signUpTestUser(page, 'signout');
 
-		// Open user menu and sign out
-		// Click on the avatar/user menu trigger
-		const avatarTrigger = page.locator('nav .cursor-pointer').last();
-		await avatarTrigger.click();
+		// Sign out using helper
+		await signOut(page);
 
-		// Click sign out in the menu
-		await page.click('button:has-text("Sign Out")');
-
-		// Should redirect to home and show sign in button
-		await page.waitForURL('/');
+		// Should be on home and show sign in button
 		await expect(page.locator('a[href="/sign-in"]')).toBeVisible();
 	});
 });
 
 test.describe('Protected Routes', () => {
 	test('users index page requires admin', async ({ page }) => {
-		// Sign up as regular user
-		const regularEmail = `regular-${Date.now()}@example.com`;
-		await page.goto('/sign-up');
-		await page.fill('input[name="username"]', regularEmail);
-		await page.fill('input[name="password"]', testPassword);
-		await page.click('button[type="submit"]');
-		await page.waitForURL(/\/users\/[a-z0-9]+$/);
+		await signUpTestUser(page, 'regular');
 
 		// Try to access users list
 		const response = await page.goto('/users');
@@ -192,13 +156,7 @@ test.describe('Protected Routes', () => {
 	});
 
 	test('user cannot view other user profiles', async ({ page }) => {
-		// Sign up as user
-		const user1Email = `user1-${Date.now()}@example.com`;
-		await page.goto('/sign-up');
-		await page.fill('input[name="username"]', user1Email);
-		await page.fill('input[name="password"]', testPassword);
-		await page.click('button[type="submit"]');
-		await page.waitForURL(/\/users\/([a-z0-9]+)$/);
+		await signUpTestUser(page, 'user1');
 
 		// Try to access another user's profile (random UUID)
 		const response = await page.goto('/users/anotheruseruuid123');
