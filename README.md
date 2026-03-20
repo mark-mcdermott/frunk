@@ -116,6 +116,8 @@ pnpm test
 pnpm test:e2e
 ```
 
+The test suite has 18 tests across unit and e2e. The e2e tests (`e2e/core-flows.test.ts`) provide solid coverage of auth flows — sign up, sign in, sign out, profile access, and protected route enforcement. Unit test coverage is minimal and focused on smoke tests for now.
+
 ### Deployment
 
 The app is configured for Cloudflare Pages:
