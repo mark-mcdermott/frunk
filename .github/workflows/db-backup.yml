@@ -1,0 +1,42 @@
+name: Daily DB Backup
+
+on:
+  schedule:
+    - cron: '0 6 * * *' # 6 AM UTC daily
+  workflow_dispatch: # Allow manual trigger
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+  BACKUP_REPO: mark-mcdermott/frunk-db-backups
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Install PostgreSQL client
+        run: sudo apt-get update && sudo apt-get install -y postgresql-client
+
+      - name: Dump database
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: |
+          pg_dump "$DATABASE_URL" --no-owner --no-acl --clean --if-exists > backup.sql
+          echo "Backup size: $(wc -c < backup.sql) bytes"
+
+      - name: Clone backup repo
+        run: |
+          git clone https://x-access-token:${{ secrets.FRUNK_BACKUP_REPO_TOKEN }}@github.com/${{ env.BACKUP_REPO }}.git backup-repo
+
+      - name: Commit and push backup
+        run: |
+          cd backup-repo
+          cp ../backup.sql frunk-$(date -u +%Y-%m-%d).sql
+          cp ../backup.sql latest.sql
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add .
+          git diff --cached --quiet && echo "No changes to backup" && exit 0
+          git commit -m "backup $(date -u +%Y-%m-%d-%H%M)"
+          git push
