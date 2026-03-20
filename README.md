@@ -116,7 +116,7 @@ pnpm test
 pnpm test:e2e
 ```
 
-The test suite has 50 tests across unit and e2e. The e2e tests cover auth flows, vehicle CRUD, vendor CRUD, repairs, notes, merch store browsing, and demo mode. Unit test coverage is minimal and focused on smoke tests for now.
+The test suite has 48 e2e tests covering auth flows, vehicle CRUD, vendor CRUD, repairs, notes, merch store browsing, and demo mode.
 
 ### Deployment
 
