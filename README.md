@@ -1,5 +1,7 @@
 # Frunk
 
+[![E2E Tests](https://github.com/mark-mcdermott/frunk/actions/workflows/e2e.yml/badge.svg)](https://github.com/mark-mcdermott/frunk/actions/workflows/e2e.yml)
+
 Your personal vehicle management companion. Keep track of everything about your cars in one place.
 
 ## What is Frunk?
