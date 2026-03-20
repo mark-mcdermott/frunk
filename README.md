@@ -1,5 +1,7 @@
 # Frunk
 
+[![E2E Tests](https://github.com/mark-mcdermott/frunk/actions/workflows/e2e.yml/badge.svg)](https://github.com/mark-mcdermott/frunk/actions/workflows/e2e.yml)
+
 Your personal vehicle management companion. Keep track of everything about your cars in one place.
 
 ## What is Frunk?
@@ -115,6 +117,8 @@ pnpm test
 # Run e2e tests
 pnpm test:e2e
 ```
+
+The test suite has 48 e2e tests covering auth flows, vehicle CRUD, vendor CRUD, repairs, notes, merch store browsing, and demo mode.
 
 ### Deployment
 
