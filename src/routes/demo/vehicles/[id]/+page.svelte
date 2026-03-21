@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
-	import { Car, Pencil, Calendar, Hash, StickyNote, Plus, Trash2, ImageIcon, ChevronRight, Wrench, DollarSign, Store, Camera, X, GripVertical, Clock, Check, AlertTriangle } from 'lucide-svelte';
+	import { Car, Pencil, Calendar, Hash, StickyNote, Plus, Trash2, ImageIcon, ChevronRight, Wrench, DollarSign, Store, Camera, X, GripVertical, Clock, Check, AlertTriangle, ClipboardCheck } from 'lucide-svelte';
 	import Navbar from '$lib/components/Navbar.svelte';
 	import Footer from '$lib/components/Footer.svelte';
 	import Breadcrumbs from '$lib/components/Breadcrumbs.svelte';
@@ -558,11 +558,11 @@
 								<div class="flex items-center gap-1 mt-3 pt-3 border-t border-surface-200 dark:border-surface-600">
 									<button
 										type="button"
-										class="flex-1 btn inline-flex items-center justify-center gap-1 px-2 py-1 text-xs bg-green-500 text-white rounded-lg transition-colors"
+										class="flex-1 btn inline-flex items-center justify-center gap-1 px-2 py-1 text-xs bg-primary-500 text-white rounded-lg transition-colors"
 										onclick={() => { scheduleToComplete = { id: schedule.id, name: schedule.name }; completeMileage = ''; completeModalOpen = true; }}
 									>
-										<Check class="w-3 h-3" />
-										Done
+										<ClipboardCheck class="w-3 h-3" />
+										Log This Service
 									</button>
 									<button
 										type="button"
