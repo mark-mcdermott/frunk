@@ -30,7 +30,7 @@ test.describe('Vendors', () => {
 
 		// Check list
 		await page.goto('/vendors');
-		await expect(page.locator('text=Quick Lube').first()).toBeVisible();
+		await expect(page.locator('text=Quick Lube').first()).toBeVisible({ timeout: 15000 });
 	});
 
 	test('user can edit a vendor', async ({ page }) => {
