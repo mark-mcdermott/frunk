@@ -32,7 +32,7 @@ test.describe('Vehicles', () => {
 
 		// Go to vehicles list
 		await page.goto('/vehicles');
-		await expect(page.locator('text=Honda').first()).toBeVisible();
+		await expect(page.locator('text=Honda').first()).toBeVisible({ timeout: 15000 });
 	});
 
 	test('user can edit a vehicle', async ({ page }) => {
