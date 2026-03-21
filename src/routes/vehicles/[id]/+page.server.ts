@@ -9,10 +9,7 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 		throw redirect(302, '/sign-in');
 	}
 
-	const [vehicle] = await db
-		.select()
-		.from(table.vehicles)
-		.where(eq(table.vehicles.id, params.id));
+	const [vehicle] = await db.select().from(table.vehicles).where(eq(table.vehicles.id, params.id));
 
 	if (!vehicle) {
 		throw error(404, 'Vehicle not found');
@@ -88,7 +85,14 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 		})
 	);
 
-	return { vehicle, notes, repairs, vendors, galleries };
+	// Get maintenance schedules for this vehicle
+	const schedules = await db
+		.select()
+		.from(table.maintenanceSchedules)
+		.where(eq(table.maintenanceSchedules.vehicleId, params.id))
+		.orderBy(table.maintenanceSchedules.name);
+
+	return { vehicle, notes, repairs, vendors, galleries, schedules };
 };
 
 export const actions: Actions = {
@@ -168,10 +172,7 @@ export const actions: Actions = {
 		const noteUuid = formData.get('noteUuid') as string;
 
 		// Get note and verify ownership through vehicle
-		const [note] = await db
-			.select()
-			.from(table.notes)
-			.where(eq(table.notes.uuid, noteUuid));
+		const [note] = await db.select().from(table.notes).where(eq(table.notes.uuid, noteUuid));
 
 		if (!note) {
 			throw error(404, 'Note not found');
@@ -223,7 +224,7 @@ export const actions: Actions = {
 		const mileageStr = formData.get('mileage') as string;
 		const costStr = formData.get('cost') as string;
 		const vendorId = formData.get('vendorId') as string;
-		const status = formData.get('status') as string || 'completed';
+		const status = (formData.get('status') as string) || 'completed';
 
 		if (!description?.trim()) {
 			return fail(400, { message: 'Description is required' });
@@ -260,10 +261,7 @@ export const actions: Actions = {
 		const repairId = formData.get('repairId') as string;
 
 		// Get repair and verify ownership through vehicle
-		const [repair] = await db
-			.select()
-			.from(table.repairs)
-			.where(eq(table.repairs.id, repairId));
+		const [repair] = await db.select().from(table.repairs).where(eq(table.repairs.id, repairId));
 
 		if (!repair) {
 			throw error(404, 'Repair not found');
@@ -594,6 +592,119 @@ export const actions: Actions = {
 				updatedAt: new Date()
 			})
 			.where(eq(table.vehiclePhotos.id, photoId));
+
+		return { success: true };
+	},
+
+	createSchedule: async ({ request, params, locals }) => {
+		if (!locals.user) {
+			throw error(401, 'Unauthorized');
+		}
+
+		const [vehicle] = await db
+			.select()
+			.from(table.vehicles)
+			.where(eq(table.vehicles.id, params.id));
+
+		if (!vehicle || vehicle.userId !== locals.user.uuid) {
+			throw error(403, 'Forbidden');
+		}
+
+		const formData = await request.formData();
+		const name = formData.get('name') as string;
+		const intervalMilesStr = formData.get('intervalMiles') as string;
+		const intervalMonthsStr = formData.get('intervalMonths') as string;
+
+		if (!name?.trim()) {
+			return fail(400, { message: 'Name is required' });
+		}
+
+		const intervalMiles = intervalMilesStr ? parseInt(intervalMilesStr, 10) : null;
+		const intervalMonths = intervalMonthsStr ? parseInt(intervalMonthsStr, 10) : null;
+
+		if (!intervalMiles && !intervalMonths) {
+			return fail(400, { message: 'At least one interval (miles or months) is required' });
+		}
+
+		await db.insert(table.maintenanceSchedules).values({
+			id: crypto.randomUUID(),
+			vehicleId: params.id,
+			name: name.trim(),
+			intervalMiles,
+			intervalMonths
+		});
+
+		return { success: true };
+	},
+
+	completeSchedule: async ({ request, params, locals }) => {
+		if (!locals.user) {
+			throw error(401, 'Unauthorized');
+		}
+
+		const [vehicle] = await db
+			.select()
+			.from(table.vehicles)
+			.where(eq(table.vehicles.id, params.id));
+
+		if (!vehicle || vehicle.userId !== locals.user.uuid) {
+			throw error(403, 'Forbidden');
+		}
+
+		const formData = await request.formData();
+		const scheduleId = formData.get('scheduleId') as string;
+		const mileageStr = formData.get('mileage') as string;
+
+		const [schedule] = await db
+			.select()
+			.from(table.maintenanceSchedules)
+			.where(eq(table.maintenanceSchedules.id, scheduleId));
+
+		if (!schedule || schedule.vehicleId !== params.id) {
+			throw error(404, 'Schedule not found');
+		}
+
+		await db
+			.update(table.maintenanceSchedules)
+			.set({
+				lastCompletedDate: new Date(),
+				lastCompletedMileage: mileageStr ? parseInt(mileageStr, 10) : null,
+				updatedAt: new Date()
+			})
+			.where(eq(table.maintenanceSchedules.id, scheduleId));
+
+		return { success: true };
+	},
+
+	deleteSchedule: async ({ request, params, locals }) => {
+		if (!locals.user) {
+			throw error(401, 'Unauthorized');
+		}
+
+		const formData = await request.formData();
+		const scheduleId = formData.get('scheduleId') as string;
+
+		const [schedule] = await db
+			.select()
+			.from(table.maintenanceSchedules)
+			.where(eq(table.maintenanceSchedules.id, scheduleId));
+
+		if (!schedule) {
+			throw error(404, 'Schedule not found');
+		}
+
+		const [vehicle] = await db
+			.select()
+			.from(table.vehicles)
+			.where(eq(table.vehicles.id, schedule.vehicleId));
+
+		if (!vehicle || vehicle.userId !== locals.user.uuid) {
+			throw error(403, 'Forbidden');
+		}
+
+		await db
+			.delete(table.maintenanceSchedules)
+			.where(eq(table.maintenanceSchedules.id, scheduleId));
 
 		return { success: true };
 	},

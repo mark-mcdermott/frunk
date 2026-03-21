@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
-	import { Car, Pencil, Calendar, Hash, StickyNote, Plus, Trash2, ImageIcon, ChevronRight, Wrench, DollarSign, Store, Camera, X, GripVertical } from 'lucide-svelte';
+	import { Car, Pencil, Calendar, Hash, StickyNote, Plus, Trash2, ImageIcon, ChevronRight, Wrench, DollarSign, Store, Camera, X, GripVertical, Clock, Check, AlertTriangle, ClipboardCheck } from 'lucide-svelte';
 	import Navbar from '$lib/components/Navbar.svelte';
 	import Footer from '$lib/components/Footer.svelte';
 	import Breadcrumbs from '$lib/components/Breadcrumbs.svelte';
@@ -9,11 +9,14 @@
 	import { dndzone } from 'svelte-dnd-action';
 	import { flip } from 'svelte/animate';
 
+	import { maintenanceTemplates } from '$lib/data/maintenance-templates';
+
 	const vehicle = $derived($page.data.vehicle);
 	const notes = $derived($page.data.notes);
 	const repairs = $derived($page.data.repairs);
 	const vendors = $derived($page.data.vendors);
 	const galleries = $derived($page.data.galleries);
+	const schedules = $derived($page.data.schedules);
 
 	let noteModalOpen = $state(false);
 	let deleteModalOpen = $state(false);
@@ -72,6 +75,50 @@
 	let editGalleryPhotos = $state<Array<{ id: string; imageUrl: string; caption: string | null; order: number }>>([]);
 	let savingEditGallery = $state(false);
 	const flipDurationMs = 200;
+
+	// Maintenance schedule state
+	let scheduleModalOpen = $state(false);
+	let scheduleDeleteModalOpen = $state(false);
+	let scheduleToDelete = $state<{ id: string; name: string } | null>(null);
+	let completeModalOpen = $state(false);
+	let scheduleToComplete = $state<{ id: string; name: string } | null>(null);
+	let completeMileage = $state('');
+	let savingSchedule = $state(false);
+
+	// Schedule form state
+	let scheduleName = $state('');
+	let scheduleIntervalMiles = $state('');
+	let scheduleIntervalMonths = $state('');
+
+	function resetScheduleForm() {
+		scheduleName = '';
+		scheduleIntervalMiles = '';
+		scheduleIntervalMonths = '';
+	}
+
+	function applyTemplate(template: { name: string; intervalMiles: number | null; intervalMonths: number | null }) {
+		scheduleName = template.name;
+		scheduleIntervalMiles = template.intervalMiles?.toString() ?? '';
+		scheduleIntervalMonths = template.intervalMonths?.toString() ?? '';
+	}
+
+	function getScheduleStatus(schedule: { intervalMiles: number | null; intervalMonths: number | null; lastCompletedDate: Date | null; lastCompletedMileage: number | null }): 'overdue' | 'due-soon' | 'ok' | 'new' {
+		if (!schedule.lastCompletedDate && !schedule.lastCompletedMileage) return 'new';
+
+		if (schedule.intervalMonths && schedule.lastCompletedDate) {
+			const lastDate = new Date(schedule.lastCompletedDate);
+			const dueDate = new Date(lastDate);
+			dueDate.setMonth(dueDate.getMonth() + schedule.intervalMonths);
+			const now = new Date();
+			const warningDate = new Date(dueDate);
+			warningDate.setMonth(warningDate.getMonth() - 1);
+
+			if (now >= dueDate) return 'overdue';
+			if (now >= warningDate) return 'due-soon';
+		}
+
+		return 'ok';
+	}
 
 	// Photo viewer state - track gallery and photo index
 	let viewingGalleryId = $state<string | null>(null);
@@ -438,6 +485,92 @@
 										onclick={(e) => { e.preventDefault(); repairToDelete = { id: repair.id, description: repair.description }; repairDeleteModalOpen = true; }}
 									>
 										<Trash2 class="w-4 h-4" />
+									</button>
+								</div>
+							</div>
+						{/each}
+					</div>
+				{/if}
+			</div>
+		</div>
+
+		<!-- Maintenance Schedule Section (Full Width) -->
+		<div class="max-w-5xl mx-auto mt-6">
+			<div class="bg-white dark:bg-surface-800 rounded-2xl p-6 shadow-xl shadow-surface-900/5 border border-[#eee]">
+				<div class="flex items-center justify-between mb-6">
+					<h2 class="text-lg font-bold text-black dark:text-white flex items-center gap-2">
+						<Clock class="w-5 h-5" />
+						Maintenance Schedule
+					</h2>
+					<button
+						type="button"
+						class="btn inline-flex items-center gap-1 px-3 py-1.5 text-sm bg-primary-500 text-white rounded-lg transition-colors"
+						onclick={() => scheduleModalOpen = true}
+					>
+						<Plus class="w-4 h-4" />
+						Add
+					</button>
+				</div>
+
+				{#if schedules.length === 0}
+					<div class="text-center py-8">
+						<Clock class="w-12 h-12 mx-auto text-surface-300 dark:text-gray-400 mb-3" />
+						<p class="text-surface-500 dark:text-gray-300 text-sm">No maintenance scheduled</p>
+						<p class="text-surface-400 text-xs mt-1">Add reminders to stay on top of maintenance</p>
+					</div>
+				{:else}
+					<div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
+						{#each schedules as schedule}
+							{@const status = getScheduleStatus(schedule)}
+							<div class="relative p-4 rounded-lg border {status === 'overdue' ? 'border-red-300 bg-red-50 dark:border-red-800 dark:bg-red-900/20' : status === 'due-soon' ? 'border-yellow-300 bg-yellow-50 dark:border-yellow-800 dark:bg-yellow-900/20' : 'border-surface-200 bg-surface-50 dark:border-surface-600 dark:bg-surface-700/50'}">
+								<div class="flex items-start justify-between gap-2">
+									<div class="flex-1 min-w-0">
+										<div class="flex items-center gap-2">
+											{#if status === 'overdue'}
+												<AlertTriangle class="w-4 h-4 text-red-500 shrink-0" />
+											{:else if status === 'due-soon'}
+												<AlertTriangle class="w-4 h-4 text-yellow-500 shrink-0" />
+											{:else if status === 'ok'}
+												<Check class="w-4 h-4 text-green-500 shrink-0" />
+											{:else}
+												<Clock class="w-4 h-4 text-surface-400 shrink-0" />
+											{/if}
+											<h3 class="font-medium text-sm text-black dark:text-white truncate">{schedule.name}</h3>
+										</div>
+										<div class="text-xs text-surface-500 dark:text-gray-300 mt-1.5 space-y-0.5">
+											{#if schedule.intervalMiles}
+												<p>Every {schedule.intervalMiles.toLocaleString()} mi</p>
+											{/if}
+											{#if schedule.intervalMonths}
+												<p>Every {schedule.intervalMonths} {schedule.intervalMonths === 1 ? 'month' : 'months'}</p>
+											{/if}
+											{#if schedule.lastCompletedDate}
+												<p class="text-surface-400">Last: {formatDate(schedule.lastCompletedDate)}{schedule.lastCompletedMileage ? ` at ${schedule.lastCompletedMileage.toLocaleString()} mi` : ''}</p>
+											{:else}
+												<p class="text-surface-400 italic">Never completed</p>
+											{/if}
+										</div>
+									</div>
+									<span class="text-xs px-2 py-0.5 rounded-full shrink-0 {status === 'overdue' ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400' : status === 'due-soon' ? 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400' : status === 'ok' ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' : 'bg-surface-100 text-surface-600 dark:bg-surface-600 dark:text-surface-300'}">
+										{status === 'overdue' ? 'Overdue' : status === 'due-soon' ? 'Due Soon' : status === 'ok' ? 'Good' : 'New'}
+									</span>
+								</div>
+								<div class="flex items-center gap-1 mt-3 pt-3 border-t border-surface-200 dark:border-surface-600">
+									<button
+										type="button"
+										class="flex-1 btn inline-flex items-center justify-center gap-1 px-2 py-1 text-xs bg-primary-500 text-white rounded-lg transition-colors"
+										onclick={() => { scheduleToComplete = { id: schedule.id, name: schedule.name }; completeMileage = ''; completeModalOpen = true; }}
+									>
+										<ClipboardCheck class="w-3 h-3" />
+										Log This Service
+									</button>
+									<button
+										type="button"
+										class="p-1.5 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
+										aria-label="Delete schedule"
+										onclick={() => { scheduleToDelete = { id: schedule.id, name: schedule.name }; scheduleDeleteModalOpen = true; }}
+									>
+										<Trash2 class="w-3.5 h-3.5" />
 									</button>
 								</div>
 							</div>
@@ -1374,4 +1507,184 @@
 			<input type="hidden" name="photoId" value={photo.id} />
 		</form>
 	{/each}
+{/each}
+
+<!-- Add Maintenance Schedule Modal -->
+{#if scheduleModalOpen}
+	<div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50" onclick={(e) => { if (e.target === e.currentTarget) scheduleModalOpen = false; }}>
+		<div class="bg-white dark:bg-surface-800 rounded-2xl p-6 w-full max-w-md shadow-xl">
+			<h3 class="text-lg font-bold text-black dark:text-white mb-4">Add Maintenance Schedule</h3>
+
+			<div class="mb-4">
+				<p class="text-xs font-medium text-surface-600 dark:text-gray-300 mb-2">Quick Add from Template</p>
+				<div class="flex flex-wrap gap-1.5">
+					{#each maintenanceTemplates as template}
+						<button
+							type="button"
+							class="px-2 py-1 text-xs rounded-md bg-surface-100 dark:bg-surface-700 text-surface-600 dark:text-surface-300 hover:bg-primary-100 hover:text-primary-700 dark:hover:bg-primary-900/30 dark:hover:text-primary-400 transition-colors"
+							onclick={() => applyTemplate(template)}
+						>
+							{template.name}
+						</button>
+					{/each}
+				</div>
+			</div>
+
+			<form
+				method="POST"
+				action="?/createSchedule"
+				use:enhance={() => {
+					savingSchedule = true;
+					return async ({ update }) => {
+						await update();
+						savingSchedule = false;
+						scheduleModalOpen = false;
+						resetScheduleForm();
+					};
+				}}
+				class="space-y-4"
+			>
+				<div>
+					<label for="schedule-name" class="text-xs font-medium text-surface-600 dark:text-gray-300 block mb-1">
+						Name <span class="text-red-500">*</span>
+					</label>
+					<input
+						type="text"
+						id="schedule-name"
+						name="name"
+						bind:value={scheduleName}
+						placeholder="e.g., Oil Change"
+						class="w-full px-3 py-2 rounded-lg bg-surface-100 dark:bg-surface-700 border-0 text-sm focus:ring-2 focus:ring-primary-500"
+						required
+					/>
+				</div>
+
+				<div class="grid grid-cols-2 gap-4">
+					<div>
+						<label for="schedule-miles" class="text-xs font-medium text-surface-600 dark:text-gray-300 block mb-1">
+							Every (miles)
+						</label>
+						<input
+							type="number"
+							id="schedule-miles"
+							name="intervalMiles"
+							bind:value={scheduleIntervalMiles}
+							placeholder="e.g., 5000"
+							class="w-full px-3 py-2 rounded-lg bg-surface-100 dark:bg-surface-700 border-0 text-sm focus:ring-2 focus:ring-primary-500"
+						/>
+					</div>
+					<div>
+						<label for="schedule-months" class="text-xs font-medium text-surface-600 dark:text-gray-300 block mb-1">
+							Every (months)
+						</label>
+						<input
+							type="number"
+							id="schedule-months"
+							name="intervalMonths"
+							bind:value={scheduleIntervalMonths}
+							placeholder="e.g., 6"
+							class="w-full px-3 py-2 rounded-lg bg-surface-100 dark:bg-surface-700 border-0 text-sm focus:ring-2 focus:ring-primary-500"
+						/>
+					</div>
+				</div>
+
+				<div class="flex gap-3 pt-4">
+					<button
+						type="button"
+						class="flex-1 btn preset-outlined-surface-500 py-2.5 rounded-lg font-semibold"
+						onclick={() => { scheduleModalOpen = false; resetScheduleForm(); }}
+					>
+						Cancel
+					</button>
+					<button
+						type="submit"
+						class="flex-1 btn preset-filled-primary-500 py-2.5 rounded-lg font-semibold text-white disabled:opacity-50"
+						disabled={!scheduleName.trim() || (!scheduleIntervalMiles && !scheduleIntervalMonths) || savingSchedule}
+					>
+						{savingSchedule ? 'Saving...' : 'Add Schedule'}
+					</button>
+				</div>
+			</form>
+		</div>
+	</div>
+{/if}
+
+<!-- Mark Complete Modal -->
+{#if completeModalOpen && scheduleToComplete}
+	<div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50" onclick={(e) => { if (e.target === e.currentTarget) { completeModalOpen = false; scheduleToComplete = null; }}}>
+		<div class="bg-white dark:bg-surface-800 rounded-2xl p-6 w-full max-w-sm shadow-xl">
+			<h3 class="text-lg font-bold text-black dark:text-white mb-2">Mark Complete</h3>
+			<p class="text-sm text-surface-500 dark:text-gray-300 mb-4">Recording completion for <strong>{scheduleToComplete.name}</strong></p>
+
+			<form
+				method="POST"
+				action="?/completeSchedule"
+				use:enhance={() => {
+					return async ({ update }) => {
+						await update();
+						completeModalOpen = false;
+						scheduleToComplete = null;
+						completeMileage = '';
+					};
+				}}
+				class="space-y-4"
+			>
+				<input type="hidden" name="scheduleId" value={scheduleToComplete.id} />
+				<div>
+					<label for="complete-mileage" class="text-xs font-medium text-surface-600 dark:text-gray-300 block mb-1">
+						Current Mileage (optional)
+					</label>
+					<input
+						type="number"
+						id="complete-mileage"
+						name="mileage"
+						bind:value={completeMileage}
+						placeholder="e.g., 50000"
+						class="w-full px-3 py-2 rounded-lg bg-surface-100 dark:bg-surface-700 border-0 text-sm focus:ring-2 focus:ring-primary-500"
+					/>
+				</div>
+				<div class="flex gap-3">
+					<button
+						type="button"
+						class="flex-1 btn preset-outlined-surface-500 py-2.5 rounded-lg font-semibold"
+						onclick={() => { completeModalOpen = false; scheduleToComplete = null; }}
+					>
+						Cancel
+					</button>
+					<button
+						type="submit"
+						class="flex-1 btn bg-green-500 hover:bg-green-600 py-2.5 rounded-lg font-semibold text-white"
+					>
+						Complete
+					</button>
+				</div>
+			</form>
+		</div>
+	</div>
+{/if}
+
+<!-- Delete Schedule Confirmation -->
+<ConfirmModal
+	open={scheduleDeleteModalOpen}
+	title="Delete Schedule"
+	message="Are you sure you want to delete {scheduleToDelete?.name ?? 'this schedule'}?"
+	onConfirm={() => {
+		if (scheduleToDelete) {
+			const form = document.getElementById(`delete-schedule-form-${scheduleToDelete.id}`) as HTMLFormElement;
+			form?.requestSubmit();
+		}
+		scheduleDeleteModalOpen = false;
+		scheduleToDelete = null;
+	}}
+	onCancel={() => {
+		scheduleDeleteModalOpen = false;
+		scheduleToDelete = null;
+	}}
+/>
+
+<!-- Hidden delete forms for schedules -->
+{#each schedules as schedule}
+	<form method="POST" action="?/deleteSchedule" use:enhance class="hidden" id="delete-schedule-form-{schedule.id}">
+		<input type="hidden" name="scheduleId" value={schedule.id} />
+	</form>
 {/each}
