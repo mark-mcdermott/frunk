@@ -45,7 +45,7 @@ jobs:
       - name: Push database schema
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
-        run: pnpm db:push
+        run: npx drizzle-kit push --force
 
       - name: Build app
         env:
