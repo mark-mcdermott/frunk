@@ -20,7 +20,10 @@ export const user = pgTable('user', {
 	avatar: text('avatar'),
 	emailVerified: integer('email_verified').notNull().default(0),
 	emailVerificationToken: text('email_verification_token'),
-	emailVerificationExpires: timestamp('email_verification_expires', { withTimezone: true, mode: 'date' }),
+	emailVerificationExpires: timestamp('email_verification_expires', {
+		withTimezone: true,
+		mode: 'date'
+	}),
 	cookieConsent: jsonb('cookie_consent') // { essential: boolean, analytics: boolean, timestamp: number }
 });
 
@@ -165,3 +168,21 @@ export const notes = pgTable('notes', {
 
 export type Note = typeof notes.$inferSelect;
 export type NewNote = typeof notes.$inferInsert;
+
+// Maintenance Schedules (per-vehicle recurring maintenance reminders)
+export const maintenanceSchedules = pgTable('maintenance_schedules', {
+	id: text('id').primaryKey(),
+	vehicleId: text('vehicle_id')
+		.notNull()
+		.references(() => vehicles.id, { onDelete: 'cascade' }),
+	name: text('name').notNull(), // e.g. "Oil Change", "Tire Rotation"
+	intervalMiles: integer('interval_miles'), // e.g. 5000
+	intervalMonths: integer('interval_months'), // e.g. 6
+	lastCompletedDate: timestamp('last_completed_date', { withTimezone: true, mode: 'date' }),
+	lastCompletedMileage: integer('last_completed_mileage'),
+	createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+	updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow()
+});
+
+export type MaintenanceSchedule = typeof maintenanceSchedules.$inferSelect;
+export type NewMaintenanceSchedule = typeof maintenanceSchedules.$inferInsert;
