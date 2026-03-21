@@ -27,11 +27,9 @@ jobs:
       - name: Dump database
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
-          PATH: /usr/lib/postgresql/17/bin:${{ env.PATH }}
         run: |
-          export PATH="/usr/lib/postgresql/17/bin:$PATH"
-          pg_dump --version
-          pg_dump "$DATABASE_URL" --no-owner --no-acl --clean --if-exists > backup.sql
+          /usr/lib/postgresql/17/bin/pg_dump --version
+          /usr/lib/postgresql/17/bin/pg_dump "$DATABASE_URL" --no-owner --no-acl --clean --if-exists > backup.sql
           echo "Backup size: $(wc -c < backup.sql) bytes"
 
       - name: Clone backup repo
