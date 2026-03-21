@@ -30,8 +30,12 @@ test.describe('Vehicles', () => {
 		await page.getByRole('button', { name: 'Add Vehicle' }).click();
 		await page.waitForURL(/\/vehicles\/[a-z0-9-]+$/);
 
+		// Verify vehicle was actually created by checking the detail page
+		await expect(page.getByRole('heading', { name: /Honda Civic/ })).toBeVisible({ timeout: 10000 });
+
 		// Go to vehicles list
 		await page.goto('/vehicles');
+		await page.waitForLoadState('networkidle');
 		await expect(page.locator('text=Honda').first()).toBeVisible({ timeout: 15000 });
 	});
 

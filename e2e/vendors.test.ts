@@ -28,8 +28,12 @@ test.describe('Vendors', () => {
 		await page.getByRole('button', { name: 'Add Vendor' }).click();
 		await page.waitForURL(/\/vendors\/[a-z0-9-]+$/);
 
+		// Verify vendor was actually created by checking the detail page
+		await expect(page.locator('text=Quick Lube').first()).toBeVisible({ timeout: 10000 });
+
 		// Check list
 		await page.goto('/vendors');
+		await page.waitForLoadState('networkidle');
 		await expect(page.locator('text=Quick Lube').first()).toBeVisible({ timeout: 15000 });
 	});
 
