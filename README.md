@@ -172,10 +172,14 @@ For whatever reason, over the years I would build this app until it was about 75
 
 - [x] User authentication
 - [x] Merch store with Stripe + Printful
-- [ ] Scheduled maintenance reminders
+- [x] Scheduled maintenance reminders
+- [x] iOS/Android mobile apps (Capacitor)
+- [x] Desktop apps (Tauri)
+- [ ] Maintenance due badges on vehicle list
+- [ ] Brand/UI redesign
 - [ ] Premium tier features
-- [ ] iOS/Android mobile apps (Capacitor)
-- [ ] Desktop apps (Tauri)
+- [ ] Use cleanroom components?
+- [ ] Platform migrations (SvelteKit -> Next, Cloudflare -> Vercel)
 
 ## License
 
