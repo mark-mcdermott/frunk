@@ -14,16 +14,18 @@ The name "Frunk" comes from "front trunk" - the storage compartment found in ele
 
 - **Vehicle Profiles** - Store details about all your vehicles including make, model, year, VIN, and photos
 - **Repair Tracking** - Log maintenance and repairs with dates, costs, mileage, and vendor information
-- **Notes & Documents** - Attach notes and documents to vehicles, repairs, or vendors for easy reference
+- **Vendor Management** - Track repair shops and service providers
+- **Notes** - Attach notes to vehicles for easy reference
 - **Photo Galleries** - Create galleries to showcase your vehicles with organized photo collections
 - **Merch Store** - Built-in e-commerce with Stripe payments and Printful print-on-demand fulfillment
+- **Demo Mode** - Try the app with pre-populated sample data before creating an account
 
 ## Tech Stack
 
 - **Frontend**: SvelteKit 2, Svelte 5 (with runes), TypeScript
 - **Styling**: Tailwind CSS 4, Skeleton UI
 - **Database**: Neon (serverless PostgreSQL), Drizzle ORM
-- **Auth**: Custom email/password auth with AWS SES for verification emails
+- **Auth**: Custom session-based auth with AWS SES for verification emails
 - **Payments**: Stripe Checkout
 - **Fulfillment**: Printful print-on-demand
 - **Storage**: Cloudflare R2
@@ -56,8 +58,8 @@ Create a `.env` file with:
 # Database
 DATABASE_URL="postgresql://..."
 
-# Auth
-JWT_SECRET="your-secret-key"
+# AWS SES sender (optional, defaults to noreply@frunk.cloud)
+SES_FROM_EMAIL="noreply@frunk.cloud"
 
 # AWS SES (for emails)
 AWS_ACCESS_KEY_ID="..."
@@ -85,7 +87,7 @@ R2_ACCOUNT_ID="..."
 pnpm db:push
 
 # Seed with sample data (optional)
-pnpm db:seed
+pnpm db:seed-office
 ```
 
 ### Development
@@ -111,14 +113,22 @@ pnpm preview
 ### Testing
 
 ```bash
-# Run unit tests
+# Run all tests
 pnpm test
 
-# Run e2e tests
-pnpm test:e2e
+# Run individual suites
+pnpm test:auth        # Sign up/in, profile, sign out, protected routes
+pnpm test:nav         # Page loads, accessibility, link checks
+pnpm test:demo        # Demo mode flows
+pnpm test:crud        # Vehicles, vendors, repairs & notes CRUD
+pnpm test:merch-ui    # Merch store browsing
+
+# Aliases
+pnpm test:core-flows  # auth + nav
+pnpm test:regression  # All 5 suites (used in CI)
 ```
 
-The test suite has 48 e2e tests covering auth flows, vehicle CRUD, vendor CRUD, repairs, notes, merch store browsing, and demo mode.
+CI runs `test:regression` — new test files in `e2e/` won't run in CI until explicitly added to the regression script in `package.json`.
 
 ### Deployment
 
@@ -135,15 +145,20 @@ npx wrangler pages deploy .svelte-kit/cloudflare
 src/
 ├── lib/
 │   ├── components/     # Reusable Svelte components
-│   ├── server/         # Server-only code (db, auth, etc.)
-│   ├── stores/         # Svelte stores
-│   └── data/           # Static data (products, etc.)
+│   ├── server/         # Server-only code (db, auth, email, stripe)
+│   ├── stores/         # Svelte stores (cart)
+│   └── data/           # Static data (products)
 ├── routes/
-│   ├── api/            # API endpoints
-│   ├── auth/           # Auth pages
-│   ├── cars/           # Vehicle management
+│   ├── api/            # API endpoints (checkout, webhooks)
+│   ├── vehicles/       # Vehicle management
+│   ├── vendors/        # Vendor management
+│   ├── repairs/        # Repair tracking
+│   ├── notes/          # Notes
 │   ├── merch/          # Merch store
-│   └── admin/          # Admin panel
+│   ├── demo/           # Demo mode
+│   ├── sign-in/        # Authentication
+│   ├── sign-up/
+│   └── users/          # User profiles
 └── app.html            # HTML template
 ```
 
