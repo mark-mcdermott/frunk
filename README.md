@@ -178,6 +178,7 @@ For whatever reason, over the years I would build this app until it was about 75
 - [ ] Maintenance due badges on vehicle list
 - [ ] Brand/UI redesign
 - [ ] Premium tier features
+- [ ] Tauri/Capacitor flow/UI tweaks
 - [ ] Use cleanroom components?
 - [ ] Platform migrations (SvelteKit -> Next, Cloudflare -> Vercel)
 
