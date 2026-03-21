@@ -55,7 +55,7 @@ jobs:
       - name: Run e2e tests
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
-        run: npx playwright test
+        run: npm run test:regression
 
       - name: Upload test results
         if: failure()
