@@ -4,7 +4,7 @@ description: Commit all changes, push, and create a PR in one step
 usage: /commit-and-pr
 examples:
   - /commit-and-pr
-  - /cap
+  - /cpr
 allowed-tools:
   - Bash(git:*)
   - Bash(gh:*)
@@ -29,13 +29,10 @@ git add [files]
 ```
 
 ### 3. Commit
-Write a gitmoji + one-sentence commit message based on the conversation context.
-```bash
-git commit -m ":sparkles: Add merch store page with product grid and cart"
-```
+Read `.claude/commit-style.md` for the current commit style. Write the commit message following that style exactly.
 
 **Commit rules (CRITICAL)**:
-- One gitmoji + one sentence. No bullet lists, no multiline bodies.
+- Follow the format and rules in `.claude/commit-style.md`.
 - No AI attribution. No co-author lines, no signatures, no references to Claude/AI.
 - Commit as the developer, never as Claude.
 
@@ -79,15 +76,6 @@ EOF
 - **Never** merge PRs automatically
 - **No AI attribution** in commits or PR
 
-## Gitmoji Reference
+## Commit Style
 
-| Type | Gitmoji | When |
-|------|---------|------|
-| New feature | `:sparkles:` | Adding new functionality |
-| Bug fix | `:bug:` | Fixing broken behavior |
-| Refactor | `:recycle:` | Restructuring without behavior change |
-| Style/UI | `:lipstick:` | Visual/styling changes |
-| Performance | `:zap:` | Performance improvements |
-| Tests | `:white_check_mark:` | Adding or updating tests |
-| Config | `:wrench:` | Configuration changes |
-| Cleanup | `:fire:` | Removing code or files |
+See `.claude/commit-style.md` for the active style, format, examples, and reference table.
