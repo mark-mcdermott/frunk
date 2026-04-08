@@ -4,10 +4,16 @@
 #
 # Exit codes:
 #   0 = Allow (no issues)
-#   1 = Non-blocking error
 #   2 = BLOCKING (prevents tool execution)
 
 INPUT=$(cat)
+
+# Fast exit: skip jq parsing if this isn't a commit or PR command
+case "$INPUT" in
+  *"git commit"*|*"gh pr create"*) ;;
+  *) exit 0 ;;
+esac
+
 COMMAND=$(echo "$INPUT" | jq -r '.tool_input.command // ""')
 
 # Check git commit commands for Co-Authored-By
