@@ -56,7 +56,19 @@ git checkout -b feat/<branch-name>
 
 ### 5. After Implementation
 - Run the project's typecheck and lint commands to verify (check package.json or project config for available scripts)
-- Do NOT auto-commit — let the user decide when to commit (they can use `/commit` or `/cap`)
+- **Slop check**: Quickly review your own work for common AI coding issues. Fix any you find before moving on:
+  - Files created that aren't imported/used anywhere
+  - Wrapper functions or abstractions that are only used once (inline them)
+  - Utility files that duplicate what a library already provides
+  - Over-engineered patterns (factories, configs, abstractions) for simple things
+  - Gratuitous comments or docstrings on self-evident code
+- **Update README**: If a `README.md` exists at the project root, update it to reflect the new feature (add to feature list, update setup instructions, etc.). Skip if the feature doesn't warrant a README mention.
+- **Auto-PR check**: Read `.claude/auto-pr.md`. If auto-PR is **on**:
+  - Commit the changes (following `.claude/commit-style.md`)
+  - Push the branch
+  - Create a PR with no AI attribution
+  - Report the PR URL to the user
+- If auto-PR is **off**, do NOT auto-commit — let the user decide when to commit (they can use `/commit` or `/cpr`)
 
 ## Branch Name Conventions
 
