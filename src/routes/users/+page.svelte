@@ -7,6 +7,7 @@
 	import Breadcrumbs from '$lib/components/Breadcrumbs.svelte';
 	import ConfirmModal from '$lib/components/ConfirmModal.svelte';
 	import { page } from '$app/stores';
+	import { isInteractiveTarget } from '$lib/utils/dom';
 	import { isAdmin, getRoleNames } from '$lib/roles';
 
 	const user = $derived($page.data.user);
@@ -134,7 +135,7 @@
 					</thead>
 					<tbody class="divide-y divide-surface-100 dark:divide-surface-700">
 						{#each users as u}
-							<tr class="hover:bg-surface-50 dark:hover:bg-surface-700/50 transition-colors cursor-pointer" onclick={(e) => { if (e.target.closest('a, button, form')) return; goto(`/users/${u.uuid}/edit`); }}>
+							<tr class="hover:bg-surface-50 dark:hover:bg-surface-700/50 transition-colors cursor-pointer" onclick={(e) => { if (isInteractiveTarget(e.target)) return; goto(`/users/${u.uuid}/edit`); }}>
 								<td class="py-4 px-6">
 									<span class="text-sm text-surface-500 dark:text-gray-300">{u.id}</span>
 								</td>

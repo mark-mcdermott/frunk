@@ -87,7 +87,7 @@
 								{/if}
 							</Avatar>
 						</Menu.Trigger>
-						<Portal class="!z-[9999]">
+						<Portal>
 							<Menu.Positioner class="!z-[9999]">
 								<Menu.Content class="bg-white dark:bg-surface-800 rounded-lg shadow-xl border border-[#ddd] dark:border-surface-700 p-1 min-w-[160px]">
 									<Menu.Item value="profile" class="px-3 py-2 rounded hover:bg-surface-100 dark:hover:bg-surface-700 cursor-pointer outline-none">

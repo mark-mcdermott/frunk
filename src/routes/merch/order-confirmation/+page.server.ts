@@ -42,15 +42,15 @@ export const load: PageServerLoad = async ({ url }) => {
 			orderNumber: orderId || session.id.slice(-8).toUpperCase(),
 			email: session.customer_details?.email || session.customer_email || '',
 			total: session.amount_total ? session.amount_total / 100 : 0,
-			shippingAddress: session.shipping_details?.address
+			shippingAddress: session.collected_information?.shipping_details?.address
 				? {
-						name: session.shipping_details.name,
-						line1: session.shipping_details.address.line1,
-						line2: session.shipping_details.address.line2,
-						city: session.shipping_details.address.city,
-						state: session.shipping_details.address.state,
-						postalCode: session.shipping_details.address.postal_code,
-						country: session.shipping_details.address.country
+						name: session.collected_information.shipping_details.name,
+						line1: session.collected_information.shipping_details.address.line1,
+						line2: session.collected_information.shipping_details.address.line2,
+						city: session.collected_information.shipping_details.address.city,
+						state: session.collected_information.shipping_details.address.state,
+						postalCode: session.collected_information.shipping_details.address.postal_code,
+						country: session.collected_information.shipping_details.address.country
 					}
 				: null,
 			items: (order?.items as Array<{
