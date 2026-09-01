@@ -82,11 +82,17 @@ navigation.
 **Eyebrow labels** — sans, uppercase, ~11–12px, letterspaced ~0.12em, in `--accent-bright`.
 Examples: `ABOUT FRUNK`, `OUR STORY`, `BUILT FOR LIFE`, `LAST UPDATED`, `ADDED`.
 
-> **Open decision — fonts are not yet chosen.** The mock images are flattened renders and
-> the PSD contains no live type, so the exact families cannot be recovered from the files.
-> The app currently ships **Arvo** (slab serif) + **Open Sans**, which does *not* match the
-> mocks — Arvo is monoline and blocky where the mocks are high-contrast and elegant.
-> This needs a decision before the redesign lands. See §8.
+**Chosen: Playfair Display (display) + Plus Jakarta Sans (body).**
+
+The mock images are flattened renders and the PSD contains no live type, so the original
+families could not be recovered. Playfair Display was picked from a specimen comparison as
+the closest available match with a full weight range (400–900) and a true italic; Plus Jakarta
+Sans carries the body and UI. Both are self-hosted via `@fontsource-variable` — see §8.
+
+Playfair has sturdier hairlines than a true Didone, which matters: the serif runs at ~20px
+section headings on `#03060F`, where higher-contrast faces optically thin out. It has no
+optical-size axis, so set small serif headings at **weight 500–600** rather than 400 to keep
+them solid on the dark ground.
 
 ---
 
@@ -176,8 +182,10 @@ numbered sections, "Download PDF", last-updated date, and version history.
 
 These block a faithful implementation and need Mark's call:
 
-1. **Display serif and body sans families.** Not recoverable from the mocks. Current
-   Arvo/Open Sans does not match.
+1. ~~**Display serif and body sans families.**~~ **Resolved** — Playfair Display +
+   Plus Jakarta Sans, self-hosted via `@fontsource-variable` so the Capacitor and Tauri
+   bundles work offline. The previous remote `@import` from the Google Fonts CDN meant the
+   packaged apps silently fell back to system fonts.
 2. **theme-forseen coupling.** `src/routes/layout.css` bridges `--color-primary`,
    `--color-accent`, `--font-heading`, `--font-body` from theme-forseen, and loads the
    Skeleton `cerberus` theme. The redesign either commits these tokens directly or ships as
