@@ -7,6 +7,7 @@
 	import Breadcrumbs from '$lib/components/Breadcrumbs.svelte';
 	import ConfirmModal from '$lib/components/ConfirmModal.svelte';
 	import { page } from '$app/stores';
+	import { isInteractiveTarget } from '$lib/utils/dom';
 
 	const vehicles = $derived($page.data.vehicles);
 	const basePath = $derived($page.data.basePath || '');
@@ -53,10 +54,10 @@
 					{#each vehicles as vehicle}
 						<div
 							class="group bg-white dark:bg-surface-800 rounded-2xl shadow-xl shadow-surface-900/5 border border-[#eee] p-6 hover:border-primary-200 dark:hover:border-primary-800 transition-colors cursor-pointer"
-							onclick={(e) => { if (e.target.closest('a, button, form')) return; goto(`${basePath}/vehicles/${vehicle.id}`); }}
+							onclick={(e) => { if (isInteractiveTarget(e.target)) return; goto(`${basePath}/vehicles/${vehicle.id}`); }}
 							role="button"
 							tabindex="0"
-							onkeydown={(e) => { if (e.key === 'Enter' && !e.target.closest('a, button, form')) goto(`${basePath}/vehicles/${vehicle.id}`); }}
+							onkeydown={(e) => { if (e.key === 'Enter' && !isInteractiveTarget(e.target)) goto(`${basePath}/vehicles/${vehicle.id}`); }}
 						>
 							<div class="flex items-center justify-between">
 								<div class="flex items-center gap-4">
