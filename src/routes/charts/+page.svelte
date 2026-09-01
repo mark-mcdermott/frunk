@@ -100,23 +100,23 @@
 					<div class="space-y-4">
 						<div class="flex items-center justify-between">
 							<span class="text-sm text-surface-700 dark:text-gray-200">Do Not Disturb</span>
-							<Switch name="dnd" bind:checked={notifyDoNotDisturb} />
+							<Switch name="dnd" checked={notifyDoNotDisturb} onCheckedChange={(e) => (notifyDoNotDisturb = e.checked)} />
 						</div>
 						<div class="flex items-center justify-between">
 							<span class="text-sm text-surface-700 dark:text-gray-200">Global</span>
-							<Switch name="global" bind:checked={notifyGlobal} />
+							<Switch name="global" checked={notifyGlobal} onCheckedChange={(e) => (notifyGlobal = e.checked)} />
 						</div>
 						<div class="flex items-center justify-between">
 							<span class="text-sm text-surface-700 dark:text-gray-200">Personal</span>
-							<Switch name="personal" bind:checked={notifyPersonal} />
+							<Switch name="personal" checked={notifyPersonal} onCheckedChange={(e) => (notifyPersonal = e.checked)} />
 						</div>
 						<div class="flex items-center justify-between">
 							<span class="text-sm text-surface-700 dark:text-gray-200">Priority</span>
-							<Switch name="priority" bind:checked={notifyPriority} />
+							<Switch name="priority" checked={notifyPriority} onCheckedChange={(e) => (notifyPriority = e.checked)} />
 						</div>
 						<div class="flex items-center justify-between">
 							<span class="text-sm text-surface-700 dark:text-gray-200">News</span>
-							<Switch name="news" bind:checked={notifyNews} />
+							<Switch name="news" checked={notifyNews} onCheckedChange={(e) => (notifyNews = e.checked)} />
 						</div>
 					</div>
 				</div>
@@ -131,7 +131,9 @@
 					<div class="space-y-3">
 						{#each teamMembers as member}
 							<div class="flex items-center gap-3">
-								<Avatar name={member.name} class={member.color} />
+								<Avatar class={member.color}>
+									<Avatar.Fallback>{member.initials}</Avatar.Fallback>
+								</Avatar>
 								<div class="min-w-0">
 									<p class="text-sm font-medium text-black dark:text-white truncate">{member.name}</p>
 									<p class="text-xs text-surface-500 dark:text-gray-300 truncate">{member.email}</p>
@@ -247,7 +249,7 @@
 				<div class="bg-white dark:bg-surface-800 rounded-2xl p-6 shadow-xl shadow-surface-900/5">
 					<h3 class="text-lg font-bold text-black dark:text-white mb-4">Delivery</h3>
 
-					<SegmentedControl name="delivery" bind:value={deliveryOption}>
+					<SegmentedControl name="delivery" value={deliveryOption} onValueChange={(e) => (deliveryOption = e.value ?? deliveryOption)}>
 						{#snippet children()}
 							<SegmentedControl.Item value="tomorrow">Tomorrow</SegmentedControl.Item>
 							<SegmentedControl.Item value="2days">Within 2 days</SegmentedControl.Item>

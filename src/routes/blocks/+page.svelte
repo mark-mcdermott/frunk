@@ -7,6 +7,7 @@
 	const team = [
 		{
 			name: 'Sarah Chen',
+			initials: 'SC',
 			role: 'CEO & Co-Founder',
 			bio: 'Former design lead at Figma. Passionate about making design systems accessible to everyone.',
 			image: null,
@@ -14,6 +15,7 @@
 		},
 		{
 			name: 'Marcus Rivera',
+			initials: 'MR',
 			role: 'CTO & Co-Founder',
 			bio: 'Ex-Google engineer with 15 years of experience building scalable frontend architectures.',
 			image: null,
@@ -21,6 +23,7 @@
 		},
 		{
 			name: 'Emily Nakamura',
+			initials: 'EN',
 			role: 'Head of Design',
 			bio: 'Award-winning designer focused on creating delightful user experiences.',
 			image: null,
@@ -28,6 +31,7 @@
 		},
 		{
 			name: 'David Okonkwo',
+			initials: 'DO',
 			role: 'Lead Engineer',
 			bio: 'Open source enthusiast and Svelte core contributor. Loves building developer tools.',
 			image: null,
@@ -35,6 +39,7 @@
 		},
 		{
 			name: 'Lisa Park',
+			initials: 'LP',
 			role: 'Developer Advocate',
 			bio: 'Community builder and educator. Helps developers succeed with modern web technologies.',
 			image: null,
@@ -42,6 +47,7 @@
 		},
 		{
 			name: 'James Mitchell',
+			initials: 'JM',
 			role: 'Product Manager',
 			bio: 'Bridges the gap between user needs and technical solutions. Data-driven decision maker.',
 			image: null,
@@ -243,7 +249,9 @@
 							<div class="relative mb-4">
 								<div class="absolute inset-0 bg-gradient-to-r from-primary-500 to-secondary-500 rounded-full blur-lg opacity-0 group-hover:opacity-50 transition-opacity"></div>
 								<div class="relative w-24 h-24">
-									<Avatar name={member.name} class="{member.color} w-24 h-24 text-2xl" />
+									<Avatar class="{member.color} w-24 h-24 text-2xl">
+										<Avatar.Fallback>{member.initials}</Avatar.Fallback>
+									</Avatar>
 								</div>
 							</div>
 							<h3 class="text-xl font-bold text-black dark:text-white">{member.name}</h3>
