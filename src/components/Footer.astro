@@ -1,0 +1,138 @@
+---
+/**
+ * Site footer — dark in both themes (DESIGN.md §5). Five columns: wordmark +
+ * tagline + short violet rule, then PRODUCT / COMPANY / SUPPORT link lists, then
+ * STAY IN THE LOOP with the newsletter input. A divider, then copyright left and
+ * social links right.
+ */
+const columns = [
+	{
+		heading: 'Product',
+		links: [
+			{ label: 'Features', href: '/#features' },
+			{ label: 'Security', href: '/#security' },
+			{ label: 'Pricing', href: '/pricing' }
+		]
+	},
+	{
+		heading: 'Company',
+		links: [
+			{ label: 'About', href: '/about' },
+			{ label: 'Blog', href: '/blog' },
+			{ label: 'Careers', href: '/careers' }
+		]
+	},
+	{
+		heading: 'Support',
+		links: [
+			{ label: 'Help Center', href: '/help' },
+			{ label: 'Contact Us', href: '/contact' },
+			{ label: 'Status', href: '/status' }
+		]
+	}
+];
+
+const socials = [
+	{ label: 'Email', href: 'mailto:hello@frunk.cloud' },
+	{ label: 'Bluesky', href: 'https://bsky.app/' },
+	{ label: 'Mastodon', href: 'https://mastodon.social/' },
+	{ label: 'GitHub', href: 'https://github.com/mark-mcdermott/frunk' }
+];
+
+const year = new Date().getFullYear();
+---
+
+<footer class="surface-dark">
+	<div class="mx-auto max-w-[1400px] px-6 py-20 sm:px-10 lg:px-16">
+		<div class="grid gap-12 lg:grid-cols-[1.6fr_1fr_1fr_1fr_1.6fr] lg:gap-10">
+			<div>
+				<p class="wordmark text-xl">FRUNK</p>
+				<p class="display mt-6 text-2xl leading-snug">
+					Everything that matters.<br />Within reach.
+				</p>
+				<div class="mt-6 h-px w-16 bg-accent-bright"></div>
+			</div>
+
+			{
+				columns.map((column) => (
+					<nav aria-label={column.heading}>
+						<h2 class="eyebrow text-text-faint">{column.heading}</h2>
+						<ul class="mt-6 space-y-4">
+							{column.links.map((link) => (
+								<li>
+									<a
+										href={link.href}
+										class="text-[0.9375rem] text-text-muted transition-colors hover:text-text"
+									>
+										{link.label}
+									</a>
+								</li>
+							))}
+						</ul>
+					</nav>
+				))
+			}
+
+			<div>
+				<h2 class="eyebrow text-text-faint">Stay in the loop</h2>
+				<p class="mt-6 text-[0.9375rem] leading-relaxed text-text-muted">
+					Get updates on new features and everything Frunk.
+				</p>
+				{/* Endpoint is added in Phase 5 with the rest of the static surface. */}
+				<form method="post" action="/api/newsletter" class="mt-6">
+					<div
+						class="flex items-center gap-2 rounded-[var(--radius-control)] border border-border bg-surface-raised pr-2 focus-within:border-border-strong"
+					>
+						<label for="newsletter-email" class="sr-only">Email address</label>
+						<input
+							id="newsletter-email"
+							name="email"
+							type="email"
+							required
+							autocomplete="email"
+							placeholder="Enter your email"
+							class="min-w-0 flex-1 bg-transparent px-4 py-3 text-[0.9375rem] text-text outline-none placeholder:text-text-faint"
+						/>
+						<button
+							type="submit"
+							aria-label="Subscribe"
+							class="grid size-8 shrink-0 place-items-center rounded-full text-accent-bright transition-colors hover:bg-accent-bright/10"
+						>
+							<span aria-hidden="true">&#8594;</span>
+						</button>
+					</div>
+				</form>
+				<p class="mt-3 text-xs text-text-faint">No spam. Unsubscribe anytime.</p>
+			</div>
+		</div>
+
+		<div
+			class="mt-16 flex flex-col gap-6 border-t border-border pt-8 sm:flex-row sm:items-center sm:justify-between"
+		>
+			<p class="text-sm text-text-muted">&copy; {year} Frunk. All rights reserved.</p>
+			<ul class="flex flex-wrap items-center gap-x-6 gap-y-2">
+				{
+					socials.map((social) => (
+						<li>
+							<a
+								href={social.href}
+								class="text-sm text-text-muted transition-colors hover:text-text"
+							>
+								{social.label}
+							</a>
+						</li>
+					))
+				}
+			</ul>
+		</div>
+
+		<div class="mt-8 flex gap-6">
+			<a href="/legal/privacy" class="text-sm text-text-faint transition-colors hover:text-text"
+				>Privacy</a
+			>
+			<a href="/legal/terms" class="text-sm text-text-faint transition-colors hover:text-text"
+				>Terms</a
+			>
+		</div>
+	</div>
+</footer>

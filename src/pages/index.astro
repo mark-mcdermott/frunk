@@ -1,0 +1,313 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Footer from '../components/Footer.astro';
+import MockImage from '../components/MockImage.astro';
+import { primaryNav } from '../lib/nav';
+import { Cloud, Heart, Lock, RefreshCw, Shield } from 'lucide-react';
+
+/**
+ * Home — built to `docs/mocks/home.webp`.
+ *
+ * Full-bleed sections alternate light and dark independently of the viewer's theme
+ * (DESIGN.md §4), so each <section> carries its own `.surface-*` class rather than
+ * inheriting the page ground.
+ *
+ * The home hero does not use the floating-card <Header />: the mock puts the
+ * oversized wordmark and the nav on one row, bleeding off the top-left. Every other
+ * marketing page uses <Header /> (Phase 5).
+ */
+
+const pillars = [
+	{
+		num: '01',
+		kicker: 'Structured',
+		lines: ['Everything organized.', 'Always within reach.'],
+		note: ['Bank-level encryption', 'keeps everything secure.'],
+		Icon: Shield
+	},
+	{
+		num: '02',
+		kicker: 'Personal',
+		lines: ['Your memories.', 'Your journey.', 'Your story.'],
+		note: ['The moments that move you,', 'kept close and protected.'],
+		Icon: Heart
+	},
+	{
+		num: '03',
+		kicker: 'Protected',
+		lines: ['The essentials you need.', 'The items you value.'],
+		note: ['Everything important.', 'In its place.'],
+		Icon: Lock
+	}
+];
+
+const stats = [
+	{ value: '256-bit', label: 'Encryption', Icon: Lock },
+	{ value: 'Auto', label: 'Sync', Icon: RefreshCw },
+	{ value: 'Access', label: 'Anywhere', Icon: Cloud }
+];
+
+/*
+ * Placeholder copy carried over from the mock. These are not real customers — replace
+ * before the Phase 6 cutover. The mock's "FEATURED IN" press row is deliberately not
+ * built: frunk has no coverage yet and real publication logos would misrepresent it.
+ */
+const testimonials = [
+	{
+		quote: ['Finally, a place for everything', 'that actually matters.', 'Frunk just works.'],
+		name: 'Alex R.',
+		role: 'Entrepreneur'
+	},
+	{
+		quote: ['Frunk gives me peace of mind', 'knowing my important things', 'are always with me.'],
+		name: 'Maya L.',
+		role: 'Photographer'
+	},
+	{
+		quote: ['Sleek, thoughtful, and', 'incredibly useful. I can’t imagine', 'going back.'],
+		name: 'Jordan T.',
+		role: 'Designer'
+	}
+];
+---
+
+<BaseLayout
+	title="Frunk — The glovebox that follows you"
+	description="Everything that matters. Within reach. Frunk keeps your vehicle documents, repairs, notes and photos in one place."
+>
+	<!-- Hero -->
+	<section class="surface-light relative overflow-hidden">
+		<div class="mx-auto max-w-[1400px] px-6 sm:px-10 lg:px-16">
+			<div class="flex flex-wrap items-start justify-between gap-x-8 gap-y-6 pt-8">
+				<a
+					href="/"
+					aria-label="Frunk, home"
+					class="wordmark wordmark-xl min-w-0 shrink text-[clamp(3rem,11vw,9rem)] leading-[0.82]"
+					>FRUNK</a
+				>
+
+				<div class="flex shrink-0 items-center gap-6 pt-3 lg:gap-10">
+					<nav aria-label="Main" class="hidden items-center gap-8 md:flex lg:gap-10">
+						{
+							primaryNav.map((item) => (
+								<a
+									href={item.href}
+									class="text-[0.9375rem] text-text-muted transition-colors hover:text-text"
+								>
+									{item.label}
+								</a>
+							))
+						}
+					</nav>
+					<a
+						href="/signup"
+						class="inline-flex shrink-0 items-center gap-2 rounded-full bg-[#0c1019] px-5 py-2.5 text-[0.9375rem] font-semibold text-[#fefefe] transition-opacity hover:opacity-88 sm:px-6 sm:py-3"
+					>
+						Get started
+						<span aria-hidden="true" class="text-xs">&#8599;</span>
+					</a>
+				</div>
+			</div>
+
+			<div class="grid items-center gap-12 pb-24 pt-12 lg:grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)] lg:pb-32">
+				<div>
+					<h1 class="display dot text-[clamp(2.5rem,6vw,4rem)]">
+						The glovebox<br />that follows you
+					</h1>
+					<p class="eyebrow mt-8 text-text-muted">Everything that matters. Within reach.</p>
+					<a href="#features" class="link-rule mt-10">
+						<span>Open the glovebox</span>
+						<span class="rule"></span>
+						<span aria-hidden="true">&#8594;</span>
+					</a>
+				</div>
+
+				<div class="relative">
+					<MockImage label="Fig. 01 — Frunk / front storage perspective" ratio="16 / 11" />
+					<!-- Technical-drawing motif (DESIGN.md §1) -->
+					<dl
+						class="mt-4 flex flex-wrap gap-x-10 gap-y-2 text-[0.6875rem] uppercase tracking-[0.12em] text-text-faint"
+					>
+						<div class="flex gap-2">
+							<dt class="sr-only">Capacity</dt>
+							<dd>Capacity 570 L / 4.2 cu ft</dd>
+						</div>
+					</dl>
+				</div>
+			</div>
+		</div>
+	</section>
+
+	<!-- Three pillars -->
+	<section id="features" class="surface-dark">
+		<div class="mx-auto max-w-[1400px] px-6 py-20 sm:px-10 lg:px-16 lg:py-28">
+			<h2 class="sr-only">What Frunk keeps for you</h2>
+			<div class="grid gap-6 lg:grid-cols-3">
+				{
+					pillars.map((pillar) => (
+						<article class="card flex flex-col overflow-hidden">
+							<div class="flex items-baseline gap-3 px-6 pt-6">
+								<span class="text-[0.6875rem] font-semibold tracking-[0.12em] text-accent-bright">
+									{pillar.num}
+								</span>
+								<span class="eyebrow text-text">{pillar.kicker}</span>
+							</div>
+							<div class="px-6 pt-4 text-[0.9375rem] leading-relaxed text-text-muted">
+								{pillar.lines.map((line) => (
+									<p>{line}</p>
+								))}
+							</div>
+							<div class="px-6 py-6">
+								<MockImage label={pillar.kicker} ratio="4 / 3" />
+							</div>
+							<div class="mt-auto flex items-start gap-3 border-t border-border px-6 py-5">
+								<pillar.Icon
+									aria-hidden="true"
+									className="mt-0.5 size-5 shrink-0 text-accent-bright"
+									strokeWidth={1.5}
+								/>
+								<p class="text-sm leading-relaxed text-text-muted">
+									{pillar.note.map((line, i) => (
+										<>
+											{i > 0 && <br />}
+											{line}
+										</>
+									))}
+								</p>
+							</div>
+						</article>
+					))
+				}
+			</div>
+		</div>
+	</section>
+
+	<!-- Built for life -->
+	<section id="security" class="surface-dark relative overflow-hidden pt-0">
+		<div
+			aria-hidden="true"
+			class="pointer-events-none absolute inset-x-0 bottom-0 h-2/3 bg-[radial-gradient(60%_80%_at_62%_100%,rgb(100_56_204_/_0.40)_0%,transparent_70%)]"
+		>
+		</div>
+		<div class="relative mx-auto max-w-[1400px] px-6 pb-20 sm:px-10 lg:px-16 lg:pb-28">
+			<div class="grid items-center gap-16 lg:grid-cols-2">
+				<div>
+					<p class="eyebrow">Built for life</p>
+					<h2 class="display mt-6 text-[clamp(2rem,4.5vw,3rem)]">
+						Seamless. Secure.<br />Always with you.
+					</h2>
+					<p class="mt-6 max-w-md text-[0.9375rem] leading-relaxed text-text-muted">
+						Frunk connects to your car and your life&mdash;automatically. It anticipates what you
+						need, keeps it safe, and is always within reach.
+					</p>
+					<a href="/about" class="btn-primary mt-8 bg-surface-elevated text-text">
+						Learn more
+						<span aria-hidden="true" class="text-xs">&#8599;</span>
+					</a>
+
+					<dl class="mt-14 flex flex-wrap gap-x-12 gap-y-6">
+						{
+							stats.map((stat) => (
+								<div class="flex items-center gap-3">
+									<stat.Icon
+										aria-hidden="true"
+										className="size-6 shrink-0 text-accent-bright"
+										strokeWidth={1.5}
+									/>
+									<div>
+										<dt class="text-[0.9375rem] font-semibold text-text">{stat.value}</dt>
+										<dd class="text-[0.6875rem] uppercase tracking-[0.12em] text-text-faint">
+											{stat.label}
+										</dd>
+									</div>
+								</div>
+							))
+						}
+					</dl>
+				</div>
+
+				<div class="mx-auto w-full max-w-[320px]">
+					<MockImage label="Frunk on iPhone" ratio="9 / 19" class="rounded-[40px]" />
+				</div>
+			</div>
+		</div>
+	</section>
+
+	<!-- Testimonials -->
+	<section class="surface-light">
+		<div class="mx-auto max-w-[1400px] px-6 py-20 sm:px-10 lg:px-16 lg:py-28">
+			<div class="grid gap-12 lg:grid-cols-[minmax(0,0.8fr)_minmax(0,2fr)] lg:gap-16">
+				<div>
+					<p class="eyebrow">Peace of mind</p>
+					<h2 class="display dot mt-6 text-[clamp(2rem,4vw,2.75rem)]">
+						Trusted by people who value what matters
+					</h2>
+				</div>
+
+				<ul class="grid gap-6 sm:grid-cols-3">
+					{
+						testimonials.map((testimonial) => (
+							<li class="card flex flex-col p-6">
+								<span aria-hidden="true" class="display text-3xl text-accent-text">
+									&ldquo;
+								</span>
+								<blockquote class="mt-3 text-[0.9375rem] leading-relaxed text-text">
+									{testimonial.quote.map((line, i) => (
+										<>
+											{i > 0 && <br />}
+											{line}
+										</>
+									))}
+								</blockquote>
+								<div class="mt-auto pt-8">
+									<div class="h-px w-10 bg-accent-text opacity-60" />
+									<div class="mt-5 flex items-center gap-3">
+										<span
+											aria-hidden="true"
+											class="grid size-8 shrink-0 place-items-center rounded-full bg-accent/15 text-xs font-semibold text-accent-text"
+										>
+											{testimonial.name.charAt(0)}
+										</span>
+										<div>
+											<p class="text-sm font-semibold text-text">{testimonial.name}</p>
+											<p class="text-xs text-text-muted">{testimonial.role}</p>
+										</div>
+									</div>
+								</div>
+							</li>
+						))
+					}
+				</ul>
+			</div>
+		</div>
+	</section>
+
+	<!-- Closing CTA -->
+	<section class="surface-dark relative overflow-hidden">
+		<div
+			aria-hidden="true"
+			class="pointer-events-none absolute inset-y-0 left-0 w-1/2 bg-[radial-gradient(70%_60%_at_20%_50%,rgb(100_56_204_/_0.35)_0%,transparent_70%)]"
+		>
+		</div>
+		<div class="relative mx-auto max-w-[1400px] px-6 py-24 sm:px-10 lg:px-16 lg:py-32">
+			<div class="grid gap-12 lg:grid-cols-2 lg:gap-16">
+				<div class="hidden lg:block">
+					<MockImage label="Frunk / open compartment" ratio="4 / 3" />
+				</div>
+				<div class="lg:pt-6">
+					<p class="eyebrow">Ready when you are</p>
+					<h2 class="display dot mt-6 text-[clamp(2rem,4.5vw,3rem)]">
+						Open a new kind<br />of glovebox
+					</h2>
+					<a href="/signup" class="link-rule mt-10">
+						<span>Get started today</span>
+						<span class="rule"></span>
+						<span aria-hidden="true">&#8594;</span>
+					</a>
+				</div>
+			</div>
+		</div>
+	</section>
+
+	<Footer />
+</BaseLayout>

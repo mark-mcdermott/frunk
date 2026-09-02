@@ -72,25 +72,24 @@ talks to the app island."
 1. **Canonical origin — `frunk.cloud`.** `RP_ID` / `RP_ORIGIN` bind to it; pick once and
    don't change it.
 
-   **The DNS situation is not what it looks like.** The domain is registered at *Namecheap*,
-   but its nameservers point at *Cloudflare* (`zainab`/`valentin.ns.cloudflare.com`) — so
-   Cloudflare answers DNS and Namecheap's DNS UI is inert. The usual workflow (add the domain
-   in Vercel, paste its records into Namecheap) requires switching nameservers back to
-   Namecheap BasicDNS first.
+   **DNS — DECIDED 2026-09-02: move the nameservers to Vercel and accept the email
+   breakage.** The domain is registered at *Namecheap*, but its nameservers point at
+   *Cloudflare* (`zainab`/`valentin.ns.cloudflare.com`), so Cloudflare answers DNS today and
+   Namecheap's DNS UI is inert.
 
-   ⚠️ **Doing that breaks email.** frunk.cloud uses **Cloudflare Email Routing**:
+   Moving the nameservers takes **Cloudflare Email Routing** down with them:
 
    ```
    MX   route1/2/3.mx.cloudflare.net
    TXT  v=spf1 include:_spf.mx.cloudflare.net ~all
    ```
 
-   That service only works while Cloudflare hosts the DNS. Move the nameservers and
-   `hello@frunk.cloud` stops forwarding — the contact-form destination, also printed on the
-   privacy page. Either keep Cloudflare as DNS-only (email survives, consolidation is
-   partial) or replace forwarding before switching. **Unresolved — decide before Phase 6.**
+   `hello@frunk.cloud` stops forwarding at that moment. It is the contact-form destination
+   and is printed on the privacy page. **This is accepted** — frunk never launched, so
+   nothing is in flight — but forwarding has to be re-established somewhere before the
+   contact form in Phase 5 is advertised as working. Mark is handling the DNS move.
 
-   Also unverified: no DKIM records were found for SES, so sending from
+   Still unverified: no DKIM records were found for SES, so sending from
    `noreply@frunk.cloud` may not be verified. Check independently.
 2. **Auth — DECIDED: passkeys + TOTP**, ported from wolfpack. No accounts exist, so there
    is no re-registration cost. Drops the hand-rolled session/password path and the SES
@@ -159,26 +158,80 @@ This replaces `vite dev` + SvelteKit's server routes.
 
 ---
 
-## Phase 0 — Prerequisites
+## Phase 0 — Prerequisites — **DONE 2026-09-02**
 
-- Land or close open PRs; start on a green `main`. Delete the stale local branch
-  `feat/cleanroom-components` and reconcile or delete `origin/staging` (2 unmerged commits,
-  one adding 46 optional vehicle fields — decide if those fields are wanted first).
-- Settle every decision above, especially **2 (auth)** and **6 (store)**.
-- Create the Vercel project and a Vercel Blob store; confirm Neon is reachable from it.
-- Audit R2 for live user data worth migrating (avatars, note images, gallery photos).
-- **Checkpoint:** Vercel project exists, `main` is clean, decisions recorded in this file.
+- ~~Land or close open PRs; start on a green `main`.~~ Done. `main` is at the PR #28 merge.
+- ~~Delete the stale branch `feat/cleanroom-components`.~~ Still on `origin`, deliberately
+  kept for now: it holds 5 unmerged commits of a hand-rolled Svelte component system,
+  superseded by Decision 3 (shadcn). Nothing depends on it; delete when convenient.
+- ~~Reconcile or delete `origin/staging`.~~ **Deleted.** Verified fully superseded: its 46
+  optional vehicle fields landed on `main` as `7146ed2` (PR #28), its Capacitor shells are
+  on `main`, and its only remaining content was `src-tauri/`, which Decision 7 drops. `main`
+  is strictly ahead of it (`main` also carries `maintenance_schedules`, which staging lacked).
+  `feat/vehicle-detail-fields` deleted too — merged in PR #28.
+- ~~Settle every decision above.~~ All eight settled; Decision 1's DNS trade closed above.
+- **Create the Vercel project and a Vercel Blob store; confirm Neon is reachable from it.**
+  ⚠️ **Outstanding — needs Mark.** Nothing in the repo can do this. See the checklist below.
+- ~~Audit R2 for live user data worth migrating.~~ **Nothing to migrate.** Two buckets exist:
+  - `frunk-avatars` — bound as `R2_AVATARS` in `wrangler.toml`. frunk never launched, so it
+    holds no real user data. Uploads were also guarded by `!import.meta.env.DEV`, so they
+    only ever ran in production.
+  - `pub-9903686a35b440c6b73f8b917ba808c8.r2.dev` — public bucket of Printful merch mockups,
+    referenced only by `src/lib/data/products.ts`. Dropped with the store (Decision 6).
 
-## Phase 1 — Astro shell, deployable and empty
+### Outstanding manual setup (Mark)
 
-- New Astro app: `@astrojs/react`, `@astrojs/vercel`, Tailwind 4, React 19.
-- Port the design tokens from `docs/DESIGN.md` and the fonts already chosen
-  (`@fontsource-variable/playfair-display`, `plus-jakarta-sans`). Add the inline
-  theme-boot script so dark-first does not flash white — frunk applies theme in
-  `onMount` today, which flashes on every load.
-- One static `index.astro` built to the `home` mock.
-- **Checkpoint:** deploys to Vercel; view-source shows real static HTML; fonts self-hosted;
-  dark and light both correct; no FOUC.
+Phase 1 builds and passes locally; it cannot be *deployed* until these exist:
+
+1. Create the Vercel project against `mark-mcdermott/frunk`. Framework preset: **Astro**.
+   Root directory: repository root (Decision 4 — no configuration needed).
+2. Create a **Vercel Blob** store and attach it to the project (`BLOB_READ_WRITE_TOKEN`).
+   Not used until Phase 4, but confirms the account tier supports it.
+3. Set `DATABASE_URL` to the Neon connection string and confirm Neon accepts connections
+   from Vercel's region.
+4. Move `frunk.cloud` nameservers to Vercel (Decision 1) — can happen any time before Phase 6.
+
+## Phase 1 — Astro shell, deployable and empty — **DONE 2026-09-02**
+
+- ~~New Astro app: `@astrojs/react`, `@astrojs/vercel`, Tailwind 4, React 19.~~ Astro 7.2,
+  React 19.2, Tailwind 4.3, flat stock layout at the repository root (Decision 4).
+- ~~Port the design tokens from `docs/DESIGN.md` and the fonts already chosen.~~
+  `src/styles/global.css` carries the full token layer. Two additions the spec left open:
+  - **`--accent-text`.** `--accent-bright` (#9890F8) clears 7.4:1 on the dark ground but only
+    **2.7:1 on the light one**, so it fails AA as text on light surfaces — which is what the
+    mock's light-section eyebrow labels are. Light surfaces therefore step down to `--accent`
+    (#6438CC, 7.0:1). `--accent-bright` stays the accent on dark.
+  - **Semantic green and red** were named but not valued in DESIGN.md; both themes now carry
+    AA-clearing pairs.
+  - Marketing sections alternate light and dark independently of the viewer's theme
+    (DESIGN.md §4), so the surface tokens are also exposed as `.surface-light` /
+    `.surface-dark` blocks applied per `<section>`.
+- ~~Add the inline theme-boot script.~~ `src/lib/theme.ts` exports `THEME_BOOT_SCRIPT`,
+  inlined in `<head>` and applied before first paint. The SvelteKit app set the theme in
+  `onMount` and flashed white on every load.
+- ~~One static `index.astro` built to the `home` mock.~~ All six sections.
+
+**Two gaps carried into later phases, both deliberate:**
+
+- **No photography.** The studio automotive renders live in `frunk-proj/branding/mock/`,
+  outside the repo — only flattened WebP mocks were committed. `src/components/MockImage.astro`
+  stands in at the right aspect ratio with the violet rim light, and every usage is a
+  one-line swap once the renders land.
+- **Placeholder marketing copy.** The three testimonials are the mock's own placeholder
+  names and must be replaced before the Phase 6 cutover. The mock's "FEATURED IN" press-logo
+  row is **deliberately not built** — frunk has no coverage, and real publication logos
+  would misrepresent it. Add it when there is something true to put there.
+
+**Checkpoint:** `astro check` 0 errors; `astro build` passes; view-source on `/` is real
+static HTML (18 KB, **zero hydration islands** — the lucide glyphs render to inline SVG at
+build time); all 11 font files self-hosted with no CDN reference in the output; theme boot
+inlined ahead of paint. **Deploying to Vercel is blocked on the manual setup above.**
+
+The old SvelteKit app moved to `legacy/` rather than being deleted — it is the reference for
+Phase 2's 25 load functions and Phase 4's 60 components, and it is excluded from the Astro
+build and typecheck. Delete the directory at the end of Phase 5. `legacy/` also holds the
+Capacitor shells (`android/`, `ios/`, `capacitor.config.ts`), which are pinned to the
+SvelteKit dev port and `build/` output; Phase 6 re-points them at the Astro origin.
 
 ## Phase 2 — Data layer: REST endpoints
 
