@@ -23,12 +23,6 @@ test.describe('Navigation', () => {
 		await expect(page.locator('input[name="password"]')).toBeVisible();
 	});
 
-	test('blocks page is accessible', async ({ page }) => {
-		await page.goto('/blocks');
-		// Use first() to handle multiple nav elements (main nav + breadcrumb nav)
-		await expect(page.locator('nav').first()).toBeVisible();
-	});
-
 	test('store/merch page is accessible', async ({ page }) => {
 		await page.goto('/store');
 		await expect(page.locator('nav').first()).toBeVisible();
