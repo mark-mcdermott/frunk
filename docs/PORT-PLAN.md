@@ -62,32 +62,47 @@ talks to the app island."
 
 ---
 
-## Decisions (settle before Phase 1)
+## Decisions
 
-1. **Canonical origin.** Recommend keeping **`frunk.cloud`**, moving DNS to Vercel. If
-   auth moves to passkeys, `RP_ID`/`RP_ORIGIN` bind to it — pick once and don't change it.
-2. **Auth.** frunk today is hand-rolled sessions (`auth-session` cookie, sessions table,
-   SES verification). wolfpack has working **passkeys + TOTP**. Recommend **adopting
-   wolfpack's**: frunk stores insurance documents, registrations and VINs — real PII, which
-   is exactly the case `_PROJECTS.md` says must not default to hand-rolled. Existing users
-   would re-register; confirm how many real accounts exist before deciding. *(This also
-   closes `docs/DESIGN.md` §8 open decision 3 — the sign-in mock shows Google/Apple/GitHub
-   OAuth, which this supersedes.)*
-3. **Component library.** "No component library" was chosen while the target was Svelte.
-   On React, recommend **shadcn** — wolfpack uses it and every stack acronym in
-   `_PROJECTS.md` has S = Shadcn. Confirm.
-4. **Repo shape.** wolfpack is a monorepo (`apps/site` + `packages/ui`). frunk is one app
-   with nothing to share yet. Recommend a **flat Astro app**, restructuring later only if a
-   second consumer appears.
-5. **Demo mode.** 16 of the 41 server files exist only to mirror the app under `demo/`.
-   Recommend collapsing it: **one applet, a `demo` flag** in the data layer, rather than a
-   duplicated route tree.
+> **Settled 2026-09-02.** frunk **never launched — there is no production data.**
+> That removes the auth-discontinuity risk entirely and reduces Phase 6's data migration to
+> nothing. It also means the schema can change freely if the rewrite wants it to.
+
+1. **Canonical origin — `frunk.cloud`**, DNS moved to Vercel. `RP_ID` / `RP_ORIGIN` bind
+   to it; pick once and don't change it.
+2. **Auth — DECIDED: passkeys + TOTP**, ported from wolfpack. No accounts exist, so there
+   is no re-registration cost. Drops the hand-rolled session/password path and the SES
+   verification flow. *(Closes `docs/DESIGN.md` §8 decision 3 — the sign-in mock's
+   Google/Apple/GitHub OAuth is superseded.)*
+   **Future intent:** a fuller commercial spread of login options is wanted eventually.
+   Passkeys + TOTP is the v1 floor, not the ceiling — keep the auth surface swappable.
+3. **Component library — DECIDED: shadcn.** The earlier "no component library" call was
+   made while the target was Svelte; on React, shadcn matches wolfpack and the S in every
+   `_PROJECTS.md` stack acronym.
+4. **Repo shape — flat Astro app.** wolfpack's monorepo exists because it has a shared
+   `packages/ui`; frunk has nothing to share yet. Restructure later only if a second
+   consumer appears.
+5. **Demo mode — collapse the route tree, keep the behaviour.** 16 of the 41 server files
+   exist only to mirror the app under `demo/`. Replace with **one applet and a `demo` flag**
+   in the data layer. The clone-a-template-user pattern stays: a visitor gets a throwaway
+   account seeded from `creed.bratton@dundermifflin.com`.
+
+   **Seed data ports.** `scripts/seed-office.ts` (552 lines) is a plain Drizzle script — 17
+   users, 24 vehicles, plus vendors, repairs, notes, galleries and photos, all Office-themed.
+   The schema is unchanged, so it carries over near-verbatim; only the password hashing is
+   replaced with passkey credential seeding. Keep `scripts/seed-roles.ts` too.
 6. **The merch store.** The robot is being retired, and it is the entire product line
    (4 Printful products, 25 mockup images). Decide whether the store survives at all before
    porting `orders`, checkout and the webhook.
 7. **Tauri.** wolfpack has no Tauri precedent. Recommend **dropping desktop for now** and
    re-adding it once the web app is stable — it is the least-used shell.
-8. **`/blocks` and `/charts`.** Template showcase pages with fake team members. Delete.
+8. **`/blocks` and `/charts` — delete.** Template showcase pages with fake team members,
+   inherited from the starter. They are also the only consumers of Skeleton's `Switch`,
+   `SegmentedControl` and `Pagination`.
+
+### Still open
+
+**6 (merch store)** and **7 (Tauri)** — both have real consequences and still need a call.
 
 ---
 
@@ -171,7 +186,7 @@ This replaces `vite dev` + SvelteKit's server routes.
 
 - Point `frunk.cloud` DNS at Vercel. Set env: `DATABASE_URL`, `BLOB_READ_WRITE_TOKEN`,
   `AUTH_SECRET`, `RP_ID`, `RP_ORIGIN`, `STRIPE_*`, `PRINTFUL_API_KEY`, SES vars.
-- Migrate live R2 objects to Blob; rewrite stored URLs in the database.
+- No production data to migrate (frunk never launched). Re-seed with `seed-office.ts`.
 - Re-point Capacitor at the new origin and verify an auth ceremony inside the webview.
 - Retire the Cloudflare Pages project. Update `CLAUDE.md` and `_PROJECTS.md`.
 - **Checkpoint:** prod green on one origin; auth end-to-end; Capacitor build passes.
@@ -195,8 +210,7 @@ This replaces `vite dev` + SvelteKit's server routes.
 - **Scope.** Three simultaneous changes (framework, host, design) with no intermediate
   state where frunk is both old-and-working and new-and-working. Mitigation: the old app
   stays live on Cloudflare until Phase 6.
-- **Auth discontinuity.** Switching to passkeys invalidates existing accounts. Confirm the
-  real user count first (Decision 2).
+- ~~**Auth discontinuity.**~~ Resolved — frunk never launched, so no accounts exist.
 - **Untested upload path.** R2 writes are guarded by `!import.meta.env.DEV`, so they only
   ever run in production and have no local coverage. Rebuild them with tests.
 - **App Store.** wolfpack's Capacitor loads the deployed origin via `CAP_SERVER_URL` rather
