@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="400" height="520" viewBox="0 0 400 520">
+  <rect width="400" height="520" fill="#e8eef5" rx="4"/>
+  <rect x="1" y="1" width="398" height="518" fill="none" stroke="#b8c9d8" stroke-width="2" rx="4"/>
+  <rect x="30" y="30" width="340" height="60" fill="#d0dfe8" rx="4"/>
+  <text x="200" y="65" text-anchor="middle" font-family="Georgia, serif" font-size="20" font-weight="bold" fill="#3a4a5a">VEHICLE REGISTRATION</text>
+  <line x1="40" y1="120" x2="360" y2="120" stroke="#a8b9c8" stroke-width="1"/>
+  <text x="40" y="150" font-family="Arial, sans-serif" font-size="11" fill="#6a7a8a">STATE OF TEXAS</text>
+  <text x="40" y="175" font-family="Arial, sans-serif" font-size="11" fill="#6a7a8a">REGISTRATION CARD</text>
+  <text x="40" y="215" font-family="Arial, sans-serif" font-size="12" fill="#3a4a5a">Plate Number:</text>
+  <text x="170" y="215" font-family="Courier, monospace" font-size="12" fill="#3a3a3a">FRK-1974</text>
+  <text x="40" y="245" font-family="Arial, sans-serif" font-size="12" fill="#3a4a5a">Registration #:</text>
+  <text x="170" y="245" font-family="Courier, monospace" font-size="12" fill="#3a3a3a">29847102</text>
+  <text x="40" y="275" font-family="Arial, sans-serif" font-size="12" fill="#3a4a5a">Expires:</text>
+  <text x="170" y="275" font-family="Courier, monospace" font-size="12" fill="#e74c3c">12/2025</text>
+  <line x1="40" y1="300" x2="360" y2="300" stroke="#a8b9c8" stroke-width="1"/>
+  <text x="40" y="330" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="#3a4a5a">VEHICLE</text>
+  <text x="40" y="355" font-family="Arial, sans-serif" font-size="11" fill="#3a4a5a">Year/Make/Model:</text>
+  <text x="170" y="355" font-family="Courier, monospace" font-size="11" fill="#3a3a3a">1974 AMC Gremlin</text>
+  <text x="40" y="380" font-family="Arial, sans-serif" font-size="11" fill="#3a4a5a">VIN:</text>
+  <text x="170" y="380" font-family="Courier, monospace" font-size="11" fill="#3a3a3a">A4A157H287431</text>
+  <text x="40" y="405" font-family="Arial, sans-serif" font-size="11" fill="#3a4a5a">Color:</text>
+  <text x="170" y="405" font-family="Courier, monospace" font-size="11" fill="#3a3a3a">Green</text>
+  <line x1="40" y1="430" x2="360" y2="430" stroke="#a8b9c8" stroke-width="1"/>
+  <text x="40" y="460" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="#3a4a5a">OWNER</text>
+  <text x="40" y="485" font-family="Arial, sans-serif" font-size="11" fill="#3a4a5a">Name:</text>
+  <text x="170" y="485" font-family="Courier, monospace" font-size="11" fill="#3a3a3a">DEMO USER</text>
+  <rect x="120" y="492" width="160" height="20" fill="none" stroke="#a8b9c8" stroke-dasharray="4 2"/>
+  <text x="200" y="506" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#aaa">SAMPLE DOCUMENT</text>
+</svg>
