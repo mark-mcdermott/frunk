@@ -87,7 +87,14 @@ talks to the app island."
    `hello@frunk.cloud` stops forwarding at that moment. It is the contact-form destination
    and is printed on the privacy page. **This is accepted** — frunk never launched, so
    nothing is in flight — but forwarding has to be re-established somewhere before the
-   contact form in Phase 5 is advertised as working. Mark is handling the DNS move.
+   contact form in Phase 5 is advertised as working.
+
+   **Status 2026-09-02: nameservers moved, propagating.** Two follow-ups this creates:
+   - **`hello@frunk.cloud` is now dead.** It is still printed on the privacy page and is
+     still the contact form's destination. Phase 5 must not ship the contact form against a
+     mailbox that does not exist — either re-home the forwarding or change the address.
+   - Confirm `frunk.cloud` and `www.frunk.cloud` both resolve to Vercel and that the
+     certificate issued, once propagation settles.
 
    Still unverified: no DKIM records were found for SES, so sending from
    `noreply@frunk.cloud` may not be verified. Check independently.
