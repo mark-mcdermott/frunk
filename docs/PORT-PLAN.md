@@ -69,8 +69,29 @@ talks to the app island."
 > That removes the auth-discontinuity risk entirely and reduces Phase 6's data migration to
 > nothing. It also means the schema can change freely if the rewrite wants it to.
 
-1. **Canonical origin — `frunk.cloud`**, DNS moved to Vercel. `RP_ID` / `RP_ORIGIN` bind
-   to it; pick once and don't change it.
+1. **Canonical origin — `frunk.cloud`.** `RP_ID` / `RP_ORIGIN` bind to it; pick once and
+   don't change it.
+
+   **The DNS situation is not what it looks like.** The domain is registered at *Namecheap*,
+   but its nameservers point at *Cloudflare* (`zainab`/`valentin.ns.cloudflare.com`) — so
+   Cloudflare answers DNS and Namecheap's DNS UI is inert. The usual workflow (add the domain
+   in Vercel, paste its records into Namecheap) requires switching nameservers back to
+   Namecheap BasicDNS first.
+
+   ⚠️ **Doing that breaks email.** frunk.cloud uses **Cloudflare Email Routing**:
+
+   ```
+   MX   route1/2/3.mx.cloudflare.net
+   TXT  v=spf1 include:_spf.mx.cloudflare.net ~all
+   ```
+
+   That service only works while Cloudflare hosts the DNS. Move the nameservers and
+   `hello@frunk.cloud` stops forwarding — the contact-form destination, also printed on the
+   privacy page. Either keep Cloudflare as DNS-only (email survives, consolidation is
+   partial) or replace forwarding before switching. **Unresolved — decide before Phase 6.**
+
+   Also unverified: no DKIM records were found for SES, so sending from
+   `noreply@frunk.cloud` may not be verified. Check independently.
 2. **Auth — DECIDED: passkeys + TOTP**, ported from wolfpack. No accounts exist, so there
    is no re-registration cost. Drops the hand-rolled session/password path and the SES
    verification flow. *(Closes `docs/DESIGN.md` §8 decision 3 — the sign-in mock's
@@ -80,13 +101,33 @@ talks to the app island."
 3. **Component library — DECIDED: shadcn.** The earlier "no component library" call was
    made while the target was Svelte; on React, shadcn matches wolfpack and the S in every
    `_PROJECTS.md` stack acronym.
-4. **Repo shape — flat Astro app.** wolfpack's monorepo exists because it has a shared
-   `packages/ui`; frunk has nothing to share yet. Restructure later only if a second
-   consumer appears.
-5. **Demo mode — collapse the route tree, keep the behaviour.** 16 of the 41 server files
-   exist only to mirror the app under `demo/`. Replace with **one applet and a `demo` flag**
-   in the data layer. The clone-a-template-user pattern stays: a visitor gets a throwaway
-   account seeded from `creed.bratton@dundermifflin.com`.
+4. **Repo shape — DECIDED: flat, the stock Astro layout.** No `apps/` or `packages/`
+   nesting. wolfpack is a monorepo to separate its design system from its app; frunk has
+   nothing to share yet, and flat→monorepo later is a mechanical move, not a rewrite.
+   The default layout also means every Astro doc applies verbatim and Vercel needs no
+   root-directory configuration.
+5. **Demo — DECIDED: it is an account type, not a mode.** This is a *conversion feature*,
+   not a technical convenience: a logged-out visitor must be able to click "Try the demo"
+   and genuinely use the app — create, edit and delete — without signing up. frunk's
+   commercial case depends on try-before-buy.
+
+   The existing implementation is already the right shape: a visitor is issued a **real user
+   row** with a `DEMO` role, cloned from `creed.bratton@dundermifflin.com`, and a real
+   session. They are not in a fake mode; they are in a real, disposable account.
+
+   So **do not thread a `demo` flag through the data layer.** The API never needs to know.
+   A demo visitor is an anonymous auto-provisioned account, isolated by `user_id` exactly
+   like any two real users — the same isolation the app already depends on. What goes away
+   is the duplicated `demo/` route tree (16 of the 41 server files), not the behaviour.
+
+   Two consequences to build in:
+
+   - **A reaper.** Demo accounts accumulate, and with Blob uploads they accumulate storage.
+     Scheduled job: delete `DEMO`-role users older than N days and their blobs.
+   - **Upgrade in place.** Because a demo account is a real account, converting is just
+     *attaching a passkey to the account the visitor is already using*. No migration, no
+     re-entry — they keep everything they made during the trial. Design the sign-up flow
+     around this; it is the whole try-before-buy story and it falls out for free.
 
    **Seed data ports.** `scripts/seed-office.ts` (552 lines) is a plain Drizzle script — 17
    users, 24 vehicles, plus vendors, repairs, notes, galleries and photos, all Office-themed.
@@ -100,9 +141,9 @@ talks to the app island."
 7. **Tauri — DECIDED: dropped for now.** No wolfpack precedent to copy, and desktop is the
    least-used shell. Get web and mobile right, then re-add Tauri against a stable app.
    Mobile (Capacitor) stays in scope.
-8. **`/blocks` and `/charts` — delete.** Template showcase pages with fake team members,
-   inherited from the starter. They are also the only consumers of Skeleton's `Switch`,
-   `SegmentedControl` and `Pagination`.
+8. **`/blocks` and `/charts` — DONE (#25).** `/blocks` was the old About page, renamed
+   rather than deleted; `/charts` was a Skeleton kitchen-sink demo. Both were live and
+   unlinked. Removed ahead of the port.
 
 All eight settled. The plan is ready to execute.
 
@@ -157,8 +198,12 @@ This replaces `vite dev` + SvelteKit's server routes.
 - Astro `signin.astro` / `signup.astro` pages mounting React auth islands, built to the
   `sign-in` and `sign-up` mocks.
 - Nav user island + `stores/user.ts` nanostore reading `/api/auth/me`.
-- **Checkpoint:** register, sign in, sign out, session persistence, and TOTP recovery all
-  work locally and on a preview deploy.
+- **Anonymous demo sessions:** a `POST /api/demo` that clones the Creed template into a new
+  `DEMO`-role user and issues a session — no passkey involved. Plus the upgrade path:
+  attaching a passkey to the current demo account converts it in place.
+- **Checkpoint:** register, sign in, sign out, session persistence and TOTP recovery all
+  work locally and on a preview deploy; a logged-out visitor can start a demo, make changes,
+  then convert to a real account keeping their data.
 
 ## Phase 4 — The applet
 
@@ -191,6 +236,8 @@ This replaces `vite dev` + SvelteKit's server routes.
 - No production data to migrate (frunk never launched). Re-seed with `seed-office.ts`.
 - Re-point Capacitor at the new origin and verify a passkey ceremony inside the webview.
 - Desktop is out of scope (Decision 7) — no Tauri step.
+- Resolve the DNS/email trade in Decision 1 before switching nameservers.
+- Schedule the demo-account reaper.
 - Retire the Cloudflare Pages project. Update `CLAUDE.md` and `_PROJECTS.md`.
 - **Checkpoint:** prod green on one origin; auth end-to-end; Capacitor build passes.
 
