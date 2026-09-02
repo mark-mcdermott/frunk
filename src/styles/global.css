@@ -1,0 +1,255 @@
+@import 'tailwindcss';
+
+/*
+ * Frunk design tokens — see docs/DESIGN.md.
+ * Colour values are sampled from the mocks in docs/mocks/, not eyeballed.
+ *
+ * Two layers:
+ *   1. Brand constants (theme-independent) — the violet accent tiers.
+ *   2. Surface tokens, redeclared per theme and per full-bleed section.
+ *
+ * Marketing pages alternate light and dark full-bleed sections regardless of the
+ * viewer's theme (DESIGN.md §4), so the surface tokens are also exposed as
+ * `.surface-dark` / `.surface-light` blocks that can be applied to any <section>.
+ */
+
+@theme {
+	--font-display: 'Playfair Display Variable', ui-serif, Georgia, serif;
+	--font-sans: 'Plus Jakarta Sans Variable', ui-sans-serif, system-ui, sans-serif;
+
+	/* Brand accent — violet, two tiers (DESIGN.md §2) */
+	--color-accent: #6438cc; /* solid fills only: buttons, checkbox fill */
+	--color-accent-bright: #9890f8; /* the wordmark dot, links, eyebrow, active nav */
+}
+
+/*
+ * Surface tokens. `--accent-text` is the accent tier that is safe as *text* on the
+ * current surface: --accent-bright clears 7.4:1 on the dark ground but only 2.7:1 on
+ * the light one, so light surfaces step down to --accent (7.0:1). DESIGN.md §2 holds
+ * the palette to WCAG AA on both themes.
+ */
+@layer base {
+	:root,
+	.surface-dark {
+		--bg: #03060f;
+		--surface: #050a14;
+		--surface-raised: #080c16;
+		--surface-elevated: #0c1019;
+		--border: rgb(255 255 255 / 0.08);
+		--border-strong: rgb(255 255 255 / 0.16);
+		--text: #f2f4f8;
+		--text-muted: rgb(242 244 248 / 0.62);
+		--text-faint: rgb(242 244 248 / 0.40);
+		--accent-text: var(--color-accent-bright);
+		--btn-primary-bg: var(--color-accent);
+		--btn-primary-text: #ffffff;
+		/* Semantic — not pinned in DESIGN.md; chosen to clear AA on both grounds */
+		--positive: #34d399;
+		--positive-bg: rgb(52 211 153 / 0.14);
+		--destructive: #f87171;
+		--destructive-bg: rgb(248 113 113 / 0.12);
+		color-scheme: dark;
+	}
+
+	[data-theme='light'],
+	.surface-light {
+		--bg: #fefefe;
+		--surface: #f5f5f7;
+		--surface-raised: #ffffff;
+		--surface-elevated: #0c1019;
+		--border: rgb(11 15 24 / 0.10);
+		--border-strong: rgb(11 15 24 / 0.18);
+		--text: #0b0f18;
+		--text-muted: rgb(11 15 24 / 0.62);
+		--text-faint: rgb(11 15 24 / 0.42);
+		--accent-text: var(--color-accent);
+		--btn-primary-bg: #0c1019;
+		--btn-primary-text: #fefefe;
+		--positive: #047857;
+		--positive-bg: rgb(4 120 87 / 0.10);
+		--destructive: #b91c1c;
+		--destructive-bg: rgb(185 28 28 / 0.10);
+		color-scheme: light;
+	}
+}
+
+/* Expose the surface tokens to Tailwind utilities (bg-surface, text-muted, …) */
+@theme inline {
+	--color-bg: var(--bg);
+	--color-surface: var(--surface);
+	--color-surface-raised: var(--surface-raised);
+	--color-surface-elevated: var(--surface-elevated);
+	--color-border: var(--border);
+	--color-border-strong: var(--border-strong);
+	--color-text: var(--text);
+	--color-text-muted: var(--text-muted);
+	--color-text-faint: var(--text-faint);
+	--color-accent-text: var(--accent-text);
+	--color-positive: var(--positive);
+	--color-positive-bg: var(--positive-bg);
+	--color-destructive: var(--destructive);
+	--color-destructive-bg: var(--destructive-bg);
+
+	/* Radii — DESIGN.md §4: ~16px containers, ~10px inputs and small controls */
+	--radius-card: 16px;
+	--radius-control: 10px;
+}
+
+@layer base {
+	html {
+		background-color: var(--bg);
+		color: var(--text);
+		-webkit-font-smoothing: antialiased;
+		scroll-behavior: smooth;
+	}
+
+	body {
+		font-family: var(--font-sans);
+		background-color: var(--bg);
+		color: var(--text);
+	}
+
+	/* A full-bleed section carrying .surface-* must paint its own ground */
+	.surface-dark,
+	.surface-light {
+		background-color: var(--bg);
+		color: var(--text);
+	}
+
+	::selection {
+		background-color: var(--color-accent);
+		color: #fff;
+	}
+
+	:focus-visible {
+		outline: 2px solid var(--color-accent-bright);
+		outline-offset: 2px;
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		html {
+			scroll-behavior: auto;
+		}
+	}
+}
+
+@layer components {
+	/*
+	 * The wordmark: heavy sans, wide tracking, always closed by a violet period.
+	 * The dot is the brand signature (DESIGN.md §1) — it is decorative, so it is
+	 * drawn with ::after rather than sitting in the accessible name.
+	 */
+	.wordmark {
+		font-family: var(--font-sans);
+		font-weight: 800;
+		letter-spacing: 0.15em;
+		line-height: 1;
+	}
+
+	.wordmark::after {
+		content: '.';
+		color: var(--color-accent-bright);
+	}
+
+	/*
+	 * Tracking adds a trailing space after the final letter, which throws the
+	 * optical alignment of a right-hand neighbour off at display sizes.
+	 */
+	.wordmark {
+		margin-right: -0.15em;
+	}
+
+	/*
+	 * The oversized hero wordmark drops the period: at 10rem the dot reads as a
+	 * violet block rather than a signature, and the mock sets it without one.
+	 */
+	.wordmark-xl::after {
+		content: none;
+	}
+
+	/* Eyebrow — sans, uppercase, ~11–12px, letterspaced, accent (DESIGN.md §3) */
+	.eyebrow {
+		font-size: 0.6875rem;
+		font-weight: 600;
+		letter-spacing: 0.12em;
+		text-transform: uppercase;
+		color: var(--accent-text);
+	}
+
+	/* Display headings — serif, tight optical tracking at large sizes */
+	.display {
+		font-family: var(--font-display);
+		font-weight: 500;
+		letter-spacing: -0.02em;
+		line-height: 1.05;
+	}
+
+	/*
+	 * Playfair has no optical-size axis, so small serif headings run at 500–600 to
+	 * keep the hairlines solid on the dark ground (DESIGN.md §3).
+	 */
+	.display-sm {
+		font-family: var(--font-display);
+		font-weight: 600;
+		letter-spacing: -0.01em;
+	}
+
+	/* Terminal period on display headings, in accent */
+	.dot::after {
+		content: '.';
+		color: var(--color-accent-bright);
+	}
+
+	.card {
+		background-color: var(--surface);
+		border: 1px solid var(--border);
+		border-radius: var(--radius-card);
+	}
+
+	/* Primary button: filled pill. Violet on dark, near-black on light. */
+	.btn-primary {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.5rem;
+		border-radius: 9999px;
+		padding: 0.75rem 1.5rem;
+		font-size: 0.9375rem;
+		font-weight: 600;
+		background-color: var(--btn-primary-bg);
+		color: var(--btn-primary-text);
+		transition: opacity 150ms ease;
+	}
+
+	.btn-primary:hover {
+		opacity: 0.88;
+	}
+
+	/*
+	 * Text link: accent, long trailing arrow, and an underline rule that extends
+	 * well past the text — "OPEN THE GLOVEBOX ────→" (DESIGN.md §5).
+	 */
+	.link-rule {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.75rem;
+		color: var(--accent-text);
+		font-size: 0.6875rem;
+		font-weight: 600;
+		letter-spacing: 0.12em;
+		text-transform: uppercase;
+		min-width: 18rem;
+	}
+
+	.link-rule .rule {
+		flex: 1 1 auto;
+		min-width: 4rem;
+		height: 1px;
+		background-color: currentColor;
+		opacity: 0.45;
+		transition: opacity 150ms ease;
+	}
+
+	.link-rule:hover .rule {
+		opacity: 0.9;
+	}
+}

@@ -6,59 +6,85 @@ Also known as **drivetracks** (older name for the same project).
 
 Named for "front trunk" — the storage compartment in EVs and mid-engine cars.
 
-## Stack
+## ⚠️ Mid-port
 
-- **SvelteKit 2** + **Svelte 5** (runes — `$state`, `$derived`, `$props`), TypeScript
-- **Tailwind CSS 4** + **Skeleton UI v4**
+The repository root is now the **Astro rewrite** (`docs/PORT-PLAN.md`), not the SvelteKit
+app. The SvelteKit app lives in **`legacy/`** — it is the reference for the port and is
+excluded from the Astro build and typecheck. It still deploys to Cloudflare Pages from
+`main` and stays live until Phase 6.
+
+**Phases 0 and 1 are done.** Phase 2 (REST endpoints) is next. Read `docs/PORT-PLAN.md`
+before doing anything here; it records what is settled and what is outstanding.
+
+## Stack (the port target, at the repo root)
+
+- **Astro 7** with **React 19** islands, TypeScript
+- **Tailwind CSS 4** + **shadcn/ui** (`components.json` is configured; no components added yet)
 - **Neon** serverless Postgres via **Drizzle ORM**
+- **Vercel** (`@astrojs/vercel`), **Vercel Blob** for file storage
+- **Passkeys + TOTP** for auth (Decision 2) — replaces the hand-rolled session/password path
+- **AWS SES** for the contact form only
+- **Capacitor** (iOS/Android) stays in scope, re-pointed in Phase 6
+
+Dropped for now: the merch store (Stripe + Printful), Tauri desktop, Skeleton UI.
+
+## Legacy stack (`legacy/`, still live on Cloudflare)
+
+- **SvelteKit 2** + **Svelte 5** (runes), **Skeleton UI v4**
 - **Cloudflare Pages** (`@sveltejs/adapter-cloudflare`), **R2** for file storage
-- **Capacitor** (iOS/Android) and **Tauri 2** (desktop) — both scaffolded and building
-- **Stripe** Checkout + **Printful** print-on-demand for the merch store
-- **AWS SES** for verification email
 - **Playwright** for e2e
 
 ## Commands
 
 ```bash
-pnpm dev                 # vite dev server
-pnpm build               # production build (must pass)
-pnpm check               # svelte-check — must report 0 errors
-pnpm test                # full Playwright e2e suite
-pnpm test:regression     # the suite CI runs
-pnpm db:push             # push schema to Neon
-pnpm db:studio           # drizzle studio
-pnpm cap:ios / cap:android
-pnpm tauri:dev / tauri:build
+pnpm dev                 # astro dev — static pages, islands and /api/* in one process
+pnpm build               # astro build (must pass)
+pnpm check               # astro check — must report 0 errors
+pnpm preview             # astro preview
 ```
 
 `pnpm install` is required after any gap — dependencies drift and the build fails
 misleadingly when `node_modules` is stale.
 
+The legacy commands (`pnpm test`, `db:push`, `cap:*`) still live in `legacy/package.json`
+and run from that directory with its own `pnpm install`.
+
 ## Verify loop
 
 A change is done when **`pnpm check` reports 0 errors** and **`pnpm build` passes**.
-CI (`.github/workflows/e2e.yml`) runs the Playwright regression suite on every push and
-pull request; Cloudflare Pages builds a preview per PR. Both must be green before merge.
 
-Playwright boots its own server (`build && preview` on port 4173), so e2e needs a working
-build and a reachable `DATABASE_URL`.
+Test coverage is intentionally at zero during the port: the 7 Playwright suites in
+`legacy/e2e/` are written against SvelteKit markup and do not survive the rewrite. They are
+re-established in Phase 4 (`docs/PORT-PLAN.md`). `.github/workflows/e2e.yml` still points at
+the legacy app.
 
-**`pnpm lint` is not a gate.** It fails on ~821 files against untouched `main` — accumulated
-prettier debt that predates any current work. Don't "fix" it inside an unrelated PR; it needs
-its own single-purpose reformat commit.
+## Architecture (the port target)
 
-## Architecture
+- `src/pages/` — Astro routes. Static `.astro` for marketing and legal; `/api/*` as Astro
+  endpoints; the app mounts as a single `client:only` React island under `[...slug].astro`.
+- `src/components/` — Astro components and, from Phase 4, React. `src/components/ui/` is
+  shadcn's target directory.
+- `src/layouts/`, `src/styles/global.css` (the design token layer), `src/lib/`.
 
-- `src/routes/` — file-based routes. Marketing pages (`about`, `pricing`, `contact`, `legal`),
+**Island classification rule:** does a live browser runtime need to exist for this to
+render? Yes → `client:only`. No → `client:load` / `client:visible`. Cross-island state is a
+**nanostore, not React context** — each island is its own React root.
+
+**Auth boundary is drawn at the API, not the page.** Astro serves the same static HTML to
+everyone; the applet decides what to render; every API handler checks the session itself.
+
+## Legacy architecture (`legacy/`)
+
+- `legacy/src/routes/` — file-based routes. Marketing pages (`about`, `pricing`, `contact`, `legal`),
   the app (`vehicles`, `vendors`, `repairs`, `notes`, `users`), the store (`merch`), and
   `demo/` which mirrors the app against seeded sample data for logged-out visitors.
-- `src/lib/server/` — server-only: `auth.ts`, `db/`, `email.ts`, `password.ts`, `stripe.ts`,
+- `legacy/src/lib/server/` — server-only: `auth.ts`, `db/`, `email.ts`, `password.ts`, `stripe.ts`,
   `printful.ts`. Never import these from client code.
-- `src/lib/components/` — shared UI. `pages/` holds full page bodies shared between the real
+- `legacy/src/lib/components/` — shared UI. `pages/` holds full page bodies shared between the real
   app and its `demo/` twin, so a change to a list or detail view must be made once there
   rather than duplicated.
-- `src/lib/utils/` — framework-free helpers (`demoRoutes.ts`, `dom.ts`).
-- `src/hooks.server.ts` — resolves the session cookie into `locals.user` / `locals.session`
+- `legacy/src/lib/utils/` — framework-free helpers (`demoRoutes.ts`, `dom.ts`).
+- `legacy/src/hooks.server.ts` — resolves the session cookie into `locals.user` / `locals.session`
   on every request.
 
 **Auth** is hand-rolled session auth: opaque token in an `auth-session` cookie, sessions
@@ -68,6 +94,8 @@ wired up today.
 **Demo mode** — routes under `demo/` reuse the same page components with `basePath` set, so
 links stay inside the demo. Check `isDemoPath` / `demoPath` in `src/lib/utils/demoRoutes.ts`
 before hardcoding any route.
+(Decision 5 retires the `demo/` route tree: a demo visitor becomes a real `DEMO`-role
+account, so the API never needs to know.)
 
 ## Design
 
@@ -77,9 +105,15 @@ repo, along with the source PSD.)
 Read the spec before touching UI; it records measured colour tokens, component rules, and
 the open decisions that are still unresolved.
 
-Note that `src/routes/layout.css` currently sources `--color-primary`, `--color-accent`,
-`--font-heading` and `--font-body` from **theme-forseen**, and loads Skeleton's `cerberus`
-theme. Present fonts are Arvo + Open Sans, which do **not** match the mocks.
+The tokens are implemented in **`src/styles/global.css`** as of Phase 1 — colours, radii,
+the two font families (Playfair Display + Plus Jakarta Sans, self-hosted), and the
+`.surface-light` / `.surface-dark` blocks that let a full-bleed section pick its own ground.
+Read that file alongside the spec; it records where the spec was silent (`--accent-text`,
+the semantic green and red).
+
+The legacy `legacy/src/routes/layout.css` still sources tokens from **theme-forseen** and
+loads Skeleton's `cerberus` theme, with Arvo + Open Sans — none of which match the mocks.
+That coupling dies with `legacy/`.
 
 ## Conventions
 
@@ -92,19 +126,19 @@ theme. Present fonts are Arvo + Open Sans, which do **not** match the mocks.
 
 ## Known rough edges
 
-- **Two Stripe webhook handlers exist**: `src/routes/api/stripe/webhook/+server.ts` and
-  `src/routes/api/webhooks/stripe/+server.ts`, with near-identical logic. Only one can be
-  the URL configured in Stripe; the other is dead and silently diverging. Consolidate before
-  trusting either.
-- **`origin/staging`** carries 2 commits never merged to `main`, one adding 46 optional
-  vehicle schema fields. Reconcile or delete it.
-- `pnpm check` reports ~76 a11y warnings (click handlers on non-interactive `div`s). Real
-  issues, not yet addressed.
+- **No photography.** The studio renders live in `frunk-proj/branding/mock/`, outside the
+  repo; only flattened WebP mocks were committed. `src/components/MockImage.astro` stands in.
+- **Placeholder marketing copy** on the home page — the three testimonials are the mock's
+  own placeholder names. Replace before the Phase 6 cutover.
+- **`origin/feat/cleanroom-components`** holds 5 unmerged commits of a hand-rolled Svelte
+  component system, superseded by the shadcn decision. Delete when convenient.
+- The two duplicate Stripe webhook handlers in `legacy/` are moot — the store is dropped
+  (Decision 6) and neither is ported.
 - `.claude/skills/` holds a superseded generation of skills (`baos`, `batdd`, `waf`,
   `qcheck`…) predating the global `~/.claude/skills`. Stale and misleading.
 
 ## Roadmap
 
-Tracked in `README.md` under "Roadmap". Remaining: maintenance-due badges on the vehicle
-list, the brand/UI redesign, premium tier, Tauri/Capacitor flow tweaks, a possible move to
-cleanroom components, and a potential platform migration (SvelteKit → Next, Cloudflare → Vercel).
+**`docs/PORT-PLAN.md` is the roadmap** until the port lands. `README.md`'s roadmap predates
+it and is stale — several of its items (cleanroom components, Tauri, the merch store) are
+now explicitly dropped or superseded by the port's decisions.
