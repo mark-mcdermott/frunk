@@ -33,9 +33,10 @@ screen, specified in `docs/DESIGN.md`. Since every component is being rewritten 
 **build each screen to the mock the first time** — doing the redesign on SvelteKit first
 would mean writing the UI twice.
 
-**What ports nearly as-is:** the Drizzle schema (11 tables), `src/lib/server/{stripe,
-printful,email,password}.ts`, and the Stripe/Printful/SES business logic. It is
-framework-agnostic TypeScript.
+**What ports nearly as-is:** the Drizzle schema (11 tables) and `scripts/seed-office.ts`.
+`src/lib/server/{stripe,printful}.ts` are framework-agnostic and would port cleanly, but the
+store is deferred (Decision 6) so they are not needed yet. `password.ts` and the SES
+verification in `email.ts` are superseded by passkeys.
 
 ---
 
@@ -91,18 +92,19 @@ talks to the app island."
    users, 24 vehicles, plus vendors, repairs, notes, galleries and photos, all Office-themed.
    The schema is unchanged, so it carries over near-verbatim; only the password hashing is
    replaced with passkey credential seeding. Keep `scripts/seed-roles.ts` too.
-6. **The merch store.** The robot is being retired, and it is the entire product line
-   (4 Printful products, 25 mockup images). Decide whether the store survives at all before
-   porting `orders`, checkout and the webhook.
-7. **Tauri.** wolfpack has no Tauri precedent. Recommend **dropping desktop for now** and
-   re-adding it once the web app is stable — it is the least-used shell.
+6. **Merch store — DECIDED: dropped for now.** Retiring the robot removes the entire
+   product line (all 4 Printful products are robot apparel). Do not port checkout, the
+   Stripe webhook, the merch pages, or `src/lib/data/products.ts`. Re-add once there is new
+   branding worth printing. Keep the `orders` table in the schema — it costs nothing and
+   avoids a migration later.
+7. **Tauri — DECIDED: dropped for now.** No wolfpack precedent to copy, and desktop is the
+   least-used shell. Get web and mobile right, then re-add Tauri against a stable app.
+   Mobile (Capacitor) stays in scope.
 8. **`/blocks` and `/charts` — delete.** Template showcase pages with fake team members,
    inherited from the starter. They are also the only consumers of Skeleton's `Switch`,
    `SegmentedControl` and `Pagination`.
 
-### Still open
-
-**6 (merch store)** and **7 (Tauri)** — both have real consequences and still need a call.
+All eight settled. The plan is ready to execute.
 
 ---
 
@@ -171,23 +173,24 @@ This replaces `vite dev` + SvelteKit's server routes.
 - **Checkpoint:** full CRUD on every entity; deep links and client-side routing work;
   uploads and deletes work; private documents are not publicly fetchable.
 
-## Phase 5 — Static surface + store
+## Phase 5 — Static surface
 
 - Remaining marketing and legal pages as `.astro`, built to their mocks: about, pricing,
   contact, privacy, terms. `z_privacy-policy-user-tos-layout.md` specifies the legal layout
   (numbered sidebar, download PDF, version history).
-- If the store survives Decision 6: port checkout and **consolidate the two Stripe webhook
-  handlers into one** — `api/stripe/webhook` and `api/webhooks/stripe` are near-identical
-  today and only one can be the configured URL.
-- **Checkpoint:** whole site navigable; static pages are static; store checkout completes
-  against Stripe test keys.
+- Contact form posts to an Astro endpoint; SES stays for that (only the *verification*
+  flow is superseded by passkeys).
+- No store — Decision 6. The duplicate Stripe webhook problem disappears with it.
+- **Checkpoint:** whole site navigable; view-source shows static HTML on every marketing
+  page; contact form delivers.
 
 ## Phase 6 — Cutover
 
 - Point `frunk.cloud` DNS at Vercel. Set env: `DATABASE_URL`, `BLOB_READ_WRITE_TOKEN`,
   `AUTH_SECRET`, `RP_ID`, `RP_ORIGIN`, `STRIPE_*`, `PRINTFUL_API_KEY`, SES vars.
 - No production data to migrate (frunk never launched). Re-seed with `seed-office.ts`.
-- Re-point Capacitor at the new origin and verify an auth ceremony inside the webview.
+- Re-point Capacitor at the new origin and verify a passkey ceremony inside the webview.
+- Desktop is out of scope (Decision 7) — no Tauri step.
 - Retire the Cloudflare Pages project. Update `CLAUDE.md` and `_PROJECTS.md`.
 - **Checkpoint:** prod green on one origin; auth end-to-end; Capacitor build passes.
 
@@ -201,8 +204,9 @@ This replaces `vite dev` + SvelteKit's server routes.
   `[...slug].astro`, `lib/theme-boot.ts`.
 - **Rewrite:** all 60 `.svelte` components → React, to the mocks.
 - **Retire:** Skeleton (`@skeletonlabs/*`), `adapter-cloudflare`, `wrangler.toml`, R2
-  bindings in `app.d.ts`, `/blocks`, `/charts`, the `demo/` route tree, `.claude/skills/`
-  (a superseded generation).
+  bindings in `app.d.ts`, `/blocks`, `/charts`, the `demo/` route tree, `src-tauri/` and the
+  `tauri:*` scripts, `/merch` + `src/lib/data/products.ts` + the two Stripe webhook routes,
+  `password.ts`, `.claude/skills/` (a superseded generation).
 - **Carry forward:** `docs/DESIGN.md`, the font choice, the contrast-verified palette.
 
 ## Risks
