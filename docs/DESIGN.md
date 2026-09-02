@@ -1,6 +1,7 @@
 # Frunk — Design Spec
 
-Derived from the mocks in `frunk-proj/branding/mock/` (outside this repo, gitignored).
+Derived from the mocks in **`docs/mocks/`** (committed as WebP; the 43 MB PNG originals
+live in `frunk-proj/branding/mock/`, outside the repo).
 Those PNGs are the source of truth for the redesign; this document is the written
 translation an implementer can work from without opening Photoshop.
 
