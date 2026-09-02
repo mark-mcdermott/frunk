@@ -71,8 +71,9 @@ before hardcoding any route.
 
 ## Design
 
-The redesign is specified in **`docs/DESIGN.md`**, derived from the mocks in
-`frunk-proj/branding/mock/` (outside this repo — the wrapper directory, gitignored).
+The redesign is specified in **`docs/DESIGN.md`**, derived from the mocks committed in
+**`docs/mocks/`**. (The PNG originals live in `frunk-proj/branding/mock/`, outside the
+repo, along with the source PSD.)
 Read the spec before touching UI; it records measured colour tokens, component rules, and
 the open decisions that are still unresolved.
 
