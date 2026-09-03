@@ -74,3 +74,17 @@ export async function readJson<T extends z.ZodType>(
 
 	return parsed.data;
 }
+
+/**
+ * 429 with `Retry-After`, which is the only way a client can tell a throttle from an
+ * outage. Seconds, rounded up, per RFC 9110 — a floor would report 0 and invite an
+ * immediate retry.
+ */
+export function tooManyRequests(retryAfterMs: number): Response {
+	const seconds = Math.ceil(retryAfterMs / 1000);
+	const body: ApiError = { error: `Too many attempts. Try again in ${seconds}s.` };
+	return new Response(JSON.stringify(body), {
+		status: 429,
+		headers: { 'content-type': 'application/json', 'retry-after': String(seconds) }
+	});
+}

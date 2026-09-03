@@ -2,6 +2,7 @@ import type { AstroCookies } from 'astro';
 import { eq } from 'drizzle-orm';
 import { getDb } from '../../../lib/server/db';
 import * as table from '../../../lib/server/db/schema';
+import type { SessionUser } from '../../../lib/user';
 
 /**
  * Session mechanics, ported from `legacy/src/lib/server/auth.ts`.
@@ -24,14 +25,11 @@ const RENEW_BEFORE_MS = DAY_IN_MS * 15;
 
 export const SESSION_COOKIE = 'auth-session';
 
-/** The user fields every handler is allowed to see. Never widen this to the whole row. */
-export interface SessionUser {
-	id: number;
-	uuid: string;
-	username: string;
-	avatar: string | null;
-	roles: number[];
-}
+/**
+ * The user fields every handler is allowed to see. Never widen this to the whole row.
+ * Declared in `src/lib/user.ts` because the React islands consume the same shape.
+ */
+export type { SessionUser };
 
 export interface ResolvedSession {
 	user: SessionUser;
@@ -66,7 +64,8 @@ export async function createSession(token: string, userUuid: string): Promise<Re
 			uuid: table.user.uuid,
 			username: table.user.username,
 			avatar: table.user.avatar,
-			roles: table.user.roles
+			roles: table.user.roles,
+			totpEnabled: table.user.totpEnabled
 		})
 		.from(table.user)
 		.where(eq(table.user.uuid, userUuid));
@@ -95,7 +94,8 @@ export async function resolveSession(cookies: AstroCookies): Promise<ResolvedSes
 				uuid: table.user.uuid,
 				username: table.user.username,
 				avatar: table.user.avatar,
-				roles: table.user.roles
+				roles: table.user.roles,
+				totpEnabled: table.user.totpEnabled
 			},
 			session: table.session
 		})

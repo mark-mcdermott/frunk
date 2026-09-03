@@ -17,8 +17,23 @@ export default defineConfig({
 	 * Vercel.
 	 */
 	env: {
+		/*
+		 * Every variable here is `access: 'secret'`, which in astro:env means "read at
+		 * runtime". A `public` server variable is validated and *inlined at build time*
+		 * instead, so an optional one that is unset during the build is frozen as
+		 * undefined for the life of that deploy — silently, since it has a fallback.
+		 * RP_ID and RP_ORIGIN are not secrets, but they must be read at runtime.
+		 */
 		schema: {
-			DATABASE_URL: envField.string({ context: 'server', access: 'secret' })
+			DATABASE_URL: envField.string({ context: 'server', access: 'secret' }),
+			// Unset in development and on preview deploys: `relying-party.ts` derives
+			// both from the request there, which is the only thing that can cover
+			// Vercel's per-deploy preview hostnames.
+			RP_ID: envField.string({ context: 'server', access: 'secret', optional: true }),
+			RP_ORIGIN: envField.string({ context: 'server', access: 'secret', optional: true }),
+			// Seals the TOTP secret at rest. Required on any https deploy — see
+			// `assertProductionSecrets`.
+			ENCRYPTION_KEY: envField.string({ context: 'server', access: 'secret', optional: true })
 		}
 	},
 	adapter: vercel(),

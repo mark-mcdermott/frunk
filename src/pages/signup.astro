@@ -1,0 +1,27 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Header from '../components/Header.astro';
+import { SignUpForm } from '../components/auth/SignUpForm';
+
+/** Built to `docs/mocks/sign-up.webp`. See `signin.astro` for why it is a route. */
+---
+
+<BaseLayout
+	title="Create your account — Frunk"
+	description="Create a Frunk account with a passkey. No password to choose or forget."
+>
+	<div class="surface-light flex min-h-svh flex-col">
+		<Header />
+
+		<main class="relative flex flex-1 items-center justify-center px-5 py-10 sm:py-16">
+			<div
+				aria-hidden="true"
+				class="pointer-events-none absolute inset-0 bg-[radial-gradient(55%_45%_at_50%_40%,rgb(100_56_204_/_0.13)_0%,transparent_70%)]"
+			>
+			</div>
+			<div class="relative flex w-full justify-center">
+				<SignUpForm client:load />
+			</div>
+		</main>
+	</div>
+</BaseLayout>

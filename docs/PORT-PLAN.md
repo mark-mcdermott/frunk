@@ -353,23 +353,64 @@ database, no secrets. The lesson is already encoded in `db-migrate.yml` — a mi
 manual, uses its own `ASTRO_DATABASE_URL` secret, and refuses to run from `main`. **No
 workflow that runs automatically should hold a schema-push step.**
 
-## Phase 3 — Auth
+## Phase 3 — Auth — **DONE 2026-09-03**
 
-- Implement the chosen model from Decision 2: port wolfpack's
-  `api/auth/{register,login}/{options,verify}` and `totp/*`. **`_lib/session.ts` already
-  exists** — Phase 2 built it, since passkeys change how a session is established, not how
-  it is represented. The ceremonies just call `createSession`.
-- Add the credential tables (passkey public keys, TOTP secrets) and drop
-  `user.password_hash` once `seed-office.ts` seeds credentials instead.
-- Astro `signin.astro` / `signup.astro` pages mounting React auth islands, built to the
-  `sign-in` and `sign-up` mocks.
-- Nav user island + `stores/user.ts` nanostore reading `/api/auth/me`.
-- **Anonymous demo sessions:** a `POST /api/demo` that clones the Creed template into a new
-  `DEMO`-role user and issues a session — no passkey involved. Plus the upgrade path:
-  attaching a passkey to the current demo account converts it in place.
-- **Checkpoint:** register, sign in, sign out, session persistence and TOTP recovery all
-  work locally and on a preview deploy; a logged-out visitor can start a demo, make changes,
-  then convert to a real account keeping their data.
+- ~~Port wolfpack's `api/auth/{register,login}/{options,verify}` and `totp/*`.~~ Done.
+  `_lib/session.ts` was already right: passkeys changed how a session is *established*,
+  not how it is represented, so the ceremonies just call `createSession`.
+- ~~Credential tables; drop `user.password_hash`.~~ Done — `credentials`,
+  `webauthn_challenges`, `auth_rate_limits`, plus `totp_secret` / `totp_enabled` on
+  `user`. `password_hash` is gone, and migration `0000` was regenerated rather than
+  extended: the port's database had never been created, so a migration history for it
+  would have been fiction.
+- ~~`signin.astro` / `signup.astro` with React auth islands.~~ Done, `client:load` — the
+  card is real HTML before hydration.
+- ~~Nav user island + `stores/user.ts`.~~ Done. `<UserNav />` replaced the hardcoded "Get
+  started" button in both `Header.astro` and the home hero.
+- ~~`POST /api/demo` and the upgrade path.~~ Done, and `seed-office.ts` came with it —
+  the demo has no template without it.
+
+### What the mocks asked for and did not get
+
+The `sign-in` and `sign-up` mocks predate Decision 2 and draw a password field, a
+strength meter and a Google / Apple / GitHub row. All superseded: there is no password to
+measure and no OAuth provider wired. "Forgot password?" became "Lost your passkey?", and
+the OAuth row became **"Explore the demo"** — the more valuable button, since a demo
+account converts in place.
+
+The mock's "Full name (optional)" is also gone: there is no column for it, and a field
+that writes nowhere is worse than an absent one. Add a `name` column first if it is
+wanted. `docs/DESIGN.md` §8 decision 3 is closed by this phase.
+
+Two things the mocks do not show, because the auth model implies them: a recovery-code
+step offered straight after registration (a passkey lives on one device, and there is no
+reset email any more), and the `recovered` state on sign-in, which offers to put a passkey
+on the device you just recovered onto.
+
+### Decisions taken here
+
+- **The account row is written in `verify`, not `options`.** An abandoned ceremony — one
+  dismissed prompt — would otherwise leave an empty user holding an email address nobody
+  could ever sign up with again.
+- **Challenges are consumed on read**, so a spent one cannot be replayed.
+- **`RP_ID` / `RP_ORIGIN` are optional and derived from the request when unset.** Nothing
+  static can cover Vercel's per-deploy preview hostnames. Production pins them; Phase 6
+  already lists both.
+- **An unknown email answers 404.** An existence oracle, deliberately: registration must
+  reject a taken email, so the fact is already discoverable. See `docs/API.md`.
+- **`totp/setup` refuses to overwrite working recovery.** Overwriting also clears
+  `totp_enabled`, so walking away from the new QR code would destroy a recovery method
+  that worked a moment earlier.
+- **Every `astro:env` variable is `access: 'secret'`.** A `public` server variable is
+  inlined at build time, so an optional one that is unset during the build freezes as
+  undefined for the life of the deploy — silently, because it has a fallback.
+
+- **Checkpoint:** met locally, against a local Postgres, with a software authenticator
+  completing the real ceremonies: register → `me` → sign in → replay refused → TOTP setup,
+  enable and recover → second passkey → rate limits; then demo → create → convert in place
+  → data intact. **Not yet run on a preview deploy** — that needs the Neon database
+  bootstrapped and `ENCRYPTION_KEY` set, and it is the one part of this checkpoint still
+  outstanding.
 
 ## Phase 4 — The applet
 
