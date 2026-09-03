@@ -177,8 +177,15 @@ This replaces `vite dev` + SvelteKit's server routes.
   is strictly ahead of it (`main` also carries `maintenance_schedules`, which staging lacked).
   `feat/vehicle-detail-fields` deleted too — merged in PR #28.
 - ~~Settle every decision above.~~ All eight settled; Decision 1's DNS trade closed above.
-- **Create the Vercel project and a Vercel Blob store; confirm Neon is reachable from it.**
-  ⚠️ **Outstanding — needs Mark.** Nothing in the repo can do this. See the checklist below.
+- ~~Create the Vercel project; confirm Neon is reachable from it.~~ **Done.** The project is
+  linked to the GitHub repo and the branch deploys — Mark confirmed the preview renders.
+  `DATABASE_URL` is set and points at a **new, blank Neon database**, not the one the
+  SvelteKit app uses. That is a change from this plan's original "point at the same Neon
+  database", and it is the better call: frunk never launched, Phase 6 re-seeds anyway, and
+  a separate database means the port cannot disturb the live Cloudflare app. The cost is
+  that the schema has to be pushed and the roles seeded before anything works — see
+  "Database setup" in `docs/API.md`.
+- **A Vercel Blob store does not exist yet.** Not blocking: Blob is unused until Phase 4.
 - ~~Audit R2 for live user data worth migrating.~~ **Nothing to migrate.** Two buckets exist:
   - `frunk-avatars` — bound as `R2_AVATARS` in `wrangler.toml`. frunk never launched, so it
     holds no real user data. Uploads were also guarded by `!import.meta.env.DEV`, so they
@@ -240,21 +247,62 @@ build and typecheck. Delete the directory at the end of Phase 5. `legacy/` also 
 Capacitor shells (`android/`, `ios/`, `capacitor.config.ts`), which are pinned to the
 SvelteKit dev port and `build/` output; Phase 6 re-points them at the Astro origin.
 
-## Phase 2 — Data layer: REST endpoints
+## Phase 2 — Data layer: REST endpoints — **DONE 2026-09-03**
 
-- Port the Drizzle schema verbatim; point at the same Neon database.
-- Convert the 25 non-demo `+page.server.ts` load functions and form actions into Astro
-  `APIRoute` handlers under `src/pages/api/*` — vehicles, vendors, repairs, notes,
-  galleries, maintenance schedules, users.
-- Every handler resolves the session itself. Reuse `src/lib/server/{stripe,printful,email,
-  password}.ts` nearly verbatim.
-- **Checkpoint:** every endpoint exercisable with `curl` against a preview deploy; reads
-  and writes hit Neon; unauthenticated calls are rejected.
+- ~~Port the Drizzle schema verbatim.~~ `src/lib/server/db/schema.ts`, all 11 tables, same
+  table and column names. Two deliberate deviations, both free because the database is blank:
+  - `user.password_hash` is **nullable**. Decision 2 replaces passwords with passkeys, so
+    Phase 3 stops writing it; NOT NULL would make it impossible to create a user without a
+    password nothing checks. The column stays until Phase 3 so `seed-office.ts` still runs.
+  - `session.user_id` now cascades. It carried no `onDelete`, so deleting a user who had
+    ever signed in raised a foreign-key violation — the SvelteKit "delete account" action
+    could not have worked.
+- ~~Convert the 25 non-demo load functions and form actions into Astro `APIRoute` handlers.~~
+  18 route files under `src/pages/api/`, documented in **`docs/API.md`**. Shared pieces live
+  in `src/pages/api/_lib/` (underscore keeps them out of routing): `session.ts`, `guard.ts`,
+  `http.ts`, `schemas.ts`.
+- ~~Every handler resolves the session itself.~~ There is no `locals` equivalent by design.
+- The store endpoints (`stripe.ts`, `printful.ts`, checkout, the two webhooks) are **not**
+  ported — Decision 6. `password.ts` and the SES verification flow are superseded by
+  Decision 2; the plan's line about reusing them predates that decision being settled.
+
+**Three things worth knowing about the port:**
+
+- **Ownership is a predicate, not a comparison.** The SvelteKit actions fetched a row and
+  then compared `row.userId !== locals.user.uuid`. The guards in `_lib/guard.ts` put the
+  owner into the `WHERE` clause instead, so a row belonging to someone else is
+  indistinguishable from one that does not exist — no existence oracle, and one query.
+- **Astro's CSRF origin check is left on.** Browsers send `Origin` on every non-GET
+  `fetch`, so the applet is unaffected, but curl must set it by hand on mutating calls or
+  they 403. The session cookie is also `SameSite=Lax`.
+- **Uploads are deferred to Phase 4.** The photo and vehicle-image endpoints record an
+  `imageUrl` that already exists; they do not accept the base64 `fileData` the SvelteKit
+  actions took. Phase 4 puts the Vercel Blob write in front of them.
+
+**Checkpoint:** `astro check` 0 errors, `astro build` passes, function count is **1**
+(`_render.func`), and `/` is still static HTML. Unauthenticated calls are rejected —
+verified locally across all 18 routes: every one answers 401 except `GET /api/auth/me`,
+which is 200 with `{"user": null}` by design. A cross-origin mutating call is refused; an
+unknown method or path is 404; 401 precedes 422, so an unauthenticated bad body does not
+leak the schema.
+
+**Not verified from the dev sandbox, and outstanding:** reads and writes actually hitting
+Neon. The sandbox has no `DATABASE_URL` and its egress allowlist cannot reach Neon or a
+Vercel preview. Closing this needs, on Mark's side:
+
+1. `pnpm db:push` (or apply `drizzle/0000_*.sql`) against the blank database.
+2. `pnpm db:seed-roles` — `ROLE_IDS` hardcodes 1/2/3, so nothing role-gated works without it.
+3. A signed-in curl. Phase 3 issues sessions; until then, insert a `session` row by hand as
+   described at the end of `docs/API.md`.
 
 ## Phase 3 — Auth
 
-- Implement the chosen model from Decision 2. If passkeys: port wolfpack's
-  `api/auth/{register,login}/{options,verify}`, `totp/*`, `_lib/session.ts`.
+- Implement the chosen model from Decision 2: port wolfpack's
+  `api/auth/{register,login}/{options,verify}` and `totp/*`. **`_lib/session.ts` already
+  exists** — Phase 2 built it, since passkeys change how a session is established, not how
+  it is represented. The ceremonies just call `createSession`.
+- Add the credential tables (passkey public keys, TOTP secrets) and drop
+  `user.password_hash` once `seed-office.ts` seeds credentials instead.
 - Astro `signin.astro` / `signup.astro` pages mounting React auth islands, built to the
   `sign-in` and `sign-up` mocks.
 - Nav user island + `stores/user.ts` nanostore reading `/api/auth/me`.
