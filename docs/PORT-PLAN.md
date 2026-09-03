@@ -306,6 +306,53 @@ been pushed to the blank Neon database. The sandbox's egress allowlist cannot re
 proxied), so this is Mark's to run — three ways to do it, two of them from a phone, are in
 "Database setup" in `docs/API.md`.
 
+## An accident worth recording
+
+**On 2026-09-03, CI applied the port's schema to the legacy production database.**
+
+`.github/workflows/e2e.yml` was configured `on: push` with no branch filter, and among
+its steps was `npx drizzle-kit push --force` against `secrets.DATABASE_URL`. That secret
+is the **legacy** database — it is what `db-backup.yml` dumps daily. So every push to the
+port branch ran a schema push, and once this branch gained a root `drizzle.config.ts`
+(commit `5cfd35b`), that push resolved against the *ported* schema.
+
+Run [#94](https://github.com/mark-mcdermott/frunk/actions/runs/33701953738) applied exactly
+three statements, and nothing since (later runs report "No changes detected"):
+
+```sql
+ALTER TABLE "session" DROP CONSTRAINT "session_user_id_user_uuid_fk";
+ALTER TABLE "user" ALTER COLUMN "password_hash" DROP NOT NULL;
+ALTER TABLE "session" ADD CONSTRAINT "session_user_id_user_uuid_fk"
+  FOREIGN KEY ("user_id") REFERENCES "public"."user"("uuid")
+  ON DELETE cascade ON UPDATE no action;
+```
+
+**Assessment: not destructive, but a real change to production.** No table, column or row
+was dropped — the log shows no `CREATE TABLE`, which is also how we know the target was the
+legacy database and not the blank one. Both changes loosen rather than tighten:
+
+- `password_hash` nullable — existing rows unaffected, and the SvelteKit app always writes
+  a hash, so nothing it does breaks.
+- `session.user_id` now cascades — deleting a user used to raise a foreign-key error and now
+  removes their sessions instead. That is arguably the bug fix described in Phase 2, but it
+  is a live behaviour change nobody asked for.
+
+frunk never launched, so no real user data was exposed to this. `frunk-daily-backups`
+holds `latest.sql` if a revert is ever wanted; the two statements reverse as:
+
+```sql
+ALTER TABLE "session" DROP CONSTRAINT "session_user_id_user_uuid_fk";
+ALTER TABLE "session" ADD CONSTRAINT "session_user_id_user_uuid_fk"
+  FOREIGN KEY ("user_id") REFERENCES "public"."user"("uuid");
+-- only if every row has one:
+ALTER TABLE "user" ALTER COLUMN "password_hash" SET NOT NULL;
+```
+
+**Fixed** by replacing `e2e.yml` with `ci.yml` on this branch: typecheck and build, no
+database, no secrets. The lesson is already encoded in `db-migrate.yml` — a migration is
+manual, uses its own `ASTRO_DATABASE_URL` secret, and refuses to run from `main`. **No
+workflow that runs automatically should hold a schema-push step.**
+
 ## Phase 3 — Auth
 
 - Implement the chosen model from Decision 2: port wolfpack's
