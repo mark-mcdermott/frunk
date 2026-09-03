@@ -1,0 +1,131 @@
+# Applies the schema to a database from a phone.
+#
+# Run it from the Actions tab (or the GitHub mobile app): Run workflow → pick the
+# target → Run. Nothing is installed locally and the connection string never leaves
+# GitHub Secrets.
+#
+# Set the secret once, at Settings → Secrets and variables → Actions:
+#   ASTRO_DATABASE_URL   the connection string for the Astro port's NEW, BLANK database
+#
+# ⚠️ Deliberately NOT `DATABASE_URL`. That secret already exists in this repository and
+# feeds `db-backup.yml`, which dumps the LEGACY database still serving frunk.cloud from
+# Cloudflare. Pointing a schema push at it would rewrite the live app's schema. The two
+# databases must never share a secret name.
+#
+# This never runs on git push. A migration is a deliberate act, not a side effect of a
+# deploy — Vercel builds must not carry it.
+name: Database migrate
+
+on:
+  workflow_dispatch:
+    inputs:
+      action:
+        description: What to do
+        required: true
+        default: status
+        type: choice
+        options:
+          - status # connect and report what is there, change nothing
+          - push # apply the schema, then seed roles
+      confirm:
+        description: Type the database name to allow "push" (ignored for "status")
+        required: false
+        type: string
+
+concurrency: database-migrate
+
+jobs:
+  migrate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    environment: database
+
+    steps:
+      - uses: actions/checkout@v4
+
+      # The Astro app — and its db:* scripts — live on the port branch. `main` is still
+      # the SvelteKit app pointed at the legacy database, so running there would apply
+      # the wrong schema from the wrong config.
+      - name: Refuse to run from the SvelteKit branch
+        run: |
+          if [ "${{ github.ref_name }}" = "main" ]; then
+            echo "::error::Run this from the Astro port branch, not main."
+            exit 1
+          fi
+          if [ ! -f astro.config.mjs ]; then
+            echo "::error::No astro.config.mjs on ${{ github.ref_name }} — wrong branch."
+            exit 1
+          fi
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Guard "push" behind a typed confirmation
+        if: inputs.action == 'push'
+        env:
+          DATABASE_URL: ${{ secrets.ASTRO_DATABASE_URL }}
+        run: |
+          if [ -z "$DATABASE_URL" ]; then
+            echo "::error::ASTRO_DATABASE_URL is not set. See the header of this file."
+            exit 1
+          fi
+          name="$(node -e 'process.stdout.write(new URL(process.env.DATABASE_URL).pathname.split("?")[0].slice(1))')"
+          if [ "${{ inputs.confirm }}" != "$name" ]; then
+            echo "::error::Type the database name in the confirm box to run a push."
+            echo "Run this workflow with action=status first — it prints the name."
+            exit 1
+          fi
+
+      - name: Report current state
+        env:
+          DATABASE_URL: ${{ secrets.ASTRO_DATABASE_URL }}
+        run: |
+          node --input-type=module -e "
+            import pg from 'pg';
+            const c = new pg.Client({ connectionString: process.env.DATABASE_URL });
+            await c.connect();
+            console.log('Database:', (await c.query('select current_database()')).rows[0].current_database);
+            const t = await c.query(\"select table_name from information_schema.tables where table_schema='public' order by 1\");
+            console.log('Tables:', t.rows.length ? t.rows.map(r => r.table_name).join(', ') : '(none)');
+            const hasRoles = t.rows.some(r => r.table_name === 'roles');
+            if (hasRoles) {
+              const r = await c.query('select id, name from roles order by id');
+              console.log('Roles:', r.rows.length ? r.rows.map(x => x.id + '=' + x.name).join(', ') : '(none)');
+            }
+            await c.end();
+          "
+
+      - name: Apply schema
+        if: inputs.action == 'push'
+        env:
+          DATABASE_URL: ${{ secrets.ASTRO_DATABASE_URL }}
+        run: pnpm db:push --force
+
+      - name: Seed roles
+        if: inputs.action == 'push'
+        env:
+          DATABASE_URL: ${{ secrets.ASTRO_DATABASE_URL }}
+        run: pnpm db:seed-roles
+
+      - name: Report new state
+        if: inputs.action == 'push'
+        env:
+          DATABASE_URL: ${{ secrets.ASTRO_DATABASE_URL }}
+        run: |
+          node --input-type=module -e "
+            import pg from 'pg';
+            const c = new pg.Client({ connectionString: process.env.DATABASE_URL });
+            await c.connect();
+            const t = await c.query(\"select table_name from information_schema.tables where table_schema='public' order by 1\");
+            const r = await c.query('select id, name from roles order by id');
+            console.log('Tables:', t.rows.map(x => x.table_name).join(', '));
+            console.log('Roles:', r.rows.map(x => x.id + '=' + x.name).join(', '));
+            await c.end();
+          "
