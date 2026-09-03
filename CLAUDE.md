@@ -71,8 +71,14 @@ A change is done when **`pnpm check` reports 0 errors** and **`pnpm build` passe
 
 Test coverage is intentionally at zero during the port: the 7 Playwright suites in
 `legacy/e2e/` are written against SvelteKit markup and do not survive the rewrite. They are
-re-established in Phase 4 (`docs/PORT-PLAN.md`). `.github/workflows/e2e.yml` still points at
-the legacy app.
+re-established in Phase 4 (`docs/PORT-PLAN.md`). CI on this branch is `.github/workflows/ci.yml`
+— typecheck and build only.
+
+**No automatically-triggered workflow may touch a database.** The `e2e.yml` it replaced ran
+`drizzle-kit push --force` on every push to every branch, against the secret that points at
+the *legacy* database, and duly rewrote the live app's schema from this branch. See
+"An accident worth recording" in `docs/PORT-PLAN.md`. Migrations go through
+`db-migrate.yml`: manual only, its own `ASTRO_DATABASE_URL` secret, refuses to run on `main`.
 
 ## Architecture (the port target)
 
