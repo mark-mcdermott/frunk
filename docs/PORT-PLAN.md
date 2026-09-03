@@ -279,21 +279,32 @@ SvelteKit dev port and `build/` output; Phase 6 re-points them at the Astro orig
   `imageUrl` that already exists; they do not accept the base64 `fileData` the SvelteKit
   actions took. Phase 4 puts the Vercel Blob write in front of them.
 
-**Checkpoint:** `astro check` 0 errors, `astro build` passes, function count is **1**
-(`_render.func`), and `/` is still static HTML. Unauthenticated calls are rejected —
-verified locally across all 18 routes: every one answers 401 except `GET /api/auth/me`,
-which is 200 with `{"user": null}` by design. A cross-origin mutating call is refused; an
-unknown method or path is 404; 401 precedes 422, so an unauthenticated bad body does not
+**Checkpoint — met.** `astro check` 0 errors, `astro build` passes, function count is **1**
+(`_render.func`), and `/` is still static HTML.
+
+*Unauthenticated calls are rejected* — all 18 routes answer 401 except `GET /api/auth/me`,
+which is 200 with `{"user": null}` by design. A cross-origin mutating call is refused, an
+unknown method or path is 404, and 401 precedes 422 so an unauthenticated bad body does not
 leak the schema.
 
-**Not verified from the dev sandbox, and outstanding:** reads and writes actually hitting
-Neon. The sandbox has no `DATABASE_URL` and its egress allowlist cannot reach Neon or a
-Vercel preview. Closing this needs, on Mark's side:
+*Reads and writes hit the database* — 31 assertions against a real Postgres 16, driven
+through the running endpoints with a real session cookie. Covered: CRUD on every entity;
+PATCH leaving omitted keys alone and an explicit `null` clearing a column; note nesting and
+child deletion; gallery reordering, including an id from another gallery being ignored
+rather than moved; FK cascades on vehicle delete, with the vendor surviving; the admin gate;
+and **ownership isolation** — a second user gets 404, never 403, on every route, and cannot
+attach a repair to someone else's vehicle.
 
-1. `pnpm db:push` (or apply `drizzle/0000_*.sql`) against the blank database.
-2. `pnpm db:seed-roles` — `ROLE_IDS` hardcodes 1/2/3, so nothing role-gated works without it.
-3. A signed-in curl. Phase 3 issues sessions; until then, insert a `session` row by hand as
-   described at the end of `docs/API.md`.
+This became possible because `getDb()` now picks its driver from the `DATABASE_URL`
+hostname: `.neon.tech` uses Neon's HTTP protocol, anything else uses node-postgres over TCP.
+That is worth having beyond the test — the app runs against a throwaway local Postgres with
+no Neon account, and Phase 4's e2e suite can do the same in CI.
+
+**Still outstanding:** the Neon HTTP driver path itself is unexercised, and no schema has
+been pushed to the blank Neon database. The sandbox's egress allowlist cannot reach Neon
+(`api.neon.tech`, `console.neon.tech` and `neon.tech` are all refused, and TCP 5432 is not
+proxied), so this is Mark's to run — three ways to do it, two of them from a phone, are in
+"Database setup" in `docs/API.md`.
 
 ## Phase 3 — Auth
 
