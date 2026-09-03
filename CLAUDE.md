@@ -44,12 +44,20 @@ pnpm check               # astro check — must report 0 errors
 pnpm preview             # astro preview
 
 pnpm db:generate         # regenerate drizzle/*.sql after a schema change
+pnpm db:bootstrap-sql    # then regenerate drizzle/bootstrap.sql from it
 pnpm db:push             # apply the schema to DATABASE_URL
 pnpm db:seed-roles       # required once per database — ROLE_IDS hardcodes 1/2/3
 ```
 
 `DATABASE_URL` points at a **new, blank Neon database**, separate from the one the legacy
 app uses, so the port cannot disturb what is still live on Cloudflare.
+
+**`getDb()` picks its driver from the `DATABASE_URL` hostname** — `.neon.tech` gets Neon's
+HTTP protocol, anything else gets node-postgres over TCP. So the whole API runs against a
+throwaway local Postgres: `psql frunk_dev -f drizzle/bootstrap.sql`, then
+`DATABASE_URL=postgresql://localhost/frunk_dev pnpm dev`. `drizzle/bootstrap.sql` is a
+generated, re-runnable schema-plus-roles file; it is also what you paste into the Neon SQL
+Editor when you have no terminal. See "Database setup" in `docs/API.md`.
 
 `pnpm install` is required after any gap — dependencies drift and the build fails
 misleadingly when `node_modules` is stale.

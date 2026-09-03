@@ -133,16 +133,57 @@ curl -s $BASE/api/auth/me
 
 # 401 on everything else
 curl -s -o /dev/null -w '%{http_code}\n' $BASE/api/vehicles
+```
 
-# Signed-in calls need a session, which Phase 3 issues. Until then, insert a row into
-# `session` by hand: id = sha256(token) as lowercase hex, user_id = a user's uuid.
-curl -s -b "auth-session=$TOKEN" $BASE/api/vehicles
+Signed-in calls need a session, which Phase 3 issues. Until then, make one by hand:
+
+```sql
+-- id is the lowercase hex SHA-256 of the cookie value, not the value itself
+INSERT INTO "user" (uuid, username, roles)
+VALUES ('<uuid>', 'you@example.com', ARRAY[2, 3]);
+
+INSERT INTO session (id, user_id, expires_at)
+VALUES ('<sha256(token)>', '<uuid>', now() + interval '30 days');
+```
+
+```bash
+TOKEN=whatever-you-hashed
+curl -s -b "auth-session=$TOKEN" -H "Origin: $BASE" $BASE/api/vehicles
 ```
 
 ## Database setup
 
+Three ways, in order of how little you need to hand:
+
+**1. One paste — no tooling.** Open `drizzle/bootstrap.sql`, copy it, and run it in the
+Neon SQL Editor (console.neon.tech → your project → SQL Editor). It is the schema plus the
+three role rows, with every statement guarded so a second run is a no-op. This works from a
+phone.
+
+**2. A button.** The `Database migrate` GitHub Action (`.github/workflows/db-migrate.yml`)
+runs `db:push` and `db:seed-roles` against the `DATABASE_URL` repository secret. Actions tab
+→ Run workflow → `status` to look, `push` to apply. Also works from a phone, and the
+connection string never leaves GitHub Secrets. A `push` requires typing the database name,
+so it cannot fire by accident, and it never runs on a git push — a migration should not be a
+side effect of a deploy.
+
+**3. A terminal.**
+
 ```bash
-pnpm db:generate      # regenerate SQL after a schema change
-pnpm db:push          # apply the schema to DATABASE_URL
-pnpm db:seed-roles    # required once — ROLE_IDS in src/lib/roles.ts hardcodes these ids
+pnpm db:generate       # regenerate drizzle/*.sql after a schema change
+pnpm db:bootstrap-sql  # then regenerate drizzle/bootstrap.sql from it
+pnpm db:push           # apply the schema to DATABASE_URL
+pnpm db:seed-roles     # ROLE_IDS in src/lib/roles.ts hardcodes ids 1/2/3
+```
+
+## Running against a local Postgres
+
+`DATABASE_URL` picks the driver by hostname: anything ending in `.neon.tech` uses Neon's
+HTTP protocol, anything else uses node-postgres over TCP. So the whole API runs against a
+throwaway local database with no Neon account:
+
+```bash
+createdb frunk_dev
+psql frunk_dev -f drizzle/bootstrap.sql
+DATABASE_URL=postgresql://localhost/frunk_dev pnpm dev
 ```

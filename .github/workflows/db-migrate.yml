@@ -1,0 +1,107 @@
+# Applies the schema to a database from a phone.
+#
+# Run it from the Actions tab (or the GitHub mobile app): Run workflow → pick the
+# target → Run. Nothing is installed locally and the connection string never leaves
+# GitHub Secrets.
+#
+# Set the secret once, at Settings → Secrets and variables → Actions:
+#   DATABASE_URL         the Neon connection string for the Astro app's database
+#
+# This never runs on push. A migration is a deliberate act, not a side effect of a
+# deploy — Vercel builds must not carry it.
+name: Database migrate
+
+on:
+  workflow_dispatch:
+    inputs:
+      action:
+        description: What to do
+        required: true
+        default: status
+        type: choice
+        options:
+          - status # connect and report what is there, change nothing
+          - push # apply the schema, then seed roles
+      confirm:
+        description: Type the database name to allow "push" (ignored for "status")
+        required: false
+        type: string
+
+concurrency: database-migrate
+
+jobs:
+  migrate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    environment: database
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Guard "push" behind a typed confirmation
+        if: inputs.action == 'push'
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: |
+          name="$(node -e 'process.stdout.write(new URL(process.env.DATABASE_URL).pathname.slice(1))')"
+          if [ "${{ inputs.confirm }}" != "$name" ]; then
+            echo "::error::Type the database name in the confirm box to run a push."
+            echo "This DATABASE_URL points at a database whose name is ${#name} characters long."
+            exit 1
+          fi
+
+      - name: Report current state
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: |
+          node --input-type=module -e "
+            import pg from 'pg';
+            const c = new pg.Client({ connectionString: process.env.DATABASE_URL });
+            await c.connect();
+            const t = await c.query(\"select table_name from information_schema.tables where table_schema='public' order by 1\");
+            console.log('Tables:', t.rows.length ? t.rows.map(r => r.table_name).join(', ') : '(none)');
+            const hasRoles = t.rows.some(r => r.table_name === 'roles');
+            if (hasRoles) {
+              const r = await c.query('select id, name from roles order by id');
+              console.log('Roles:', r.rows.length ? r.rows.map(x => x.id + '=' + x.name).join(', ') : '(none)');
+            }
+            await c.end();
+          "
+
+      - name: Apply schema
+        if: inputs.action == 'push'
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: pnpm db:push --force
+
+      - name: Seed roles
+        if: inputs.action == 'push'
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: pnpm db:seed-roles
+
+      - name: Report new state
+        if: inputs.action == 'push'
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: |
+          node --input-type=module -e "
+            import pg from 'pg';
+            const c = new pg.Client({ connectionString: process.env.DATABASE_URL });
+            await c.connect();
+            const t = await c.query(\"select table_name from information_schema.tables where table_schema='public' order by 1\");
+            const r = await c.query('select id, name from roles order by id');
+            console.log('Tables:', t.rows.map(x => x.table_name).join(', '));
+            console.log('Roles:', r.rows.map(x => x.id + '=' + x.name).join(', '));
+            await c.end();
+          "
