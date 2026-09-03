@@ -211,3 +211,33 @@ export const userListQuerySchema = z.object({
 	sortOrder: z.enum(['asc', 'desc']).default('asc'),
 	search: z.string().trim().default('')
 });
+
+/**
+ * Auth bodies (Phase 3). Email is lowercased on the way in so `user.username` — which
+ * is unique and case-sensitive in Postgres — cannot hold two rows for one address.
+ */
+const email = z
+	.email('Enter a valid email address')
+	.max(320)
+	.transform((v) => v.toLowerCase());
+
+export const authEmailSchema = z.object({ email });
+
+/**
+ * The authenticator's own response. Its shape is WebAuthn's, not ours, and
+ * `@simplewebauthn/server` is what actually validates it — so this checks only that
+ * `id` is present, which is the field the login lookup keys on.
+ */
+export const passkeyVerifySchema = z.object({
+	email,
+	response: z.looseObject({ id: z.string() })
+});
+
+const totpToken = z
+	.string()
+	.trim()
+	.regex(/^\d{6}$/, 'Enter the 6-digit code from your authenticator app');
+
+export const totpEnableSchema = z.object({ token: totpToken });
+
+export const totpRecoverSchema = z.object({ email, token: totpToken });

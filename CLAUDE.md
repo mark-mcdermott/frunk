@@ -13,7 +13,7 @@ app. The SvelteKit app lives in **`legacy/`** — it is the reference for the po
 excluded from the Astro build and typecheck. It still deploys to Cloudflare Pages from
 `main` and stays live until Phase 6.
 
-**Phases 0, 1 and 2 are done.** Phase 3 (passkeys + TOTP auth) is next. Read
+**Phases 0–3 are done.** Phase 4 (the React applet) is next. Read
 `docs/PORT-PLAN.md` before doing anything here; it records what is settled and what is
 outstanding.
 
@@ -47,6 +47,7 @@ pnpm db:generate         # regenerate drizzle/*.sql after a schema change
 pnpm db:bootstrap-sql    # then regenerate drizzle/bootstrap.sql from it
 pnpm db:push             # apply the schema to DATABASE_URL
 pnpm db:seed-roles       # required once per database — ROLE_IDS hardcodes 1/2/3
+pnpm db:seed-office      # sample data; also the template POST /api/demo clones
 ```
 
 `DATABASE_URL` points at a **new, blank Neon database**, separate from the one the legacy
@@ -97,6 +98,23 @@ Two rules it encodes: ownership goes in the `WHERE` clause, never a post-fetch c
 (so another user's row is a 404, not a 403); and PATCH is genuinely partial, where an
 omitted key is left alone and an explicit `null` clears the column.
 
+**Auth is passkeys + TOTP** (Decision 2), and there is no password anywhere. The
+ceremonies live in `src/pages/api/auth/{register,login}/{options,verify}` and
+`api/auth/totp/*`; `src/lib/server/auth/` holds the pieces they share — relying-party
+identity, TOTP, secret sealing, rate limiting. `docs/API.md` has the contract.
+
+Three things about it are easy to get wrong:
+
+- **`RP_ID` / `RP_ORIGIN` unset is correct in dev and on previews** — they are derived
+  from the request there. Pin them in production. A wrong value does not fail loudly; it
+  mints passkeys that can never sign in.
+- **A demo account is a real account** (Decision 5). Registering a passkey while holding a
+  `DEMO` session upgrades that row in place rather than making a new one, so a trial
+  converts without losing anything. `POST /api/demo` needs `pnpm db:seed-office`.
+- **TOTP is recovery, not a second factor.** It is the only way back after a lost device,
+  which is why `totp/recover` is rate limited hardest and why `totp/setup` refuses to
+  overwrite a working secret.
+
 **Island classification rule:** does a live browser runtime need to exist for this to
 render? Yes → `client:only`. No → `client:load` / `client:visible`. Cross-island state is a
 **nanostore, not React context** — each island is its own React root.
@@ -118,9 +136,9 @@ everyone; the applet decides what to render; every API handler checks the sessio
 - `legacy/src/hooks.server.ts` — resolves the session cookie into `locals.user` / `locals.session`
   on every request.
 
-**Auth** is hand-rolled session auth: opaque token in an `auth-session` cookie, sessions
-table in Postgres, sliding expiry, SES for verification email. There are no OAuth providers
-wired up today.
+**Auth** was hand-rolled session auth: opaque token in an `auth-session` cookie, sessions
+table in Postgres, sliding expiry, SES for verification email. The port keeps the session
+half and replaced everything in front of it with passkeys (see above).
 
 **Demo mode** — routes under `demo/` reuse the same page components with `basePath` set, so
 links stay inside the demo. Check `isDemoPath` / `demoPath` in `src/lib/utils/demoRoutes.ts`

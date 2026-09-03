@@ -191,6 +191,8 @@ These block a faithful implementation and need Mark's call:
    `--color-accent`, `--font-heading`, `--font-body` from theme-forseen, and loads the
    Skeleton `cerberus` theme. The redesign either commits these tokens directly or ships as
    a theme-forseen preset. That choice affects every file below.
-3. **Auth surface.** The `sign-in` mock shows **Google / Apple / GitHub OAuth**. The app
-   today uses hand-rolled sessions with SES email verification, and the roadmap calls for
-   **passkeys**. Three different directions — pick one before building the auth screens.
+3. ~~**Auth surface.**~~ **Resolved** — passkeys + TOTP (PORT-PLAN.md Decision 2), built
+   in Phase 3. The mock's Google / Apple / GitHub row, its password field and its strength
+   meter are superseded: there is no password. The OAuth slot now holds **"Explore the
+   demo"**, and "Forgot password?" is "Lost your passkey?". A fuller spread of login
+   options is still wanted eventually — the auth surface is kept swappable for it.

@@ -3,6 +3,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 import Footer from '../components/Footer.astro';
 import MockImage from '../components/MockImage.astro';
 import { primaryNav } from '../lib/nav';
+import { UserNav } from '../components/auth/UserNav';
 import { Cloud, Heart, Lock, RefreshCw, Shield } from 'lucide-react';
 
 /**
@@ -99,13 +100,7 @@ const testimonials = [
 							))
 						}
 					</nav>
-					<a
-						href="/signup"
-						class="inline-flex shrink-0 items-center gap-2 rounded-full bg-[#0c1019] px-5 py-2.5 text-[0.9375rem] font-semibold text-[#fefefe] transition-opacity hover:opacity-88 sm:px-6 sm:py-3"
-					>
-						Get started
-						<span aria-hidden="true" class="text-xs">&#8599;</span>
-					</a>
+					<UserNav client:load />
 				</div>
 			</div>
 

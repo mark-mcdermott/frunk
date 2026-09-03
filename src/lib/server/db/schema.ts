@@ -4,7 +4,16 @@
  * Table and column names are unchanged so the port is a drop-in against the same
  * Postgres shape. Deviations are commented inline where they exist.
  */
-import { pgTable, integer, text, timestamp, jsonb, serial } from 'drizzle-orm/pg-core';
+import {
+	pgTable,
+	bigint,
+	boolean,
+	integer,
+	jsonb,
+	serial,
+	text,
+	timestamp
+} from 'drizzle-orm/pg-core';
 
 // Roles table - defines available roles and their mutual exclusivity
 export const roles = pgTable('roles', {
@@ -20,15 +29,8 @@ export const user = pgTable('user', {
 	id: serial('id').primaryKey(),
 	uuid: text('uuid').notNull().unique(),
 	age: integer('age'),
+	/** The sign-in identifier. It is an email address everywhere — the column name is the legacy one. */
 	username: text('username').notNull().unique(),
-	/**
-	 * Nullable, unlike the SvelteKit schema. Decision 2 replaces passwords with
-	 * passkeys + TOTP, so Phase 3 adds credential tables and stops writing this
-	 * column; leaving it NOT NULL would make it impossible to create a user without
-	 * a password that nothing checks. The column itself stays until Phase 3 lands
-	 * so `seed-office.ts` keeps working in the meantime.
-	 */
-	passwordHash: text('password_hash'),
 	roles: integer('roles').array().notNull().default([]), // array of role IDs from roles table
 	avatar: text('avatar'),
 	emailVerified: integer('email_verified').notNull().default(0),
@@ -37,7 +39,15 @@ export const user = pgTable('user', {
 		withTimezone: true,
 		mode: 'date'
 	}),
-	cookieConsent: jsonb('cookie_consent') // { essential: boolean, analytics: boolean, timestamp: number }
+	cookieConsent: jsonb('cookie_consent'), // { essential: boolean, analytics: boolean, timestamp: number }
+	/**
+	 * TOTP is the recovery factor, not a second factor: it stands in for a passkey the
+	 * user no longer has. Sealed with AES-256-GCM before it is stored — see
+	 * `src/lib/server/auth/secrets.ts`. `totpEnabled` stays false until the user has
+	 * proved they can produce a code, so a half-finished setup cannot lock anyone out.
+	 */
+	totpSecret: text('totp_secret'),
+	totpEnabled: boolean('totp_enabled').notNull().default(false)
 });
 
 export const session = pgTable('session', {
@@ -56,6 +66,70 @@ export const session = pgTable('session', {
 export type Session = typeof session.$inferSelect;
 
 export type User = typeof user.$inferSelect;
+
+/**
+ * Passkeys. One row per authenticator a user has registered (Decision 2) — the
+ * replacement for `user.password_hash`, which this phase drops.
+ *
+ * The public key is the only secret-adjacent thing here and it is, by design, public:
+ * possession of it proves nothing. What authenticates is a signature over a
+ * server-issued challenge, checked in `api/auth/login/verify`.
+ */
+export const credentials = pgTable('credentials', {
+	/** The WebAuthn credential ID, base64url — already a string, so it is the key. */
+	id: text('id').primaryKey(),
+	userId: text('user_id')
+		.notNull()
+		.references(() => user.uuid, { onDelete: 'cascade' }),
+	/** COSE public key, base64url. */
+	publicKey: text('public_key').notNull(),
+	/**
+	 * Signature counter. An authenticator that ever reports a counter at or below the
+	 * stored one has been cloned; `@simplewebauthn/server` raises on that, which is
+	 * the whole reason this is written back on every sign-in.
+	 */
+	counter: bigint('counter', { mode: 'number' }).notNull().default(0),
+	/** JSON array of AuthenticatorTransport — a hint so the browser offers the right prompt. */
+	transports: text('transports'),
+	createdAt: timestamp('created_at', { withTimezone: true, mode: 'date' }).notNull().defaultNow()
+});
+
+export type Credential = typeof credentials.$inferSelect;
+
+/**
+ * Short-lived WebAuthn challenges. A ceremony is two round trips and the server has
+ * to remember what it asked between them; a signature is only meaningful over a
+ * challenge the server chose, so this cannot live in the client.
+ *
+ * Keyed by `register:<email>` or `login:<email>` so the two ceremonies cannot consume
+ * each other's challenge. `userId` carries the account a registration is destined for:
+ * the uuid of the account being upgraded in place, or a fresh one held aside so an
+ * abandoned ceremony leaves no empty user row behind.
+ */
+export const webauthnChallenges = pgTable('webauthn_challenges', {
+	key: text('key').primaryKey(),
+	challenge: text('challenge').notNull(),
+	userId: text('user_id'),
+	expiresAt: timestamp('expires_at', { withTimezone: true, mode: 'date' }).notNull()
+});
+
+/**
+ * Fixed-window counters for the unauthenticated auth entry points, keyed by
+ * `<action>:<email>`.
+ *
+ * TOTP recovery is a six-digit secret that grants a session, so it is brute-forceable
+ * in a way a passkey is not. This is what keeps that from being a viable attack, and
+ * it lives in Postgres rather than in memory because serverless instances do not share
+ * one.
+ */
+export const authRateLimits = pgTable('auth_rate_limits', {
+	key: text('key').primaryKey(),
+	count: integer('count').notNull().default(0),
+	windowStart: timestamp('window_start', { withTimezone: true, mode: 'date' })
+		.notNull()
+		.defaultNow()
+});
+
 
 // Store orders
 export const orders = pgTable('orders', {
