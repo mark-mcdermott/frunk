@@ -13,8 +13,9 @@ app. The SvelteKit app lives in **`legacy/`** — it is the reference for the po
 excluded from the Astro build and typecheck. It still deploys to Cloudflare Pages from
 `main` and stays live until Phase 6.
 
-**Phases 0 and 1 are done.** Phase 2 (REST endpoints) is next. Read `docs/PORT-PLAN.md`
-before doing anything here; it records what is settled and what is outstanding.
+**Phases 0, 1 and 2 are done.** Phase 3 (passkeys + TOTP auth) is next. Read
+`docs/PORT-PLAN.md` before doing anything here; it records what is settled and what is
+outstanding.
 
 ## Stack (the port target, at the repo root)
 
@@ -41,7 +42,14 @@ pnpm dev                 # astro dev — static pages, islands and /api/* in one
 pnpm build               # astro build (must pass)
 pnpm check               # astro check — must report 0 errors
 pnpm preview             # astro preview
+
+pnpm db:generate         # regenerate drizzle/*.sql after a schema change
+pnpm db:push             # apply the schema to DATABASE_URL
+pnpm db:seed-roles       # required once per database — ROLE_IDS hardcodes 1/2/3
 ```
+
+`DATABASE_URL` points at a **new, blank Neon database**, separate from the one the legacy
+app uses, so the port cannot disturb what is still live on Cloudflare.
 
 `pnpm install` is required after any gap — dependencies drift and the build fails
 misleadingly when `node_modules` is stale.
@@ -65,6 +73,15 @@ the legacy app.
 - `src/components/` — Astro components and, from Phase 4, React. `src/components/ui/` is
   shadcn's target directory.
 - `src/layouts/`, `src/styles/global.css` (the design token layer), `src/lib/`.
+- `src/pages/api/_lib/` — shared API pieces; the underscore keeps them out of routing.
+  `session.ts` (cookie → user), `guard.ts` (`requireSession`, `ownedVehicle`, …),
+  `http.ts` (`json`/`fail`/`handler`/`readJson`), `schemas.ts` (zod request bodies).
+- `src/lib/server/` — server-only: `db/schema.ts`, `db/index.ts`. Never import from client code.
+
+**The REST surface is documented in `docs/API.md`.** Read it before adding an endpoint.
+Two rules it encodes: ownership goes in the `WHERE` clause, never a post-fetch comparison
+(so another user's row is a 404, not a 403); and PATCH is genuinely partial, where an
+omitted key is left alone and an explicit `null` clears the column.
 
 **Island classification rule:** does a live browser runtime need to exist for this to
 render? Yes → `client:only`. No → `client:load` / `client:visible`. Cross-island state is a
