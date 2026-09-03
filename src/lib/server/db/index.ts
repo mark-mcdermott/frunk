@@ -2,6 +2,7 @@ import { drizzle as drizzleNeon, type NeonHttpDatabase } from 'drizzle-orm/neon-
 import { drizzle as drizzlePg } from 'drizzle-orm/node-postgres';
 import { neon } from '@neondatabase/serverless';
 import pg from 'pg';
+import { DATABASE_URL } from 'astro:env/server';
 import * as schema from './schema';
 
 /**
@@ -11,6 +12,10 @@ import * as schema from './schema';
  * request time, and `DATABASE_URL` is a runtime-only secret on Vercel: connecting
  * eagerly would fail every build. Cached because a serverless invocation may be
  * reused across requests.
+ *
+ * The URL comes from `astro:env/server`, which reads a local `.env` in dev and the
+ * process environment in production. Reading `process.env` directly does not work
+ * in dev: Astro loads `.env` into its own layer and never copies it across.
  *
  * The driver is chosen from the host. Neon in production speaks its own HTTP
  * protocol, which cannot talk to an ordinary Postgres; pointing `DATABASE_URL` at
@@ -33,7 +38,7 @@ function isNeon(url: string): boolean {
 export function getDb(): Db {
 	if (cached) return cached;
 
-	const url = process.env.DATABASE_URL;
+	const url = DATABASE_URL;
 	if (!url) throw new Error('DATABASE_URL is not set');
 
 	if (isNeon(url)) {
