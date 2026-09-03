@@ -1,8 +1,28 @@
+# CI for the SvelteKit app, which still serves frunk.cloud from Cloudflare.
+#
+# Two changes on 2026-09-03, after this workflow twice rewrote the live database's
+# schema from branches that are not the SvelteKit app:
+#
+#   1. It is scoped to `main` and to pull requests targeting `main`. It used to run
+#      `on: push` with no filter, so it ran on every branch in the repo — including
+#      the Astro port branch, where `drizzle.config.ts` resolves to a *different*
+#      schema.
+#   2. The `drizzle-kit push --force` step is gone. An automatically-triggered
+#      workflow must not migrate a database. Schema changes go through
+#      `db-migrate.yml`, which is manual and confirms the target first.
+#
+# What happened: the port branch's schema was applied to the legacy database (making
+# `user.password_hash` nullable and adding a cascade to `session.user_id`), and a
+# later run from another branch reverted it. Nothing was lost — the daily backups
+# confirm the schema is unchanged from before — but the schema was whipsawing
+# between branches, and the next branch to differ could have done real damage.
 name: E2E Tests
 
 on:
   push:
+    branches: [main]
   pull_request:
+    branches: [main]
 
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
@@ -39,11 +59,6 @@ jobs:
       - name: Install Playwright system deps
         if: steps.playwright-cache.outputs.cache-hit == 'true'
         run: npx playwright install-deps chromium
-
-      - name: Push database schema
-        env:
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
-        run: npx drizzle-kit push --force
 
       - name: Build app
         env:
