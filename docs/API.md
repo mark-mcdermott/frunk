@@ -161,11 +161,21 @@ three role rows, with every statement guarded so a second run is a no-op. This w
 phone.
 
 **2. A button.** The `Database migrate` GitHub Action (`.github/workflows/db-migrate.yml`)
-runs `db:push` and `db:seed-roles` against the `DATABASE_URL` repository secret. Actions tab
-→ Run workflow → `status` to look, `push` to apply. Also works from a phone, and the
-connection string never leaves GitHub Secrets. A `push` requires typing the database name,
-so it cannot fire by accident, and it never runs on a git push — a migration should not be a
-side effect of a deploy.
+runs `db:push` and `db:seed-roles`. Actions tab → Run workflow → `status` to look, `push` to
+apply. Works from a phone, and the connection string never leaves GitHub Secrets.
+
+Two things to know before relying on it:
+
+- **It needs a new secret, `ASTRO_DATABASE_URL`.** Not `DATABASE_URL` — that one already
+  exists and feeds `db-backup.yml`, which dumps the **legacy** database still serving
+  frunk.cloud from Cloudflare. Sharing the name would let a schema push land on the live
+  app. The workflow also refuses to run from `main`, where the SvelteKit config lives.
+- **`workflow_dispatch` only lists workflows that exist on the default branch.** Until this
+  file is on `main`, the Run workflow button will not appear. Use option 1 in the meantime.
+
+A `push` requires typing the database name (run `status` first — it prints it), so it cannot
+fire by accident, and it never runs on a git push: a migration should not be a side effect of
+a deploy.
 
 **3. A terminal.**
 
