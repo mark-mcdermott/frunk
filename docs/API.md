@@ -186,6 +186,23 @@ pnpm db:push           # apply the schema to DATABASE_URL
 pnpm db:seed-roles     # ROLE_IDS in src/lib/roles.ts hardcodes ids 1/2/3
 ```
 
+## `DATABASE_URL` and `.env`
+
+Put it in a gitignored `.env` at the repo root:
+
+```
+DATABASE_URL=postgresql://...
+```
+
+The app reads it through `astro:env/server`, **not** `process.env`. This matters: Astro
+loads `.env` into its own env layer and never copies it into `process.env`, so reading
+`process.env.DATABASE_URL` gives `undefined` in dev even with a perfectly good `.env` —
+while `drizzle.config.ts`, which imports `dotenv/config` itself, sees it fine. One
+misconfiguration, two different symptoms.
+
+If it is missing, every `/api/*` route fails with Astro's `EnvInvalidVariables` naming the
+variable. Static pages are unaffected — `/` renders without a database.
+
 ## Running against a local Postgres
 
 `DATABASE_URL` picks the driver by hostname: anything ending in `.neon.tech` uses Neon's
@@ -195,5 +212,11 @@ throwaway local database with no Neon account:
 ```bash
 createdb frunk_dev
 psql frunk_dev -f drizzle/bootstrap.sql
-DATABASE_URL=postgresql://localhost/frunk_dev pnpm dev
+echo 'DATABASE_URL=postgresql://localhost/frunk_dev' > .env
+pnpm dev
 ```
+
+No `createdb` on macOS? It ships with the Postgres client tools, not with the OS:
+`brew install postgresql@17 && brew services start postgresql@17`, then add
+`/opt/homebrew/opt/postgresql@17/bin` to `PATH`. Or install Postgres.app. Either way this
+is optional — pointing `DATABASE_URL` at the Neon database works the same.
