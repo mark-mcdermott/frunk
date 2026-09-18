@@ -191,6 +191,9 @@ These block a faithful implementation and need Mark's call:
    `--color-accent`, `--font-heading`, `--font-body` from theme-forseen, and loads the
    Skeleton `cerberus` theme. The redesign either commits these tokens directly or ships as
    a theme-forseen preset. That choice affects every file below.
-3. **Auth surface.** The `sign-in` mock shows **Google / Apple / GitHub OAuth**. The app
-   today uses hand-rolled sessions with SES email verification, and the roadmap calls for
-   **passkeys**. Three different directions — pick one before building the auth screens.
+3. ~~**Auth surface.**~~ **Resolved 2026-09-17 — build the mock as drawn.** The three
+   directions (the mock's Google/Apple/GitHub OAuth, email + SES verification, and passkeys)
+   turned out not to be alternatives. `PORT-PLAN.md` Decision 2 adopts **Better Auth**, where
+   email+password and social providers are core config and passkeys and TOTP are plugins —
+   all on one user table. So the sign-in screen ships with its social buttons intact rather
+   than contradicting the mock, and passkeys are added alongside rather than instead.
