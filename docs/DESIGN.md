@@ -191,8 +191,19 @@ These block a faithful implementation and need Mark's call:
    `--color-accent`, `--font-heading`, `--font-body` from theme-forseen, and loads the
    Skeleton `cerberus` theme. The redesign either commits these tokens directly or ships as
    a theme-forseen preset. That choice affects every file below.
-3. ~~**Auth surface.**~~ **Resolved** — passkeys + TOTP (PORT-PLAN.md Decision 2), built
-   in Phase 3. The mock's Google / Apple / GitHub row, its password field and its strength
-   meter are superseded: there is no password. The OAuth slot now holds **"Explore the
-   demo"**, and "Forgot password?" is "Lost your passkey?". A fuller spread of login
-   options is still wanted eventually — the auth surface is kept swappable for it.
+3. **Auth surface — technically unblocked, one product question left.** *(Updated
+   2026-09-17.)* Previously resolved as passkeys + TOTP, which made the mock's Google /
+   Apple / GitHub row impossible. PORT-PLAN Decision 2 now adopts **Better Auth**, where
+   social providers are core config alongside passkeys on one user table — so the row is
+   **available again**, and the question is no longer technical.
+
+   The counter-argument from Phase 3 stands and should be weighed rather than overridden:
+   that slot currently holds **"Explore the demo"**, argued as the more valuable button
+   because a demo account converts in place, keeping everything the visitor made. An OAuth
+   row competes with it for the same space.
+
+   Settled regardless: there is no password, so the password field and strength meter stay
+   gone and "Forgot password?" remains "Lost your passkey?" — unless email+password is
+   deliberately enabled, which Better Auth also allows.
+
+   **Decide before rebuilding the sign-in screen:** social row, demo button, or both.

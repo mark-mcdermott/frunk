@@ -98,12 +98,42 @@ talks to the app island."
 
    Still unverified: no DKIM records were found for SES, so sending from
    `noreply@frunk.cloud` may not be verified. Check independently.
-2. **Auth — DECIDED: passkeys + TOTP**, ported from wolfpack. No accounts exist, so there
-   is no re-registration cost. Drops the hand-rolled session/password path and the SES
-   verification flow. *(Closes `docs/DESIGN.md` §8 decision 3 — the sign-in mock's
-   Google/Apple/GitHub OAuth is superseded.)*
-   **Future intent:** a fuller commercial spread of login options is wanted eventually.
-   Passkeys + TOTP is the v1 floor, not the ceiling — keep the auth surface swappable.
+2. **Auth — DECIDED: Better Auth.** *(Revised 2026-09-17. Supersedes "passkeys + TOTP
+   ported from wolfpack", which was **built and locally verified** in Phase 3 before this
+   reversal. Reopens Phase 3.)*
+
+   `better-auth` — MIT, self-hosted, a library rather than a service, so no tier and no
+   per-MAU cost. Passkeys via `@better-auth/passkey`, TOTP via the bundled
+   `two-factor` plugin, Drizzle adapter in core, `bearer` for Capacitor, `anonymous` for the
+   demo lifecycle, and social providers as core config.
+
+   **This is a deliberate trade, not an upgrade on every axis.** What it costs: ~1,693 lines
+   across 25 files, working and verified locally, replaced by a dependency. What it buys:
+
+   - **Capacitor `bearer` mode** — otherwise a hand-built job at Phase 6, when cross-origin
+     cookies stop working from `capacitor://localhost`.
+   - **`anonymous` plugin** — Decision 5's demo-converts-in-place lifecycle, which is
+     currently our own code.
+   - **Social providers** as config, reopening the mock's Google/Apple/GitHub row (see the
+     counter-argument recorded in Phase 3 — it is not obviously wanted).
+   - **Less owned security surface**, and future options (`@better-auth/sso` for an
+     enterprise fleet wedge, `@better-auth/stripe` for the premium tier) as installs.
+
+   **Timing is the argument.** Phases 4–6 are still the whole app. Swapping auth before the
+   applet is built on top of it is far cheaper than after, and no accounts exist, so nothing
+   migrates either way.
+
+   ⚠️ **Six decisions were reasoned into the code being replaced. They must be re-verified
+   against Better Auth's defaults, not silently lost** — the full reasoning stays in Phase 3:
+
+   | carried-forward decision | to check against Better Auth |
+   |---|---|
+   | account row written in `verify`, not `options` | does registration create the user before the ceremony completes? |
+   | challenges consumed on read | is a spent challenge replayable? |
+   | `RP_ID`/`RP_ORIGIN` derived from request when unset | preview deploys have per-deploy hostnames; static config cannot cover them |
+   | unknown email answers 404 (deliberate oracle) | what does its default leak, and is it consistent with registration? |
+   | `totp/setup` refuses to overwrite working recovery | does re-running setup destroy a working recovery method? |
+   | every `astro:env` var is `access: 'secret'` | unaffected — an Astro concern, keep it |
 3. **Component library — DECIDED: shadcn.** The earlier "no component library" call was
    made while the target was Svelte; on React, shadcn matches wolfpack and the S in every
    `_PROJECTS.md` stack acronym.
@@ -154,6 +184,62 @@ talks to the app island."
 All eight settled. The plan is ready to execute.
 
 ---
+
+9. **Server-state cache — DECIDED: TanStack Query.** *(Added 2026-09-17.)* The plan had no
+   answer for server state. Phase 4 mounts a `client:only` applet with react-router, which
+   has none of SvelteKit's revalidation-on-navigation — so without Query it means
+   hand-rolling fetch, cache and invalidation on every screen. It sits on top of the Phase 2
+   endpoints without changing their shape.
+
+   One `QueryClient` at `AppRoot` — one island, one client, never per screen. Persist the
+   cache to localStorage so a returning user repaints instantly, **but gate what persists**:
+   the schema holds `insurancePolicyNumber`, `lienHolder` and `loanAccountNumber`, which must
+   not sit in plaintext. Purge on sign-out, set a `maxAge`, allowlist via
+   `dehydrateOptions`. Code-split per route so Phase 4 does not ship every screen upfront.
+
+10. **Stack name — NASDAQ-VCRZ.** *(Recorded 2026-09-17.)*
+
+    **N**eon · **A**stro · **S**hadcn · **D**rizzle · **A**uth (Better) · **Q**uery
+    (TanStack) · **V**ercel (Blob/Analytics) · **C**apacitor · **R**eact · **Z**od
+
+    Rule: **every letter names a decision, not a default.** Node, TypeScript, Vite and
+    ESLint are therefore absent — Vite comes *with* Astro rather than being chosen beside it
+    — which says nothing about whether they are used. Tauri is out by Decision 7 (restore the
+    letter when that reverses); nanostores is out because Better Auth brings it either way.
+    Recorded in `_PROJECTS.md`.
+
+11. **Testing — DECIDED: Vitest-weighted, Playwright for flows.** *(Added 2026-09-17.)*
+
+    `legacy/` still holds 7 Playwright suites (618 lines) asserting against SvelteKit markup;
+    they do not survive. Principle: **push tests away from markup, because markup churns.**
+
+    **① API integration tests (Vitest, node) — the bulk.** The Phase 2 endpoints are HTTP in,
+    JSON out, so these survive every UI change. They are also where the security boundary
+    now lives: post-port each endpoint is independently reachable, so one missing check is a
+    leak. Per endpoint — no session → 401; valid session but another user's row → 404/403,
+    never the row; own row → 200; `DEMO`-role session → isolated identically. That last case
+    is not optional: Decision 5 rests demo safety entirely on `user_id` scoping.
+
+    **② Component tests — few.** Only components that *compute*: validation, date maths,
+    currency and VIN formatting. Not "does the card render the title".
+
+    **③ E2E (Playwright) — four or five.** Cross-system flows only, never per-entity CRUD:
+    register → sign in → sign out; demo → create → convert with data intact; one CRUD happy
+    path; and upload a document → assert it is **not** publicly fetchable (the Phase 4
+    privacy fix, which regresses silently).
+
+    **Test database: a Neon branch per CI run**, seeded from `seed-office.ts`, dropped after.
+    See "An accident worth recording" above for why tests must not reach a real database.
+
+    **Split the scripts** — `pnpm test:unit` (seconds, run constantly) and `pnpm test:e2e`
+    (minutes, before PR). CI runs unit on every push, e2e on PRs.
+
+    **Lint becomes a gate.** It was excluded because ~821 files failed prettier — debt in
+    files this port replaces wholesale. Format new files from the start and add lint to CI
+    once Phase 4 lands.
+
+    **Skipped: visual regression.** Noisy across font rendering and CI-vs-local, and during
+    an active redesign every intentional change reads as a failure. Revisit once settled.
 
 ## Local development
 
@@ -353,7 +439,31 @@ database, no secrets. The lesson is already encoded in `db-migrate.yml` — a mi
 manual, uses its own `ASTRO_DATABASE_URL` secret, and refuses to run from `main`. **No
 workflow that runs automatically should hold a schema-push step.**
 
-## Phase 3 — Auth — **DONE 2026-09-03**
+## Phase 3 — Auth — **REOPENED 2026-09-17** *(was DONE 2026-09-03)*
+
+> Decision 2 was reversed to Better Auth after this phase completed. **Everything below
+> describes work that was built and verified**, and is kept rather than deleted: the
+> reasoning is the valuable part and most of it transfers. The React components
+> (`src/components/auth/*`, ~780 lines) largely survive — they are forms. What is replaced
+> is the ~900 lines of server ceremonies and client wiring.
+>
+> **Rework:**
+>
+> - Mount `betterAuth()` with the Drizzle adapter on a catch-all `/api/auth/[...all]`;
+>   generate its tables with the Better Auth CLI. The existing `credentials`,
+>   `webauthn_challenges` and `auth_rate_limits` tables are superseded by its schema —
+>   check what `totp_secret` / `totp_enabled` on `user` become before dropping them.
+> - Enable `emailAndPassword`, `socialProviders`, and the `passkey`, `twoFactor`, `bearer`
+>   and `anonymous` plugins.
+> - Rewire `src/lib/auth-client.ts` and the auth components to Better Auth's client; drop
+>   `stores/user.ts` in favour of its session nanostore.
+> - Re-point `POST /api/demo` at the `anonymous` plugin, keeping the Creed-template cloning.
+> - **Walk the six carried-forward decisions in Decision 2's table** and record the answer
+>   for each. That table is the deliverable of this rework, not an afterthought.
+> - Re-run the full local ceremony checklist below — it is a good checklist and it still
+>   applies. Then finally run it on a preview deploy, which was the one gap left in 2026-09-03.
+
+### What was built on 2026-09-03 *(superseded — kept for its reasoning)*
 
 - ~~Port wolfpack's `api/auth/{register,login}/{options,verify}` and `totp/*`.~~ Done.
   `_lib/session.ts` was already right: passkeys changed how a session is *established*,
@@ -422,8 +532,15 @@ on the device you just recovered onto.
 - Uploads move to **Vercel Blob**. Use `access: 'private'` for vehicle documents — the
   current R2 setup serves everything from public `r2.dev` URLs, so any document URL is
   world-readable today. This is a privacy fix, not just a storage swap.
+- Wire **TanStack Query** (Decision 9) over the Phase 2 endpoints: one `QueryClient` at
+  `AppRoot`, keys per entity, mutations invalidating their entity's key, plus the gated
+  persister and per-route code splitting.
+- Re-establish tests per Decision 11 — the Vitest API suite first, since it is the safety
+  net for everything else in this phase.
 - **Checkpoint:** full CRUD on every entity; deep links and client-side routing work;
-  uploads and deletes work; private documents are not publicly fetchable.
+  uploads and deletes work; private documents are not publicly fetchable; revisiting a
+  screen serves from cache without refetching; the Playwright flows pass; `pnpm lint` green
+  and in CI.
 
 ## Phase 5 — Static surface
 
@@ -433,6 +550,14 @@ on the device you just recovered onto.
 - Contact form posts to an Astro endpoint; SES stays for that (only the *verification*
   flow is superseded by passkeys).
 - No store — Decision 6. The duplicate Stripe webhook problem disappears with it.
+- **Vercel Web Analytics** (`@vercel/analytics`) — one `<Analytics />` in the layout,
+  cookieless, so it adds no category to the consent flow. **Web surface only:** the beacon
+  path `/_vercel/insights/view` is relative and intercepted by Vercel's CDN, and a bundled
+  Capacitor build runs from `capacitor://localhost` with no CDN in front of it. Acceptable
+  rather than a gap — the native build bundles the applet, not the marketing site.
+  What it cannot answer is Decision 5's funnel (demo → create → convert). That needs
+  event-based product analytics working on all three platforms, so an absolute endpoint plus
+  an API key — PostHog, or `POST /api/events` into Neon. **Deferred; do not block Phase 5.**
 - **Checkpoint:** whole site navigable; view-source shows static HTML on every marketing
   page; contact form delivers.
 
