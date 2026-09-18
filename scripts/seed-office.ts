@@ -1,45 +1,31 @@
-import { drizzle } from 'drizzle-orm/neon-http';
-import { neon } from '@neondatabase/serverless';
 import { inArray } from 'drizzle-orm';
-import { user, vehicles, notes, vendors, repairs, session, galleries, vehiclePhotos } from '../src/lib/server/db/schema';
+import {
+	user,
+	vehicles,
+	notes,
+	vendors,
+	repairs,
+	session,
+	galleries,
+	vehiclePhotos
+} from '../src/lib/server/db/schema';
 import { ROLE_IDS } from '../src/lib/roles';
+import { describeTarget, scriptDb } from './db';
 
-const DATABASE_URL = process.env.DATABASE_URL;
-if (!DATABASE_URL) throw new Error('DATABASE_URL is not set');
+/**
+ * Sample data: seventeen Office characters with vehicles, vendors, repairs, notes and
+ * photo galleries. Ported near-verbatim from `legacy/scripts/seed-office.ts`.
+ *
+ * Two things changed. Passwords are gone — Decision 2 replaced them with passkeys, and
+ * a passkey cannot be seeded because it is bound to a physical authenticator. So these
+ * accounts have no way to sign in, which is fine: they are fixtures, not logins.
+ *
+ * Creed is the exception that matters. He is the template `POST /api/demo` clones, so
+ * he gets the full set of data and a `DEMO` role, and this script is what makes the
+ * demo work at all (`src/lib/server/demo.ts`).
+ */
 
-const client = neon(DATABASE_URL);
-const db = drizzle(client);
-
-// Password hashing (same as src/lib/server/password.ts)
-const ITERATIONS = 100000;
-const KEY_LENGTH = 32;
-const SALT_LENGTH = 16;
-
-function arrayBufferToBase64(buffer: ArrayBuffer): string {
-	const bytes = new Uint8Array(buffer);
-	let binary = '';
-	for (let i = 0; i < bytes.byteLength; i++) {
-		binary += String.fromCharCode(bytes[i]);
-	}
-	return btoa(binary);
-}
-
-async function hashPassword(password: string): Promise<string> {
-	const encoder = new TextEncoder();
-	const passwordBuffer = encoder.encode(password);
-	const salt = crypto.getRandomValues(new Uint8Array(SALT_LENGTH));
-	const keyMaterial = await crypto.subtle.importKey('raw', passwordBuffer, 'PBKDF2', false, [
-		'deriveBits'
-	]);
-	const derivedBits = await crypto.subtle.deriveBits(
-		{ name: 'PBKDF2', salt: salt, iterations: ITERATIONS, hash: 'SHA-256' },
-		keyMaterial,
-		KEY_LENGTH * 8
-	);
-	const saltBase64 = arrayBufferToBase64(salt.buffer);
-	const hashBase64 = arrayBufferToBase64(derivedBits);
-	return `pbkdf2:${ITERATIONS}:${saltBase64}:${hashBase64}`;
-}
+const db = scriptDb();
 
 // Office characters with their vehicles
 // Avatar images stored on R2
@@ -395,7 +381,7 @@ const officeCharacters = [
 ];
 
 async function seed() {
-	console.log('Seeding Office characters, vehicles, vendors, and repairs...\n');
+	console.log(`Seeding Office characters into ${describeTarget()}...\n`);
 
 	// Clear existing seed data (in reverse order of dependencies)
 	console.log('Clearing existing data...');
@@ -408,7 +394,7 @@ async function seed() {
 		.where(inArray(user.username, usernames));
 
 	if (existingUsers.length > 0) {
-		const existingUuids = existingUsers.map(u => u.uuid);
+		const existingUuids = existingUsers.map((u) => u.uuid);
 
 		// Delete in order: sessions -> repairs -> notes -> vehicles -> vendors -> users
 		// (repairs and notes cascade from vehicles, vendors set null on repair)
@@ -419,8 +405,6 @@ async function seed() {
 		console.log(`Cleared ${existingUsers.length} existing users and their data.\n`);
 	}
 
-	const defaultPassword = await hashPassword('password123');
-
 	for (const character of officeCharacters) {
 		const userUuid = crypto.randomUUID();
 
@@ -429,7 +413,6 @@ async function seed() {
 			uuid: userUuid,
 			username: character.username,
 			age: character.age,
-			passwordHash: defaultPassword,
 			roles: character.roles,
 			avatar: character.avatar,
 			emailVerified: 1
@@ -492,9 +475,10 @@ async function seed() {
 			for (const repair of vehicleRepairs) {
 				const repairId = crypto.randomUUID();
 				// Randomly assign a vendor (or none)
-				const vendorId = vendorIds.length > 0 && Math.random() > 0.3
-					? vendorIds[Math.floor(Math.random() * vendorIds.length)]
-					: null;
+				const vendorId =
+					vendorIds.length > 0 && Math.random() > 0.3
+						? (vendorIds[Math.floor(Math.random() * vendorIds.length)] ?? null)
+						: null;
 
 				// Use appropriate date based on status
 				const repairDate = repair.status === 'scheduled'
@@ -516,8 +500,7 @@ async function seed() {
 
 			// Add galleries with photos to this vehicle (demo user gets all, others get random)
 			const vehicleGalleries = isDemo ? galleryTemplates : getGalleriesForVehicle();
-			for (let gi = 0; gi < vehicleGalleries.length; gi++) {
-				const gallery = vehicleGalleries[gi];
+			for (const [gi, gallery] of vehicleGalleries.entries()) {
 				const galleryId = crypto.randomUUID();
 
 				await db.insert(galleries).values({
@@ -530,8 +513,7 @@ async function seed() {
 				console.log(`    📁 Added gallery: ${gallery.name}`);
 
 				// Add photos to this gallery
-				for (let pi = 0; pi < gallery.photos.length; pi++) {
-					const photo = gallery.photos[pi];
+				for (const [pi, photo] of gallery.photos.entries()) {
 					await db.insert(vehiclePhotos).values({
 						id: crypto.randomUUID(),
 						galleryId: galleryId,
@@ -545,8 +527,12 @@ async function seed() {
 		}
 	}
 
-	console.log('\nSeeding complete!');
-	console.log('Default password for all users: password123');
+	console.log('\nSeeding complete.');
+	console.log('These accounts have no passkey, so none of them can be signed into —');
+	console.log('they are fixtures. Creed is the template POST /api/demo clones.');
 }
 
-seed().catch(console.error);
+seed().catch((cause) => {
+	console.error(cause);
+	process.exitCode = 1;
+});

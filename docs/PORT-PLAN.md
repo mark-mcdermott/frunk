@@ -72,32 +72,68 @@ talks to the app island."
 1. **Canonical origin — `frunk.cloud`.** `RP_ID` / `RP_ORIGIN` bind to it; pick once and
    don't change it.
 
-   **The DNS situation is not what it looks like.** The domain is registered at *Namecheap*,
-   but its nameservers point at *Cloudflare* (`zainab`/`valentin.ns.cloudflare.com`) — so
-   Cloudflare answers DNS and Namecheap's DNS UI is inert. The usual workflow (add the domain
-   in Vercel, paste its records into Namecheap) requires switching nameservers back to
-   Namecheap BasicDNS first.
+   **DNS — DECIDED 2026-09-02: move the nameservers to Vercel and accept the email
+   breakage.** The domain is registered at *Namecheap*, but its nameservers point at
+   *Cloudflare* (`zainab`/`valentin.ns.cloudflare.com`), so Cloudflare answers DNS today and
+   Namecheap's DNS UI is inert.
 
-   ⚠️ **Doing that breaks email.** frunk.cloud uses **Cloudflare Email Routing**:
+   Moving the nameservers takes **Cloudflare Email Routing** down with them:
 
    ```
    MX   route1/2/3.mx.cloudflare.net
    TXT  v=spf1 include:_spf.mx.cloudflare.net ~all
    ```
 
-   That service only works while Cloudflare hosts the DNS. Move the nameservers and
-   `hello@frunk.cloud` stops forwarding — the contact-form destination, also printed on the
-   privacy page. Either keep Cloudflare as DNS-only (email survives, consolidation is
-   partial) or replace forwarding before switching. **Unresolved — decide before Phase 6.**
+   `hello@frunk.cloud` stops forwarding at that moment. It is the contact-form destination
+   and is printed on the privacy page. **This is accepted** — frunk never launched, so
+   nothing is in flight — but forwarding has to be re-established somewhere before the
+   contact form in Phase 5 is advertised as working.
 
-   Also unverified: no DKIM records were found for SES, so sending from
+   **Status 2026-09-02: nameservers moved, propagating.** Two follow-ups this creates:
+   - **`hello@frunk.cloud` is now dead.** It is still printed on the privacy page and is
+     still the contact form's destination. Phase 5 must not ship the contact form against a
+     mailbox that does not exist — either re-home the forwarding or change the address.
+   - Confirm `frunk.cloud` and `www.frunk.cloud` both resolve to Vercel and that the
+     certificate issued, once propagation settles.
+
+   Still unverified: no DKIM records were found for SES, so sending from
    `noreply@frunk.cloud` may not be verified. Check independently.
-2. **Auth — DECIDED: passkeys + TOTP**, ported from wolfpack. No accounts exist, so there
-   is no re-registration cost. Drops the hand-rolled session/password path and the SES
-   verification flow. *(Closes `docs/DESIGN.md` §8 decision 3 — the sign-in mock's
-   Google/Apple/GitHub OAuth is superseded.)*
-   **Future intent:** a fuller commercial spread of login options is wanted eventually.
-   Passkeys + TOTP is the v1 floor, not the ceiling — keep the auth surface swappable.
+2. **Auth — DECIDED: Better Auth.** *(Revised 2026-09-17. Supersedes "passkeys + TOTP
+   ported from wolfpack", which was **built and locally verified** in Phase 3 before this
+   reversal. Reopens Phase 3.)*
+
+   `better-auth` — MIT, self-hosted, a library rather than a service, so no tier and no
+   per-MAU cost. Passkeys via `@better-auth/passkey`, TOTP via the bundled
+   `two-factor` plugin, Drizzle adapter in core, `bearer` for Capacitor, `anonymous` for the
+   demo lifecycle, and social providers as core config.
+
+   **This is a deliberate trade, not an upgrade on every axis.** What it costs: ~1,693 lines
+   across 25 files, working and verified locally, replaced by a dependency. What it buys:
+
+   - **Capacitor `bearer` mode** — otherwise a hand-built job at Phase 6, when cross-origin
+     cookies stop working from `capacitor://localhost`.
+   - **`anonymous` plugin** — Decision 5's demo-converts-in-place lifecycle, which is
+     currently our own code.
+   - **Social providers** as config, reopening the mock's Google/Apple/GitHub row (see the
+     counter-argument recorded in Phase 3 — it is not obviously wanted).
+   - **Less owned security surface**, and future options (`@better-auth/sso` for an
+     enterprise fleet wedge, `@better-auth/stripe` for the premium tier) as installs.
+
+   **Timing is the argument.** Phases 4–6 are still the whole app. Swapping auth before the
+   applet is built on top of it is far cheaper than after, and no accounts exist, so nothing
+   migrates either way.
+
+   ⚠️ **Six decisions were reasoned into the code being replaced. They must be re-verified
+   against Better Auth's defaults, not silently lost** — the full reasoning stays in Phase 3:
+
+   | carried-forward decision | to check against Better Auth |
+   |---|---|
+   | account row written in `verify`, not `options` | does registration create the user before the ceremony completes? |
+   | challenges consumed on read | is a spent challenge replayable? |
+   | `RP_ID`/`RP_ORIGIN` derived from request when unset | preview deploys have per-deploy hostnames; static config cannot cover them |
+   | unknown email answers 404 (deliberate oracle) | what does its default leak, and is it consistent with registration? |
+   | `totp/setup` refuses to overwrite working recovery | does re-running setup destroy a working recovery method? |
+   | every `astro:env` var is `access: 'secret'` | unaffected — an Astro concern, keep it |
 3. **Component library — DECIDED: shadcn.** The earlier "no component library" call was
    made while the target was Svelte; on React, shadcn matches wolfpack and the S in every
    `_PROJECTS.md` stack acronym.
@@ -149,6 +185,62 @@ All eight settled. The plan is ready to execute.
 
 ---
 
+9. **Server-state cache — DECIDED: TanStack Query.** *(Added 2026-09-17.)* The plan had no
+   answer for server state. Phase 4 mounts a `client:only` applet with react-router, which
+   has none of SvelteKit's revalidation-on-navigation — so without Query it means
+   hand-rolling fetch, cache and invalidation on every screen. It sits on top of the Phase 2
+   endpoints without changing their shape.
+
+   One `QueryClient` at `AppRoot` — one island, one client, never per screen. Persist the
+   cache to localStorage so a returning user repaints instantly, **but gate what persists**:
+   the schema holds `insurancePolicyNumber`, `lienHolder` and `loanAccountNumber`, which must
+   not sit in plaintext. Purge on sign-out, set a `maxAge`, allowlist via
+   `dehydrateOptions`. Code-split per route so Phase 4 does not ship every screen upfront.
+
+10. **Stack name — NASDAQ-VCRZ.** *(Recorded 2026-09-17.)*
+
+    **N**eon · **A**stro · **S**hadcn · **D**rizzle · **A**uth (Better) · **Q**uery
+    (TanStack) · **V**ercel (Blob/Analytics) · **C**apacitor · **R**eact · **Z**od
+
+    Rule: **every letter names a decision, not a default.** Node, TypeScript, Vite and
+    ESLint are therefore absent — Vite comes *with* Astro rather than being chosen beside it
+    — which says nothing about whether they are used. Tauri is out by Decision 7 (restore the
+    letter when that reverses); nanostores is out because Better Auth brings it either way.
+    Recorded in `_PROJECTS.md`.
+
+11. **Testing — DECIDED: Vitest-weighted, Playwright for flows.** *(Added 2026-09-17.)*
+
+    `legacy/` still holds 7 Playwright suites (618 lines) asserting against SvelteKit markup;
+    they do not survive. Principle: **push tests away from markup, because markup churns.**
+
+    **① API integration tests (Vitest, node) — the bulk.** The Phase 2 endpoints are HTTP in,
+    JSON out, so these survive every UI change. They are also where the security boundary
+    now lives: post-port each endpoint is independently reachable, so one missing check is a
+    leak. Per endpoint — no session → 401; valid session but another user's row → 404/403,
+    never the row; own row → 200; `DEMO`-role session → isolated identically. That last case
+    is not optional: Decision 5 rests demo safety entirely on `user_id` scoping.
+
+    **② Component tests — few.** Only components that *compute*: validation, date maths,
+    currency and VIN formatting. Not "does the card render the title".
+
+    **③ E2E (Playwright) — four or five.** Cross-system flows only, never per-entity CRUD:
+    register → sign in → sign out; demo → create → convert with data intact; one CRUD happy
+    path; and upload a document → assert it is **not** publicly fetchable (the Phase 4
+    privacy fix, which regresses silently).
+
+    **Test database: a Neon branch per CI run**, seeded from `seed-office.ts`, dropped after.
+    See "An accident worth recording" above for why tests must not reach a real database.
+
+    **Split the scripts** — `pnpm test:unit` (seconds, run constantly) and `pnpm test:e2e`
+    (minutes, before PR). CI runs unit on every push, e2e on PRs.
+
+    **Lint becomes a gate.** It was excluded because ~821 files failed prettier — debt in
+    files this port replaces wholesale. Format new files from the start and add lint to CI
+    once Phase 4 lands.
+
+    **Skipped: visual regression.** Noisy across font rendering and CI-vs-local, and during
+    an active redesign every intentional change reads as a failure. Revisit once settled.
+
 ## Local development
 
 `npm run dev` (`astro dev`) is **one server**: static `.astro` pages, React islands with
@@ -159,51 +251,276 @@ This replaces `vite dev` + SvelteKit's server routes.
 
 ---
 
-## Phase 0 — Prerequisites
+## Phase 0 — Prerequisites — **DONE 2026-09-02**
 
-- Land or close open PRs; start on a green `main`. Delete the stale local branch
-  `feat/cleanroom-components` and reconcile or delete `origin/staging` (2 unmerged commits,
-  one adding 46 optional vehicle fields — decide if those fields are wanted first).
-- Settle every decision above, especially **2 (auth)** and **6 (store)**.
-- Create the Vercel project and a Vercel Blob store; confirm Neon is reachable from it.
-- Audit R2 for live user data worth migrating (avatars, note images, gallery photos).
-- **Checkpoint:** Vercel project exists, `main` is clean, decisions recorded in this file.
+- ~~Land or close open PRs; start on a green `main`.~~ Done. `main` is at the PR #28 merge.
+- ~~Delete the stale branch `feat/cleanroom-components`.~~ Still on `origin`, deliberately
+  kept for now: it holds 5 unmerged commits of a hand-rolled Svelte component system,
+  superseded by Decision 3 (shadcn). Nothing depends on it; delete when convenient.
+- ~~Reconcile or delete `origin/staging`.~~ **Deleted.** Verified fully superseded: its 46
+  optional vehicle fields landed on `main` as `7146ed2` (PR #28), its Capacitor shells are
+  on `main`, and its only remaining content was `src-tauri/`, which Decision 7 drops. `main`
+  is strictly ahead of it (`main` also carries `maintenance_schedules`, which staging lacked).
+  `feat/vehicle-detail-fields` deleted too — merged in PR #28.
+- ~~Settle every decision above.~~ All eight settled; Decision 1's DNS trade closed above.
+- ~~Create the Vercel project; confirm Neon is reachable from it.~~ **Done.** The project is
+  linked to the GitHub repo and the branch deploys — Mark confirmed the preview renders.
+  `DATABASE_URL` is set and points at a **new, blank Neon database**, not the one the
+  SvelteKit app uses. That is a change from this plan's original "point at the same Neon
+  database", and it is the better call: frunk never launched, Phase 6 re-seeds anyway, and
+  a separate database means the port cannot disturb the live Cloudflare app. The cost is
+  that the schema has to be pushed and the roles seeded before anything works — see
+  "Database setup" in `docs/API.md`.
+- **A Vercel Blob store does not exist yet.** Not blocking: Blob is unused until Phase 4.
+- ~~Audit R2 for live user data worth migrating.~~ **Nothing to migrate.** Two buckets exist:
+  - `frunk-avatars` — bound as `R2_AVATARS` in `wrangler.toml`. frunk never launched, so it
+    holds no real user data. Uploads were also guarded by `!import.meta.env.DEV`, so they
+    only ever ran in production.
+  - `pub-9903686a35b440c6b73f8b917ba808c8.r2.dev` — public bucket of Printful merch mockups,
+    referenced only by `src/lib/data/products.ts`. Dropped with the store (Decision 6).
 
-## Phase 1 — Astro shell, deployable and empty
+### Outstanding manual setup (Mark)
 
-- New Astro app: `@astrojs/react`, `@astrojs/vercel`, Tailwind 4, React 19.
-- Port the design tokens from `docs/DESIGN.md` and the fonts already chosen
-  (`@fontsource-variable/playfair-display`, `plus-jakarta-sans`). Add the inline
-  theme-boot script so dark-first does not flash white — frunk applies theme in
-  `onMount` today, which flashes on every load.
-- One static `index.astro` built to the `home` mock.
-- **Checkpoint:** deploys to Vercel; view-source shows real static HTML; fonts self-hosted;
-  dark and light both correct; no FOUC.
+Phase 1 builds and passes locally; it cannot be *deployed* until these exist:
 
-## Phase 2 — Data layer: REST endpoints
+1. Create the Vercel project against `mark-mcdermott/frunk`. Framework preset: **Astro**.
+   Root directory: repository root (Decision 4 — no configuration needed).
+2. Create a **Vercel Blob** store and attach it to the project (`BLOB_READ_WRITE_TOKEN`).
+   Not used until Phase 4, but confirms the account tier supports it.
+3. Set `DATABASE_URL` to the Neon connection string and confirm Neon accepts connections
+   from Vercel's region.
+4. Move `frunk.cloud` nameservers to Vercel (Decision 1) — can happen any time before Phase 6.
 
-- Port the Drizzle schema verbatim; point at the same Neon database.
-- Convert the 25 non-demo `+page.server.ts` load functions and form actions into Astro
-  `APIRoute` handlers under `src/pages/api/*` — vehicles, vendors, repairs, notes,
-  galleries, maintenance schedules, users.
-- Every handler resolves the session itself. Reuse `src/lib/server/{stripe,printful,email,
-  password}.ts` nearly verbatim.
-- **Checkpoint:** every endpoint exercisable with `curl` against a preview deploy; reads
-  and writes hit Neon; unauthenticated calls are rejected.
+## Phase 1 — Astro shell, deployable and empty — **DONE 2026-09-02**
 
-## Phase 3 — Auth
+- ~~New Astro app: `@astrojs/react`, `@astrojs/vercel`, Tailwind 4, React 19.~~ Astro 7.2,
+  React 19.2, Tailwind 4.3, flat stock layout at the repository root (Decision 4).
+- ~~Port the design tokens from `docs/DESIGN.md` and the fonts already chosen.~~
+  `src/styles/global.css` carries the full token layer. Two additions the spec left open:
+  - **`--accent-text`.** `--accent-bright` (#9890F8) clears 7.4:1 on the dark ground but only
+    **2.7:1 on the light one**, so it fails AA as text on light surfaces — which is what the
+    mock's light-section eyebrow labels are. Light surfaces therefore step down to `--accent`
+    (#6438CC, 7.0:1). `--accent-bright` stays the accent on dark.
+  - **Semantic green and red** were named but not valued in DESIGN.md; both themes now carry
+    AA-clearing pairs.
+  - Marketing sections alternate light and dark independently of the viewer's theme
+    (DESIGN.md §4), so the surface tokens are also exposed as `.surface-light` /
+    `.surface-dark` blocks applied per `<section>`.
+- ~~Add the inline theme-boot script.~~ `src/lib/theme.ts` exports `THEME_BOOT_SCRIPT`,
+  inlined in `<head>` and applied before first paint. The SvelteKit app set the theme in
+  `onMount` and flashed white on every load.
+- ~~One static `index.astro` built to the `home` mock.~~ All six sections.
 
-- Implement the chosen model from Decision 2. If passkeys: port wolfpack's
-  `api/auth/{register,login}/{options,verify}`, `totp/*`, `_lib/session.ts`.
-- Astro `signin.astro` / `signup.astro` pages mounting React auth islands, built to the
-  `sign-in` and `sign-up` mocks.
-- Nav user island + `stores/user.ts` nanostore reading `/api/auth/me`.
-- **Anonymous demo sessions:** a `POST /api/demo` that clones the Creed template into a new
-  `DEMO`-role user and issues a session — no passkey involved. Plus the upgrade path:
-  attaching a passkey to the current demo account converts it in place.
-- **Checkpoint:** register, sign in, sign out, session persistence and TOTP recovery all
-  work locally and on a preview deploy; a logged-out visitor can start a demo, make changes,
-  then convert to a real account keeping their data.
+**Two gaps carried into later phases, both deliberate:**
+
+- **No photography.** The studio automotive renders live in `frunk-proj/branding/mock/`,
+  outside the repo — only flattened WebP mocks were committed. `src/components/MockImage.astro`
+  stands in at the right aspect ratio with the violet rim light, and every usage is a
+  one-line swap once the renders land.
+- **Placeholder marketing copy.** The three testimonials are the mock's own placeholder
+  names and must be replaced before the Phase 6 cutover. The mock's "FEATURED IN" press-logo
+  row is **deliberately not built** — frunk has no coverage, and real publication logos
+  would misrepresent it. Add it when there is something true to put there.
+
+**Checkpoint:** `astro check` 0 errors; `astro build` passes; view-source on `/` is real
+static HTML (18 KB, **zero hydration islands** — the lucide glyphs render to inline SVG at
+build time); all 11 font files self-hosted with no CDN reference in the output; theme boot
+inlined ahead of paint. **Deploying to Vercel is blocked on the manual setup above.**
+
+The old SvelteKit app moved to `legacy/` rather than being deleted — it is the reference for
+Phase 2's 25 load functions and Phase 4's 60 components, and it is excluded from the Astro
+build and typecheck. Delete the directory at the end of Phase 5. `legacy/` also holds the
+Capacitor shells (`android/`, `ios/`, `capacitor.config.ts`), which are pinned to the
+SvelteKit dev port and `build/` output; Phase 6 re-points them at the Astro origin.
+
+## Phase 2 — Data layer: REST endpoints — **DONE 2026-09-03**
+
+- ~~Port the Drizzle schema verbatim.~~ `src/lib/server/db/schema.ts`, all 11 tables, same
+  table and column names. Two deliberate deviations, both free because the database is blank:
+  - `user.password_hash` is **nullable**. Decision 2 replaces passwords with passkeys, so
+    Phase 3 stops writing it; NOT NULL would make it impossible to create a user without a
+    password nothing checks. The column stays until Phase 3 so `seed-office.ts` still runs.
+  - `session.user_id` now cascades. It carried no `onDelete`, so deleting a user who had
+    ever signed in raised a foreign-key violation — the SvelteKit "delete account" action
+    could not have worked.
+- ~~Convert the 25 non-demo load functions and form actions into Astro `APIRoute` handlers.~~
+  18 route files under `src/pages/api/`, documented in **`docs/API.md`**. Shared pieces live
+  in `src/pages/api/_lib/` (underscore keeps them out of routing): `session.ts`, `guard.ts`,
+  `http.ts`, `schemas.ts`.
+- ~~Every handler resolves the session itself.~~ There is no `locals` equivalent by design.
+- The store endpoints (`stripe.ts`, `printful.ts`, checkout, the two webhooks) are **not**
+  ported — Decision 6. `password.ts` and the SES verification flow are superseded by
+  Decision 2; the plan's line about reusing them predates that decision being settled.
+
+**Three things worth knowing about the port:**
+
+- **Ownership is a predicate, not a comparison.** The SvelteKit actions fetched a row and
+  then compared `row.userId !== locals.user.uuid`. The guards in `_lib/guard.ts` put the
+  owner into the `WHERE` clause instead, so a row belonging to someone else is
+  indistinguishable from one that does not exist — no existence oracle, and one query.
+- **Astro's CSRF origin check is left on.** Browsers send `Origin` on every non-GET
+  `fetch`, so the applet is unaffected, but curl must set it by hand on mutating calls or
+  they 403. The session cookie is also `SameSite=Lax`.
+- **Uploads are deferred to Phase 4.** The photo and vehicle-image endpoints record an
+  `imageUrl` that already exists; they do not accept the base64 `fileData` the SvelteKit
+  actions took. Phase 4 puts the Vercel Blob write in front of them.
+
+**Checkpoint — met.** `astro check` 0 errors, `astro build` passes, function count is **1**
+(`_render.func`), and `/` is still static HTML.
+
+*Unauthenticated calls are rejected* — all 18 routes answer 401 except `GET /api/auth/me`,
+which is 200 with `{"user": null}` by design. A cross-origin mutating call is refused, an
+unknown method or path is 404, and 401 precedes 422 so an unauthenticated bad body does not
+leak the schema.
+
+*Reads and writes hit the database* — 31 assertions against a real Postgres 16, driven
+through the running endpoints with a real session cookie. Covered: CRUD on every entity;
+PATCH leaving omitted keys alone and an explicit `null` clearing a column; note nesting and
+child deletion; gallery reordering, including an id from another gallery being ignored
+rather than moved; FK cascades on vehicle delete, with the vendor surviving; the admin gate;
+and **ownership isolation** — a second user gets 404, never 403, on every route, and cannot
+attach a repair to someone else's vehicle.
+
+This became possible because `getDb()` now picks its driver from the `DATABASE_URL`
+hostname: `.neon.tech` uses Neon's HTTP protocol, anything else uses node-postgres over TCP.
+That is worth having beyond the test — the app runs against a throwaway local Postgres with
+no Neon account, and Phase 4's e2e suite can do the same in CI.
+
+**Still outstanding:** the Neon HTTP driver path itself is unexercised, and no schema has
+been pushed to the blank Neon database. The sandbox's egress allowlist cannot reach Neon
+(`api.neon.tech`, `console.neon.tech` and `neon.tech` are all refused, and TCP 5432 is not
+proxied), so this is Mark's to run — three ways to do it, two of them from a phone, are in
+"Database setup" in `docs/API.md`.
+
+## An accident worth recording
+
+**On 2026-09-03, CI applied the port's schema to the legacy production database.**
+
+`.github/workflows/e2e.yml` was configured `on: push` with no branch filter, and among
+its steps was `npx drizzle-kit push --force` against `secrets.DATABASE_URL`. That secret
+is the **legacy** database — it is what `db-backup.yml` dumps daily. So every push to the
+port branch ran a schema push, and once this branch gained a root `drizzle.config.ts`
+(commit `5cfd35b`), that push resolved against the *ported* schema.
+
+Run [#94](https://github.com/mark-mcdermott/frunk/actions/runs/33701953738) applied exactly
+three statements, and nothing since (later runs report "No changes detected"):
+
+```sql
+ALTER TABLE "session" DROP CONSTRAINT "session_user_id_user_uuid_fk";
+ALTER TABLE "user" ALTER COLUMN "password_hash" DROP NOT NULL;
+ALTER TABLE "session" ADD CONSTRAINT "session_user_id_user_uuid_fk"
+  FOREIGN KEY ("user_id") REFERENCES "public"."user"("uuid")
+  ON DELETE cascade ON UPDATE no action;
+```
+
+**Assessment: not destructive, but a real change to production.** No table, column or row
+was dropped — the log shows no `CREATE TABLE`, which is also how we know the target was the
+legacy database and not the blank one. Both changes loosen rather than tighten:
+
+- `password_hash` nullable — existing rows unaffected, and the SvelteKit app always writes
+  a hash, so nothing it does breaks.
+- `session.user_id` now cascades — deleting a user used to raise a foreign-key error and now
+  removes their sessions instead. That is arguably the bug fix described in Phase 2, but it
+  is a live behaviour change nobody asked for.
+
+frunk never launched, so no real user data was exposed to this. `frunk-daily-backups`
+holds `latest.sql` if a revert is ever wanted; the two statements reverse as:
+
+```sql
+ALTER TABLE "session" DROP CONSTRAINT "session_user_id_user_uuid_fk";
+ALTER TABLE "session" ADD CONSTRAINT "session_user_id_user_uuid_fk"
+  FOREIGN KEY ("user_id") REFERENCES "public"."user"("uuid");
+-- only if every row has one:
+ALTER TABLE "user" ALTER COLUMN "password_hash" SET NOT NULL;
+```
+
+**Fixed** by replacing `e2e.yml` with `ci.yml` on this branch: typecheck and build, no
+database, no secrets. The lesson is already encoded in `db-migrate.yml` — a migration is
+manual, uses its own `ASTRO_DATABASE_URL` secret, and refuses to run from `main`. **No
+workflow that runs automatically should hold a schema-push step.**
+
+## Phase 3 — Auth — **REOPENED 2026-09-17** *(was DONE 2026-09-03)*
+
+> Decision 2 was reversed to Better Auth after this phase completed. **Everything below
+> describes work that was built and verified**, and is kept rather than deleted: the
+> reasoning is the valuable part and most of it transfers. The React components
+> (`src/components/auth/*`, ~780 lines) largely survive — they are forms. What is replaced
+> is the ~900 lines of server ceremonies and client wiring.
+>
+> **Rework:**
+>
+> - Mount `betterAuth()` with the Drizzle adapter on a catch-all `/api/auth/[...all]`;
+>   generate its tables with the Better Auth CLI. The existing `credentials`,
+>   `webauthn_challenges` and `auth_rate_limits` tables are superseded by its schema —
+>   check what `totp_secret` / `totp_enabled` on `user` become before dropping them.
+> - Enable `emailAndPassword`, `socialProviders`, and the `passkey`, `twoFactor`, `bearer`
+>   and `anonymous` plugins.
+> - Rewire `src/lib/auth-client.ts` and the auth components to Better Auth's client; drop
+>   `stores/user.ts` in favour of its session nanostore.
+> - Re-point `POST /api/demo` at the `anonymous` plugin, keeping the Creed-template cloning.
+> - **Walk the six carried-forward decisions in Decision 2's table** and record the answer
+>   for each. That table is the deliverable of this rework, not an afterthought.
+> - Re-run the full local ceremony checklist below — it is a good checklist and it still
+>   applies. Then finally run it on a preview deploy, which was the one gap left in 2026-09-03.
+
+### What was built on 2026-09-03 *(superseded — kept for its reasoning)*
+
+- ~~Port wolfpack's `api/auth/{register,login}/{options,verify}` and `totp/*`.~~ Done.
+  `_lib/session.ts` was already right: passkeys changed how a session is *established*,
+  not how it is represented, so the ceremonies just call `createSession`.
+- ~~Credential tables; drop `user.password_hash`.~~ Done — `credentials`,
+  `webauthn_challenges`, `auth_rate_limits`, plus `totp_secret` / `totp_enabled` on
+  `user`. `password_hash` is gone, and migration `0000` was regenerated rather than
+  extended: the port's database had never been created, so a migration history for it
+  would have been fiction.
+- ~~`signin.astro` / `signup.astro` with React auth islands.~~ Done, `client:load` — the
+  card is real HTML before hydration.
+- ~~Nav user island + `stores/user.ts`.~~ Done. `<UserNav />` replaced the hardcoded "Get
+  started" button in both `Header.astro` and the home hero.
+- ~~`POST /api/demo` and the upgrade path.~~ Done, and `seed-office.ts` came with it —
+  the demo has no template without it.
+
+### What the mocks asked for and did not get
+
+The `sign-in` and `sign-up` mocks predate Decision 2 and draw a password field, a
+strength meter and a Google / Apple / GitHub row. All superseded: there is no password to
+measure and no OAuth provider wired. "Forgot password?" became "Lost your passkey?", and
+the OAuth row became **"Explore the demo"** — the more valuable button, since a demo
+account converts in place.
+
+The mock's "Full name (optional)" is also gone: there is no column for it, and a field
+that writes nowhere is worse than an absent one. Add a `name` column first if it is
+wanted. `docs/DESIGN.md` §8 decision 3 is closed by this phase.
+
+Two things the mocks do not show, because the auth model implies them: a recovery-code
+step offered straight after registration (a passkey lives on one device, and there is no
+reset email any more), and the `recovered` state on sign-in, which offers to put a passkey
+on the device you just recovered onto.
+
+### Decisions taken here
+
+- **The account row is written in `verify`, not `options`.** An abandoned ceremony — one
+  dismissed prompt — would otherwise leave an empty user holding an email address nobody
+  could ever sign up with again.
+- **Challenges are consumed on read**, so a spent one cannot be replayed.
+- **`RP_ID` / `RP_ORIGIN` are optional and derived from the request when unset.** Nothing
+  static can cover Vercel's per-deploy preview hostnames. Production pins them; Phase 6
+  already lists both.
+- **An unknown email answers 404.** An existence oracle, deliberately: registration must
+  reject a taken email, so the fact is already discoverable. See `docs/API.md`.
+- **`totp/setup` refuses to overwrite working recovery.** Overwriting also clears
+  `totp_enabled`, so walking away from the new QR code would destroy a recovery method
+  that worked a moment earlier.
+- **Every `astro:env` variable is `access: 'secret'`.** A `public` server variable is
+  inlined at build time, so an optional one that is unset during the build freezes as
+  undefined for the life of the deploy — silently, because it has a fallback.
+
+- **Checkpoint:** met locally, against a local Postgres, with a software authenticator
+  completing the real ceremonies: register → `me` → sign in → replay refused → TOTP setup,
+  enable and recover → second passkey → rate limits; then demo → create → convert in place
+  → data intact. **Not yet run on a preview deploy** — that needs the Neon database
+  bootstrapped and `ENCRYPTION_KEY` set, and it is the one part of this checkpoint still
+  outstanding.
 
 ## Phase 4 — The applet
 
@@ -215,8 +532,15 @@ This replaces `vite dev` + SvelteKit's server routes.
 - Uploads move to **Vercel Blob**. Use `access: 'private'` for vehicle documents — the
   current R2 setup serves everything from public `r2.dev` URLs, so any document URL is
   world-readable today. This is a privacy fix, not just a storage swap.
+- Wire **TanStack Query** (Decision 9) over the Phase 2 endpoints: one `QueryClient` at
+  `AppRoot`, keys per entity, mutations invalidating their entity's key, plus the gated
+  persister and per-route code splitting.
+- Re-establish tests per Decision 11 — the Vitest API suite first, since it is the safety
+  net for everything else in this phase.
 - **Checkpoint:** full CRUD on every entity; deep links and client-side routing work;
-  uploads and deletes work; private documents are not publicly fetchable.
+  uploads and deletes work; private documents are not publicly fetchable; revisiting a
+  screen serves from cache without refetching; the Playwright flows pass; `pnpm lint` green
+  and in CI.
 
 ## Phase 5 — Static surface
 
@@ -226,6 +550,14 @@ This replaces `vite dev` + SvelteKit's server routes.
 - Contact form posts to an Astro endpoint; SES stays for that (only the *verification*
   flow is superseded by passkeys).
 - No store — Decision 6. The duplicate Stripe webhook problem disappears with it.
+- **Vercel Web Analytics** (`@vercel/analytics`) — one `<Analytics />` in the layout,
+  cookieless, so it adds no category to the consent flow. **Web surface only:** the beacon
+  path `/_vercel/insights/view` is relative and intercepted by Vercel's CDN, and a bundled
+  Capacitor build runs from `capacitor://localhost` with no CDN in front of it. Acceptable
+  rather than a gap — the native build bundles the applet, not the marketing site.
+  What it cannot answer is Decision 5's funnel (demo → create → convert). That needs
+  event-based product analytics working on all three platforms, so an absolute endpoint plus
+  an API key — PostHog, or `POST /api/events` into Neon. **Deferred; do not block Phase 5.**
 - **Checkpoint:** whole site navigable; view-source shows static HTML on every marketing
   page; contact form delivers.
 
