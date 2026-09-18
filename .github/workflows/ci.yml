@@ -1,0 +1,42 @@
+# CI for the Astro port.
+#
+# This replaces `e2e.yml` on this branch. That workflow ran on every push to every
+# branch and included `npx drizzle-kit push --force` against `secrets.DATABASE_URL` —
+# which is the LEGACY database. On this branch that meant CI was applying the port's
+# schema to the live app's database. It did exactly that on 2026-09-03; see
+# docs/PORT-PLAN.md, "An accident worth recording".
+#
+# Nothing here touches a database. Migrations belong in `db-migrate.yml`, which is
+# manual, uses a separate secret, and refuses to run from `main`.
+#
+# The Playwright suites live in `legacy/e2e/` and are written against SvelteKit
+# markup; Phase 4 re-establishes them against the React applet.
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Typecheck
+        run: pnpm check
+
+      - name: Build
+        run: pnpm build

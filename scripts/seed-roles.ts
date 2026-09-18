@@ -1,13 +1,14 @@
-import { drizzle } from 'drizzle-orm/neon-http';
-import { neon } from '@neondatabase/serverless';
 import { roles } from '../src/lib/server/db/schema';
 import { ROLE_IDS } from '../src/lib/roles';
+import { describeTarget, scriptDb } from './db';
 
-const DATABASE_URL = process.env.DATABASE_URL;
-if (!DATABASE_URL) throw new Error('DATABASE_URL is not set');
+/**
+ * Seeds the three roles. `ROLE_IDS` in `src/lib/roles.ts` hardcodes these ids, so
+ * every deployment needs this run once — including the new blank Neon database the
+ * port points at. Idempotent: re-running is a no-op.
+ */
 
-const client = neon(DATABASE_URL);
-const db = drizzle(client);
+const db = scriptDb();
 
 const roleData = [
 	{
@@ -28,7 +29,7 @@ const roleData = [
 ];
 
 async function seedRoles() {
-	console.log('Seeding roles table...\n');
+	console.log(`Seeding roles into ${describeTarget()}...\n`);
 
 	for (const role of roleData) {
 		await db.insert(roles).values(role).onConflictDoNothing();
@@ -38,4 +39,7 @@ async function seedRoles() {
 	console.log('\nRoles seeding complete!');
 }
 
-seedRoles().catch(console.error);
+seedRoles().catch((cause) => {
+	console.error(cause);
+	process.exitCode = 1;
+});
