@@ -134,6 +134,21 @@ export async function startDemo(): Promise<SessionUser> {
 	return toSessionUser(body.user);
 }
 
+/**
+ * Re-sends the verification link.
+ *
+ * This is not a convenience. Better Auth sends the sign-up email as a *background
+ * task*, so a send that fails is logged and the request still answers 200 — the
+ * account exists and nothing was delivered (see `server/email.ts`). Without this the
+ * user has no way out of that state.
+ */
+export async function resendVerification(email: string): Promise<void> {
+	const result = await authClient.sendVerificationEmail({ email, callbackURL: '/signin' });
+	if (result?.error) {
+		throw new AuthError(result.error.message ?? 'Could not send that email. Try again shortly.');
+	}
+}
+
 export async function signOut(): Promise<void> {
 	await endSession();
 }
