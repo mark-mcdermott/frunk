@@ -92,12 +92,34 @@ talks to the app island."
    nothing is in flight — but forwarding has to be re-established somewhere before the
    contact form in Phase 5 is advertised as working.
 
-   **Status 2026-09-02: nameservers moved, propagating.** Two follow-ups this creates:
-   - **`hello@frunk.cloud` is now dead.** It is still printed on the privacy page and is
-     still the contact form's destination. Phase 5 must not ship the contact form against a
-     mailbox that does not exist — either re-home the forwarding or change the address.
-   - Confirm `frunk.cloud` and `www.frunk.cloud` both resolve to Vercel and that the
-     certificate issued, once propagation settles.
+   **Status 2026-09-19: resolved. Both follow-ups closed.**
+
+   - ~~`hello@frunk.cloud` is now dead.~~ **Live again.** The forwarding was re-homed from
+     Cloudflare Email Routing to **Namecheap Email Forwarding** — Advanced DNS → Mail
+     Settings → *Email Forwarding* provisions the apex MX and SPF, and the alias itself is
+     mapped on the **Domain** tab under *Redirect Email* (`hello` → the owner's address),
+     which is a separate screen and easy to miss. The address is safe to keep on the privacy
+     page, in the footer `mailto:`, and as Phase 5's contact-form destination.
+   - ~~Confirm both hostnames resolve to Vercel and the certificate issued.~~ Done — apex is
+     canonical and serves, `www` 308-redirects to it, both over valid TLS.
+
+   **The apex MX is the contended record.** Namecheap's forwarding claims it. So does
+   Resend's optional *Enable Receiving*, which warns about exactly this — enabling it would
+   replace the forwarding MX and kill `hello@`. Frunk never needs inbound mail
+   programmatically, so **leave Resend receiving off**; sending is all that is required, and
+   it lives on `send.frunk.cloud` where it cannot collide.
+
+   Final shape:
+
+   | role | records | owner |
+   |---|---|---|
+   | Sending | `resend._domainkey` TXT, `send`/`rsend` CNAME | Resend |
+   | Receiving | apex MX ×5, apex SPF | Namecheap forwarding |
+   | Policy | `_dmarc` TXT (`p=none`) | — |
+   | Web | apex + `www` → Vercel | Vercel |
+
+   No `rua=` on the DMARC record, so no aggregate reports arrive — add one before tightening
+   past `p=none`, since those reports are the evidence that tightening is safe.
 
    **Email DNS is still unconfigured** — SPF covers Namecheap forwarding only, with no DKIM
    and no DMARC. Superseded in detail by the Resend item in Phase 6; the short version is
@@ -639,13 +661,16 @@ opposite on both counts: genuinely secret, so mark it sensitive.
   (`dns1/dns2.registrar-servers.com`) and email forwarding moved with it
   (`eforward1-5.registrar-servers.com`). Cloudflare Email Routing is gone, so the trade
   Decision 1 agonised over no longer exists.
-- **Email DNS is unconfigured**, and this gates the Better Auth rework: `frunk.cloud` has SPF
-  for Namecheap forwarding only (`include:spf.efwd.registrar-servers.com`), no DKIM, no DMARC.
-  Harmless while auth is passkeys — they send no mail — but Decision 2 puts
-  `sendVerificationEmail` on the sign-up path, so **unverified sending means nobody can
-  register.** Verify `frunk.cloud` in Resend, add the records it issues, and **edit the
-  existing SPF TXT rather than adding a second one** — two SPF records is a permanent error
-  that breaks all SPF. `_dmarc` is provider-agnostic: start at `p=none` and tighten later.
+- ~~**Email DNS is unconfigured**, and this gates the Better Auth rework.~~ **Done
+  2026-09-19.** `frunk.cloud` is verified in Resend and sending is enabled. The record layout
+  is in Decision 1; the part worth repeating is that **Resend never touched the apex** — it
+  provisions a `send.frunk.cloud` subdomain carrying its own SPF and MX, so the apex SPF was
+  left alone rather than extended. (An earlier draft of this plan said to add
+  `include:amazonses.com` to the apex. That was SES-shaped advice and would have been wrong
+  here — worth remembering if the provider ever changes again.)
+
+  Still open: `_dmarc` is at `p=none` with no `rua=`, so no aggregate reports arrive. Add one
+  before tightening, since those reports are what prove tightening is safe.
 
   > Choosing Resend over SES also removes a scheduling risk that was on this critical path:
   > **SES starts every account in sandbox**, able to send only to pre-verified addresses until
