@@ -6,7 +6,6 @@
  */
 import {
 	pgTable,
-	bigint,
 	boolean,
 	integer,
 	jsonb,
@@ -25,102 +24,162 @@ export const roles = pgTable('roles', {
 export type Role = typeof roles.$inferSelect;
 export type NewRole = typeof roles.$inferInsert;
 
+/**
+ * Better Auth owns this table (Decision 2). Its adapter addresses columns by the
+ * *property* name, and Drizzle maps properties to column names — so the snake_case
+ * columns this codebase uses are free, as long as the property names match Better
+ * Auth's field names exactly. Renaming a property below will break auth silently.
+ *
+ * `id` is text and is **the** identity. `uuid` is gone: it was a second identity
+ * alongside `id serial`, and every entity's `user_id` now targets this column
+ * instead (PORT-PLAN Decision 2, "Identity").
+ */
 export const user = pgTable('user', {
-	id: serial('id').primaryKey(),
-	uuid: text('uuid').notNull().unique(),
+	id: text('id').primaryKey(),
+	/**
+	 * Required by Better Auth, which reverses the earlier call to drop it. The
+	 * sign-up mock draws "Full name", so the form collects it again.
+	 */
+	name: text('name').notNull(),
+	/** Was `username`, which held an email despite the name. */
+	email: text('email').notNull().unique(),
+	/** Was `email_verified integer`. Better Auth requires a boolean. */
+	emailVerified: boolean('email_verified').notNull().default(false),
+	/** Was `avatar`. */
+	image: text('image'),
+	createdAt: timestamp('created_at', { withTimezone: true, mode: 'date' }).notNull().defaultNow(),
+	updatedAt: timestamp('updated_at', { withTimezone: true, mode: 'date' }).notNull().defaultNow(),
+	/** Maintained by the twoFactor plugin. */
+	twoFactorEnabled: boolean('two_factor_enabled').default(false),
+	/**
+	 * Maintained by the anonymous plugin. The `roles` array below stays authoritative
+	 * for demo accounts (Decision 5) — this is Better Auth's own bookkeeping, and the
+	 * two must not be allowed to disagree about who is a demo user.
+	 */
+	isAnonymous: boolean('is_anonymous').default(false),
+
+	// --- frunk's own columns. Declared to Better Auth as additionalFields. ---
+	roles: integer('roles').array().notNull().default([]),
 	age: integer('age'),
-	/** The sign-in identifier. It is an email address everywhere — the column name is the legacy one. */
-	username: text('username').notNull().unique(),
-	roles: integer('roles').array().notNull().default([]), // array of role IDs from roles table
-	avatar: text('avatar'),
-	emailVerified: integer('email_verified').notNull().default(0),
-	emailVerificationToken: text('email_verification_token'),
-	emailVerificationExpires: timestamp('email_verification_expires', {
+	cookieConsent: jsonb('cookie_consent')
+});
+
+/**
+ * Better Auth's session. Differs from the hand-rolled one in two ways that matter:
+ * the opaque token is its own column rather than being the primary key, and the row
+ * records `ipAddress` / `userAgent`.
+ */
+export const session = pgTable('session', {
+	id: text('id').primaryKey(),
+	userId: text('user_id')
+		.notNull()
+		.references(() => user.id, { onDelete: 'cascade' }),
+	token: text('token').notNull().unique(),
+	expiresAt: timestamp('expires_at', { withTimezone: true, mode: 'date' }).notNull(),
+	ipAddress: text('ip_address'),
+	userAgent: text('user_agent'),
+	createdAt: timestamp('created_at', { withTimezone: true, mode: 'date' }).notNull().defaultNow(),
+	updatedAt: timestamp('updated_at', { withTimezone: true, mode: 'date' }).notNull().defaultNow()
+});
+
+/**
+ * Credentials per provider. Email+password lives here in `password`; a social login
+ * would add a row with its own `providerId`. There was no equivalent before, because
+ * the hand-rolled path had only passkeys.
+ */
+export const account = pgTable('account', {
+	id: text('id').primaryKey(),
+	userId: text('user_id')
+		.notNull()
+		.references(() => user.id, { onDelete: 'cascade' }),
+	accountId: text('account_id').notNull(),
+	providerId: text('provider_id').notNull(),
+	accessToken: text('access_token'),
+	refreshToken: text('refresh_token'),
+	idToken: text('id_token'),
+	accessTokenExpiresAt: timestamp('access_token_expires_at', { withTimezone: true, mode: 'date' }),
+	refreshTokenExpiresAt: timestamp('refresh_token_expires_at', {
 		withTimezone: true,
 		mode: 'date'
 	}),
-	cookieConsent: jsonb('cookie_consent'), // { essential: boolean, analytics: boolean, timestamp: number }
-	/**
-	 * TOTP is the recovery factor, not a second factor: it stands in for a passkey the
-	 * user no longer has. Sealed with AES-256-GCM before it is stored — see
-	 * `src/lib/server/auth/secrets.ts`. `totpEnabled` stays false until the user has
-	 * proved they can produce a code, so a half-finished setup cannot lock anyone out.
-	 */
-	totpSecret: text('totp_secret'),
-	totpEnabled: boolean('totp_enabled').notNull().default(false)
+	scope: text('scope'),
+	password: text('password'),
+	createdAt: timestamp('created_at', { withTimezone: true, mode: 'date' }).notNull().defaultNow(),
+	updatedAt: timestamp('updated_at', { withTimezone: true, mode: 'date' }).notNull().defaultNow()
 });
 
-export const session = pgTable('session', {
+/**
+ * Short-lived tokens: email verification, password reset, and **WebAuthn challenges**.
+ *
+ * This replaces `webauthn_challenges`. Consuming a challenge on read — so a spent one
+ * cannot be replayed — was a decision reasoned into the old code; it is now Better
+ * Auth's behaviour and must be re-verified rather than assumed (Decision 2's
+ * carry-forward table).
+ */
+export const verification = pgTable('verification', {
 	id: text('id').primaryKey(),
-	/**
-	 * Cascades, unlike the SvelteKit schema, where this reference carried no
-	 * `onDelete` — deleting a user who had ever signed in raised a foreign-key
-	 * violation, since their session rows still pointed at them.
-	 */
+	identifier: text('identifier').notNull(),
+	value: text('value').notNull(),
+	expiresAt: timestamp('expires_at', { withTimezone: true, mode: 'date' }).notNull(),
+	createdAt: timestamp('created_at', { withTimezone: true, mode: 'date' }).notNull().defaultNow(),
+	updatedAt: timestamp('updated_at', { withTimezone: true, mode: 'date' }).notNull().defaultNow()
+});
+
+/**
+ * Replaces `credentials`. Wider than the hand-rolled table: Better Auth also records
+ * `deviceType`, `backedUp` (whether the passkey syncs to a cloud keychain) and
+ * `aaguid` (the authenticator model).
+ *
+ * `counter` is still the clone detector — an authenticator reporting a counter at or
+ * below the stored one has been duplicated.
+ */
+export const passkey = pgTable('passkey', {
+	id: text('id').primaryKey(),
 	userId: text('user_id')
 		.notNull()
-		.references(() => user.uuid, { onDelete: 'cascade' }),
-	expiresAt: timestamp('expires_at', { withTimezone: true, mode: 'date' }).notNull()
+		.references(() => user.id, { onDelete: 'cascade' }),
+	name: text('name'),
+	publicKey: text('public_key').notNull(),
+	credentialID: text('credential_id').notNull(),
+	counter: integer('counter').notNull().default(0),
+	deviceType: text('device_type').notNull(),
+	backedUp: boolean('backed_up').notNull().default(false),
+	transports: text('transports'),
+	aaguid: text('aaguid'),
+	createdAt: timestamp('created_at', { withTimezone: true, mode: 'date' }).defaultNow()
 });
 
-export type Session = typeof session.$inferSelect;
+/**
+ * Replaces `user.totp_secret` / `user.totp_enabled`.
+ *
+ * ⚠️ The old columns were sealed with AES-256-GCM (`src/lib/server/auth/secrets.ts`)
+ * so that a database dump alone could not mint valid codes — a TOTP seed is symmetric,
+ * and a code is enough to recover an account. **Whether Better Auth encrypts `secret`
+ * and `backupCodes` at rest has to be confirmed before `secrets.ts` is deleted.** If it
+ * stores them in plaintext, keeping the sealing layer is a deliberate requirement, not
+ * a leftover.
+ */
+export const twoFactor = pgTable('two_factor', {
+	id: text('id').primaryKey(),
+	userId: text('user_id')
+		.notNull()
+		.references(() => user.id, { onDelete: 'cascade' }),
+	secret: text('secret').notNull(),
+	backupCodes: text('backup_codes').notNull(),
+	verified: boolean('verified').default(false),
+	failedVerificationCount: integer('failed_verification_count').default(0),
+	lockedUntil: timestamp('locked_until', { withTimezone: true, mode: 'date' })
+});
 
 export type User = typeof user.$inferSelect;
+export type Session = typeof session.$inferSelect;
+export type Passkey = typeof passkey.$inferSelect;
 
 /**
- * Passkeys. One row per authenticator a user has registered (Decision 2) — the
- * replacement for `user.password_hash`, which this phase drops.
- *
- * The public key is the only secret-adjacent thing here and it is, by design, public:
- * possession of it proves nothing. What authenticates is a signature over a
- * server-issued challenge, checked in `api/auth/login/verify`.
- */
-export const credentials = pgTable('credentials', {
-	/** The WebAuthn credential ID, base64url — already a string, so it is the key. */
-	id: text('id').primaryKey(),
-	userId: text('user_id')
-		.notNull()
-		.references(() => user.uuid, { onDelete: 'cascade' }),
-	/** COSE public key, base64url. */
-	publicKey: text('public_key').notNull(),
-	/**
-	 * Signature counter. An authenticator that ever reports a counter at or below the
-	 * stored one has been cloned; `@simplewebauthn/server` raises on that, which is
-	 * the whole reason this is written back on every sign-in.
-	 */
-	counter: bigint('counter', { mode: 'number' }).notNull().default(0),
-	/** JSON array of AuthenticatorTransport — a hint so the browser offers the right prompt. */
-	transports: text('transports'),
-	createdAt: timestamp('created_at', { withTimezone: true, mode: 'date' }).notNull().defaultNow()
-});
-
-export type Credential = typeof credentials.$inferSelect;
-
-/**
- * Short-lived WebAuthn challenges. A ceremony is two round trips and the server has
- * to remember what it asked between them; a signature is only meaningful over a
- * challenge the server chose, so this cannot live in the client.
- *
- * Keyed by `register:<email>` or `login:<email>` so the two ceremonies cannot consume
- * each other's challenge. `userId` carries the account a registration is destined for:
- * the uuid of the account being upgraded in place, or a fresh one held aside so an
- * abandoned ceremony leaves no empty user row behind.
- */
-export const webauthnChallenges = pgTable('webauthn_challenges', {
-	key: text('key').primaryKey(),
-	challenge: text('challenge').notNull(),
-	userId: text('user_id'),
-	expiresAt: timestamp('expires_at', { withTimezone: true, mode: 'date' }).notNull()
-});
-
-/**
- * Fixed-window counters for the unauthenticated auth entry points, keyed by
- * `<action>:<email>`.
- *
- * TOTP recovery is a six-digit secret that grants a session, so it is brute-forceable
- * in a way a passkey is not. This is what keeps that from being a viable attack, and
- * it lives in Postgres rather than in memory because serverless instances do not share
- * one.
+ * Fixed-window counters. Kept after the Better Auth swap because it is not only an
+ * auth concern: `POST /api/contact` is the one unauthenticated endpoint that can make
+ * frunk send mail, and it uses this. Postgres rather than memory because serverless
+ * instances do not share one.
  */
 export const authRateLimits = pgTable('auth_rate_limits', {
 	key: text('key').primaryKey(),
@@ -135,7 +194,7 @@ export const authRateLimits = pgTable('auth_rate_limits', {
 export const orders = pgTable('orders', {
 	id: text('id').primaryKey(),
 	email: text('email').notNull(),
-	userId: text('user_id').references(() => user.uuid, { onDelete: 'set null' }),
+	userId: text('user_id').references(() => user.id, { onDelete: 'set null' }),
 	stripeSessionId: text('stripe_session_id'),
 	stripePaymentIntentId: text('stripe_payment_intent_id'),
 	printfulOrderId: text('printful_order_id'),
@@ -159,7 +218,7 @@ export const vehicles = pgTable('vehicles', {
 	id: text('id').primaryKey(),
 	userId: text('user_id')
 		.notNull()
-		.references(() => user.uuid, { onDelete: 'cascade' }),
+		.references(() => user.id, { onDelete: 'cascade' }),
 
 	// Basic Vehicle Info (required)
 	make: text('make').notNull(),
@@ -242,7 +301,7 @@ export const vendors = pgTable('vendors', {
 	id: text('id').primaryKey(),
 	userId: text('user_id')
 		.notNull()
-		.references(() => user.uuid, { onDelete: 'cascade' }),
+		.references(() => user.id, { onDelete: 'cascade' }),
 	name: text('name').notNull(),
 	address: text('address'),
 	phone: text('phone'),
@@ -315,7 +374,7 @@ export const notes = pgTable('notes', {
 	type: text('type').notNull().default('note'), // 'note' or 'gallery'
 	order: integer('order'),
 	parentNoteId: text('parent_note_id'), // FK to notes.uuid for nesting
-	userId: text('user_id').references(() => user.uuid, { onDelete: 'cascade' }),
+	userId: text('user_id').references(() => user.id, { onDelete: 'cascade' }),
 	vehicleId: text('vehicle_id').references(() => vehicles.id, { onDelete: 'cascade' }),
 	repairId: text('repair_id').references(() => repairs.id, { onDelete: 'cascade' }),
 	vendorId: text('vendor_id').references(() => vendors.id, { onDelete: 'cascade' }),
