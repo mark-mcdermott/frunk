@@ -52,8 +52,28 @@ pnpm db:seed-roles       # required once per database — ROLE_IDS hardcodes 1/2
 pnpm db:seed-office      # sample data; also the template POST /api/demo clones
 ```
 
-`DATABASE_URL` points at a **new, blank Neon database**, separate from the one the legacy
-app uses, so the port cannot disturb what is still live on Cloudflare.
+### Which database is which
+
+Settled 2026-09-19, after a long hunt caused by this being undocumented. One Neon project,
+**`frunk`**, in the personal Neon console — the same shape as every other project here. Two
+branches, both carrying the full schema:
+
+| branch | endpoint | used by |
+|---|---|---|
+| `production` | `ep-wild-glitter-a4wusipf` | **Vercel** — `DATABASE_URL`, Production + Preview |
+| `development` | `ep-odd-credit-a42d9jqu` | **local `.env`** |
+
+`DATABASE_URL` in Vercel is **hand-set and Sensitive**, not integration-managed. The Vercel
+Marketplace Neon integration was deliberately removed: it had provisioned a *third*,
+invisible database (`neon-byzantium-paddle`, Neon id `soft-wave-99827797`) that production
+actually used, that never appeared in the Neon console, and that no one had bootstrapped —
+which is why signup returned 500 for weeks while two perfectly good databases sat ready.
+Removing it also dropped 18 integration-managed env vars, 8 of them credential-bearing.
+
+**Local and deployed are deliberately different branches.** `pnpm db:push` from a laptop
+cannot reach production — that separation is the point, and it is the accident recorded in
+"An accident worth recording" in `docs/PORT-PLAN.md`. Both branches are bootstrapped
+identically, so a schema change means applying it to both.
 
 **`getDb()` picks its driver from the `DATABASE_URL` hostname** — `.neon.tech` gets Neon's
 HTTP protocol, anything else gets node-postgres over TCP. So the whole API runs against a
