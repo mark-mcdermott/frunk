@@ -176,13 +176,13 @@ export function ContactForm() {
 
 			<SubmitButton label="Send message" pendingLabel="Sending…" pending={pending} />
 
-			{/*
-			 * The mock links "Privacy Policy" here. That page is still unbuilt (Phase 5, laid
-			 * out in `docs/mocks/z_privacy-policy-user-tos-layout.md`), and a dead link on a
-			 * consent line is worse than none — restore the anchor when it ships.
-			 */}
 			<p className="text-[0.8125rem] leading-relaxed text-text-faint">
-				Your message reaches one person, and your address is used only to reply.
+				Your message reaches one person, and your address is used only to reply. By submitting
+				this form, you agree to our{' '}
+				<a href="/privacy" className="text-accent-text underline underline-offset-2">
+					Privacy Policy
+				</a>
+				.
 			</p>
 		</form>
 	);
