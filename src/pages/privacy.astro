@@ -1,0 +1,138 @@
+---
+/**
+ * Privacy Policy — ported from `legacy/src/routes/privacy/+page.svelte`.
+ *
+ * The wording is the existing policy's, not new drafting. Four statements were corrected
+ * because the port made them false, and only those:
+ *
+ * 1. §1 collected "username, email address, and password (stored securely as a hash)".
+ *    There are no passwords — auth is passkeys (PORT-PLAN Decision 2), so nothing
+ *    reusable is stored and the claim overstated what is held.
+ * 2. §2 "Process transactions and send related information" — the merch store is dropped
+ *    (Decision 6). Frunk processes no payments.
+ * 3. §4 "Secure password hashing" — same as 1. Replaced with what is actually true: the
+ *    TOTP recovery secret is sealed with AES-256-GCM at rest (`src/lib/server/auth/secrets.ts`).
+ * 4. §7 "Payment processors for merchandise orders" — dropped with the store.
+ *
+ * The rest survives a provider change because it names categories, not vendors.
+ *
+ * ⚠️ This is a ported document, not legal advice, and it has not been reviewed by anyone
+ * qualified. The entity question is open too: the layout mock says "Frunk Inc.", which is
+ * not used here because the About page says frunk is built by one person.
+ */
+import LegalDocument, { type LegalSection } from '../components/legal/LegalDocument.astro';
+
+const sections: LegalSection[] = [
+	{
+		heading: 'Information We Collect',
+		blocks: [
+			'We collect information you provide directly to us, including:',
+			[
+				{
+					term: 'Account Information',
+					text: 'When you create an account, we collect your email address and the public key of the passkey you register. We never receive or store a password.'
+				},
+				{
+					term: 'Vehicle Data',
+					text: 'Information about your vehicles including make, model, year, VIN, and related photos and documents.'
+				},
+				{
+					term: 'Usage Data',
+					text: 'Information about how you use the application, including repairs, notes, and vendor information you add.'
+				}
+			]
+		]
+	},
+	{
+		heading: 'How We Use Your Information',
+		blocks: [
+			'We use the information we collect to:',
+			[
+				'Provide, maintain, and improve our services',
+				'Send you technical notices and support messages',
+				'Respond to your comments, questions, and requests'
+			]
+		]
+	},
+	{
+		heading: 'Cookies',
+		blocks: [
+			'We use the following types of cookies:',
+			[
+				{
+					term: 'Essential Cookies',
+					text: 'Required for the site to function properly, including session cookies for authentication. These cannot be disabled.'
+				},
+				{
+					term: 'Analytics Cookies',
+					text: 'Help us understand how visitors interact with our website. You can opt out of these cookies.'
+				}
+			],
+			'You can manage your cookie preferences at any time. Essential cookies are necessary for the website to function and cannot be switched off.'
+		]
+	},
+	{
+		heading: 'Data Storage and Security',
+		blocks: [
+			'Your data is stored securely using industry-standard encryption. We use:',
+			[
+				'HTTPS encryption for all data transmission',
+				'Passkeys for sign-in, so no password is transmitted or stored',
+				'Encryption at rest for recovery secrets, using AES-256-GCM',
+				'Cloud storage with encryption at rest for uploaded files'
+			]
+		]
+	},
+	{
+		heading: 'Your Rights',
+		blocks: [
+			'You have the right to:',
+			[
+				{ term: 'Access', text: 'Request a copy of your personal data' },
+				{ term: 'Correction', text: 'Update or correct your personal data' },
+				{ term: 'Deletion', text: 'Request deletion of your account and associated data' },
+				{ term: 'Export', text: 'Request your data in a portable format' }
+			],
+			'To exercise any of these rights, please contact us or use the account settings in your profile.'
+		]
+	},
+	{
+		heading: 'Data Retention',
+		blocks: [
+			'We retain your personal data for as long as your account is active. When you delete your account, we will delete your personal data within 30 days, except where we are required to retain it for legal purposes.'
+		]
+	},
+	{
+		heading: 'Third-Party Services',
+		blocks: [
+			'We may use third-party services that collect, monitor, and analyze data to improve our service. These include:',
+			[
+				'Hosting and content delivery providers',
+				'Database and file storage providers',
+				'Email delivery providers, used to send verification and support messages',
+				'Analytics providers (when analytics cookies are accepted)'
+			]
+		]
+	},
+	{
+		heading: 'Changes to This Policy',
+		blocks: [
+			'We may update this privacy policy from time to time. We will notify you of any changes by posting the new policy on this page and updating the "Last updated" date.'
+		]
+	},
+	{
+		heading: 'Contact Us',
+		blocks: [
+			'If you have any questions about this Privacy Policy, please contact us at hello@frunk.cloud, or through the contact form.'
+		]
+	}
+];
+---
+
+<LegalDocument
+	title="Privacy Policy"
+	description="How Frunk collects, uses, and protects your information."
+	lastUpdated="19 September 2026"
+	intro="This Privacy Policy explains how Frunk collects, uses, and protects your information when you use the service."
+	sections={sections}
+/>
