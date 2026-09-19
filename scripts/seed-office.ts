@@ -389,19 +389,19 @@ async function seed() {
 
 	// Get existing user UUIDs for these usernames
 	const existingUsers = await db
-		.select({ uuid: user.uuid })
+		.select({ id: user.id })
 		.from(user)
-		.where(inArray(user.username, usernames));
+		.where(inArray(user.email, usernames));
 
 	if (existingUsers.length > 0) {
-		const existingUuids = existingUsers.map((u) => u.uuid);
+		const existingUuids = existingUsers.map((u) => u.id);
 
 		// Delete in order: sessions -> repairs -> notes -> vehicles -> vendors -> users
 		// (repairs and notes cascade from vehicles, vendors set null on repair)
 		await db.delete(session).where(inArray(session.userId, existingUuids));
 		await db.delete(vehicles).where(inArray(vehicles.userId, existingUuids));
 		await db.delete(vendors).where(inArray(vendors.userId, existingUuids));
-		await db.delete(user).where(inArray(user.uuid, existingUuids));
+		await db.delete(user).where(inArray(user.id, existingUuids));
 		console.log(`Cleared ${existingUsers.length} existing users and their data.\n`);
 	}
 
@@ -410,12 +410,15 @@ async function seed() {
 
 		// Insert user
 		await db.insert(user).values({
-			uuid: userUuid,
-			username: character.username,
+			id: userUuid,
+			// Better Auth requires `name`. The characters carry no separate display
+			// name, so the address's local part stands in.
+			name: character.username.split('@')[0] ?? character.username,
+			email: character.username,
 			age: character.age,
 			roles: character.roles,
-			avatar: character.avatar,
-			emailVerified: 1
+			image: character.avatar,
+			emailVerified: true
 		}).onConflictDoNothing();
 
 		console.log(`Created user: ${character.username}`);

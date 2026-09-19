@@ -105,8 +105,8 @@ export function UserNav() {
 					aria-haspopup="menu"
 					className="flex items-center gap-2 rounded-full py-1 pl-1 pr-2 transition-colors hover:bg-[rgb(11_15_24_/_0.05)]"
 				>
-					{user.avatar ? (
-						<img src={user.avatar} alt="" className="size-9 rounded-full object-cover" />
+					{user.image ? (
+						<img src={user.image} alt="" className="size-9 rounded-full object-cover" />
 					) : (
 						<span
 							aria-hidden
@@ -132,7 +132,7 @@ export function UserNav() {
 								{displayName(user)}
 							</p>
 							<p className="truncate text-[0.75rem] text-[rgb(11_15_24_/_0.62)]">
-								{demo ? 'Demo account' : user.username}
+								{demo ? 'Demo account' : user.email}
 							</p>
 						</div>
 

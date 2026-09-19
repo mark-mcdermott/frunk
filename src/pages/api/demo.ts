@@ -1,21 +1,21 @@
 import type { APIContext, APIRoute } from 'astro';
 import { isDemo } from '../../lib/roles';
+import { getAuth } from '../../lib/server/auth/config';
 import { checkRateLimit } from '../../lib/server/auth/rate-limit';
 import { cloneDemoAccount, DemoTemplateMissing } from '../../lib/server/demo';
 import { fail, handler, json, tooManyRequests } from './_lib/http';
-import {
-	createSession,
-	generateSessionToken,
-	resolveSession,
-	setSessionCookie
-} from './_lib/session';
+import { resolveSession } from './_lib/session';
 
 export const prerender = false;
 
 /**
  * Start a demo. No passkey, no email, no form — a logged-out visitor gets a real
- * account with a `DEMO` role and a session, and can create, edit and delete for real
- * (Decision 5).
+ * account and a session, and can create, edit and delete for real (Decision 5).
+ *
+ * Better Auth's `anonymous` plugin creates the account and opens the session; this
+ * endpoint only rate limits it and clones the sample garage in afterwards. That split
+ * is what makes conversion free: attaching a credential later upgrades the *same* row,
+ * so nothing made during the trial is lost.
  *
  * Limited per address because each call writes a user plus their whole cloned garage.
  */
@@ -23,7 +23,7 @@ const LIMIT = { limit: 3, windowMs: 60 * 60 * 1000 };
 
 export const POST: APIRoute = (context) =>
 	handler(async () => {
-		const existing = await resolveSession(context.cookies);
+		const existing = await resolveSession(context);
 		if (existing) {
 			// Already in a demo: hand back the same account rather than abandoning the
 			// data they have been making, which is the thing conversion depends on.
@@ -34,9 +34,23 @@ export const POST: APIRoute = (context) =>
 		const limit = await checkRateLimit(`demo:${clientKey(context)}`, LIMIT);
 		if (!limit.allowed) return tooManyRequests(limit.retryAfterMs);
 
-		let userId: string;
+		/*
+		 * `asResponse` so Better Auth's own `Set-Cookie` reaches the browser — the
+		 * session cookie is its to mint now, and rebuilding it by hand is exactly the
+		 * kind of divergence this swap was meant to remove.
+		 */
+		const auth = getAuth(new URL(context.request.url));
+		const opened = await auth.api.signInAnonymous({
+			headers: context.request.headers,
+			asResponse: true
+		});
+
+		if (!opened.ok) return fail(503, 'The demo is not available right now.');
+
+		const { user } = (await opened.clone().json()) as { user: { id: string } };
+
 		try {
-			userId = await cloneDemoAccount();
+			await cloneDemoAccount(user.id);
 		} catch (cause) {
 			if (cause instanceof DemoTemplateMissing) {
 				console.error(cause);
@@ -45,11 +59,7 @@ export const POST: APIRoute = (context) =>
 			throw cause;
 		}
 
-		const token = generateSessionToken();
-		const opened = await createSession(token, userId);
-		setSessionCookie(context.cookies, token, opened.expiresAt);
-
-		return json({ user: opened.user }, 201);
+		return opened;
 	});
 
 /**
