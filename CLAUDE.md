@@ -24,7 +24,9 @@ outstanding.
 - **Neon** serverless Postgres via **Drizzle ORM**
 - **Vercel** (`@astrojs/vercel`), **Vercel Blob** for file storage
 - **Passkeys + TOTP** for auth (Decision 2) — replaces the hand-rolled session/password path
-- **AWS SES** for the contact form only
+- **Resend** for transactional email — the contact form (Phase 5) and, once Decision 2's
+  Better Auth rework lands, verification mail. Both behind one `src/lib/server/email.ts`.
+  Supersedes AWS SES, which was never wired into this app
 - **Capacitor** (iOS/Android) stays in scope, re-pointed in Phase 6
 
 Dropped for now: the merch store (Stripe + Printful), Tauri desktop, Skeleton UI.
