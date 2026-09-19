@@ -123,6 +123,12 @@ talks to the app island."
    applet is built on top of it is far cheaper than after, and no accounts exist, so nothing
    migrates either way.
 
+   **This puts email back on the critical path.** Passkeys send none; Better Auth's
+   `sendVerificationEmail` does, and a failed send means a failed registration. It takes a
+   function, so point it at the shared `sendEmail()` helper the contact form uses (Phase 5,
+   Resend) rather than giving auth its own transport. Email DNS must be verified before this
+   rework ships — see Phase 6.
+
    ⚠️ **Six decisions were reasoned into the code being replaced. They must be re-verified
    against Better Auth's defaults, not silently lost** — the full reasoning stays in Phase 3:
 
@@ -580,8 +586,15 @@ opposite on both counts: genuinely secret, so mark it sensitive.
 - Remaining marketing and legal pages as `.astro`, built to their mocks: about, pricing,
   contact, privacy, terms. `z_privacy-policy-user-tos-layout.md` specifies the legal layout
   (numbered sidebar, download PDF, version history).
-- Contact form posts to an Astro endpoint; SES stays for that (only the *verification*
-  flow is superseded by passkeys).
+- Contact form posts to an Astro endpoint, sending through **Resend** (decided 2026-09-19,
+  superseding SES). Nothing was migrated — SES was never wired into the Astro app: no email
+  dependency, no send code, no contact endpoint. Only the env vars existed.
+
+  **Put it behind one `src/lib/server/email.ts` exporting `sendEmail()`**, the shape
+  `legacy/src/lib/server/email.ts` already had. Both callers — this contact form and Better
+  Auth's `sendVerificationEmail` (Decision 2) — go through it, so the provider stays a
+  contained change. That matters because the one real argument for SES is cost at volume,
+  which is worth nothing at zero users and easy to revisit behind this seam.
 - No store — Decision 6. The duplicate Stripe webhook problem disappears with it.
 - **Vercel Web Analytics** (`@vercel/analytics`) — one `<Analytics />` in the layout,
   cookieless, so it adds no category to the consent flow. **Web surface only:** the beacon
@@ -610,7 +623,8 @@ opposite on both counts: genuinely secret, so mark it sensitive.
   | `DATABASE_URL` + Neon integration vars | ✅ set (preview + production) |
   | `ENCRYPTION_KEY` | ✅ set — see Phase 3 |
   | `RP_ID`, `RP_ORIGIN` | ✅ set (production only) |
-  | SES: `SES_FROM_EMAIL`, `AWS_*` | ✅ set |
+  | `RESEND_API_KEY` | ❌ **needed for Phase 5** — replaces SES |
+  | ~~SES: `SES_FROM_EMAIL`, `AWS_*`~~ | 🗑 delete from Vercel — superseded by Resend, and nothing ever read them |
   | `BLOB_READ_WRITE_TOKEN` | ❌ **still missing — Phase 4 needs it for uploads** |
 - No production data to migrate (frunk never launched). Re-seed with `seed-office.ts`.
 - Re-point Capacitor at the new origin and verify a passkey ceremony inside the webview.
@@ -620,11 +634,18 @@ opposite on both counts: genuinely secret, so mark it sensitive.
   (`dns1/dns2.registrar-servers.com`) and email forwarding moved with it
   (`eforward1-5.registrar-servers.com`). Cloudflare Email Routing is gone, so the trade
   Decision 1 agonised over no longer exists.
-- **SES is not DNS-ready** and this now matters: SPF is `include:spf.efwd.registrar-servers.com`
-  only — no `include:amazonses.com` — with no DKIM and no DMARC record. Verification mail from
-  `noreply@frunk.cloud` will land in spam or be rejected. Harmless while auth is passkeys, but
-  Better Auth (Decision 2) puts `sendVerificationEmail` on the sign-up path, so **fix this
-  before that rework ships or nobody can register.**
+- **Email DNS is unconfigured**, and this gates the Better Auth rework: `frunk.cloud` has SPF
+  for Namecheap forwarding only (`include:spf.efwd.registrar-servers.com`), no DKIM, no DMARC.
+  Harmless while auth is passkeys — they send no mail — but Decision 2 puts
+  `sendVerificationEmail` on the sign-up path, so **unverified sending means nobody can
+  register.** Verify `frunk.cloud` in Resend, add the records it issues, and **edit the
+  existing SPF TXT rather than adding a second one** — two SPF records is a permanent error
+  that breaks all SPF. `_dmarc` is provider-agnostic: start at `p=none` and tighten later.
+
+  > Choosing Resend over SES also removes a scheduling risk that was on this critical path:
+  > **SES starts every account in sandbox**, able to send only to pre-verified addresses until
+  > AWS grants production access on request. No amount of DNS fixes that, and it has a lead
+  > time. Resend has no equivalent gate.
 - Schedule the demo-account reaper.
 - Retire the Cloudflare Pages project. Update `CLAUDE.md` and `_PROJECTS.md`.
 - **Checkpoint:** prod green on one origin; auth end-to-end; Capacitor build passes.
@@ -635,6 +656,11 @@ opposite on both counts: genuinely secret, so mark it sensitive.
 
 - **Reuse near-verbatim:** `src/lib/server/db/schema.ts`, `stripe.ts`, `printful.ts`,
   `email.ts`, `password.ts`.
+
+  Two corrections: **`password.ts` is not reused** — Better Auth owns hashing (Decision 2).
+  And **`email.ts` is a template, not a copy** — its `sendContactEmail` body and HTML are
+  worth keeping, but its SES transport is replaced by Resend, and `sendVerificationEmail`
+  now belongs to Better Auth's hook rather than being called directly.
 - **Reference, don't copy:** wolfpack's `src/pages/api/_lib/*`, `AppRoot.tsx`,
   `[...slug].astro`, `lib/theme-boot.ts`.
 - **Rewrite:** all 60 `.svelte` components → React, to the mocks.
