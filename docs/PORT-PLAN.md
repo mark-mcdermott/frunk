@@ -515,12 +515,45 @@ on the device you just recovered onto.
   inlined at build time, so an optional one that is unset during the build freezes as
   undefined for the life of the deploy — silently, because it has a fallback.
 
+### Environment — set 2026-09-19
+
+These three belong to this phase, not to Phase 6. `ENCRYPTION_KEY` in particular was never
+a cutover chore: `assertProductionSecrets` refuses any ceremony on an `https://` origin
+without it, which is what kept this phase's checkpoint from ever running on a deploy.
+
+| variable | targets | why |
+|---|---|---|
+| `ENCRYPTION_KEY` | **production + preview** | `assertProductionSecrets` fires on *any* https origin, and preview deploys are https. Setting it on production alone leaves previews unable to run a ceremony — the actual reason this checkpoint stalled. |
+| `RP_ID` | production only | `frunk.cloud` |
+| `RP_ORIGIN` | production only | `https://frunk.cloud` |
+
+`RP_ID` / `RP_ORIGIN` stay **off** preview deliberately — `relyingParty()` derives them from
+the request there, and nothing static can cover Vercel's per-deploy preview hostnames.
+
+They are **config, not secrets** (the values appear in every page the site serves), so leave
+Vercel's Sensitive flag off. That is not pedantry: sensitive values cannot be read back, and
+`relying-party.ts` warns that a wrong value "does not fail loudly — it silently creates
+passkeys that can never sign in." Being able to *see* that it reads `frunk.cloud` and not
+`www.frunk.cloud` is worth more than secrecy that buys nothing. `ENCRYPTION_KEY` is the
+opposite on both counts: genuinely secret, so mark it sensitive.
+
+> ⚠️ **Never rotate `ENCRYPTION_KEY`.** The AES key is derived from it deterministically
+> (`scryptSync(key, 'frunk-totp', 32)`), so a new value makes every sealed TOTP seed
+> undecryptable. Per `secrets.ts`, TOTP is the only way back after a lost passkey — rotating
+> this destroys every user's account recovery, silently and irreversibly. Set it once and
+> store it somewhere outside Vercel, because the Sensitive flag means you cannot read it back.
+> **It must survive the Better Auth migration**, which brings its own `BETTER_AUTH_SECRET`
+> but does not replace this one unless the seeds are migrated too.
+
 - **Checkpoint:** met locally, against a local Postgres, with a software authenticator
   completing the real ceremonies: register → `me` → sign in → replay refused → TOTP setup,
   enable and recover → second passkey → rate limits; then demo → create → convert in place
-  → data intact. **Not yet run on a preview deploy** — that needs the Neon database
-  bootstrapped and `ENCRYPTION_KEY` set, and it is the one part of this checkpoint still
-  outstanding.
+  → data intact. ~~Not yet run on a preview deploy — that needs the Neon database
+  bootstrapped and `ENCRYPTION_KEY` set.~~ **`ENCRYPTION_KEY` is set (2026-09-19), on both
+  production and preview. The remaining blocker is the Neon database bootstrap**
+  (`pnpm db:bootstrap-sql`, then `db:seed-roles`), and production answers
+  `GET /api/auth/me` → `{"user":null}`, so the API layer and `astro:env` resolve correctly
+  on the real origin.
 
 ## Phase 4 — The applet
 
@@ -563,12 +596,35 @@ on the device you just recovered onto.
 
 ## Phase 6 — Cutover
 
-- Point `frunk.cloud` DNS at Vercel. Set env: `DATABASE_URL`, `BLOB_READ_WRITE_TOKEN`,
-  `AUTH_SECRET`, `RP_ID`, `RP_ORIGIN`, `STRIPE_*`, `PRINTFUL_API_KEY`, SES vars.
+- ~~Point `frunk.cloud` DNS at Vercel.~~ **Done 2026-09-19.** Apex is canonical and serves;
+  `www.frunk.cloud` 308-redirects to it, which is what makes `RP_ORIGIN=https://frunk.cloud`
+  the correct pin (Decision 1).
+- **Environment is mostly already set** — this list was wrong in three ways and is corrected
+  here. It omitted `ENCRYPTION_KEY` entirely (it belongs to Phase 3, above, and is set); it
+  named an `AUTH_SECRET` that exists nowhere in this codebase; and it still listed
+  `STRIPE_*` and `PRINTFUL_API_KEY`, which Decision 6 dropped — those were deleted from the
+  Vercel project on 2026-09-19, along with the `R2_*` vars that Vercel Blob replaces.
+
+  | variable | state |
+  |---|---|
+  | `DATABASE_URL` + Neon integration vars | ✅ set (preview + production) |
+  | `ENCRYPTION_KEY` | ✅ set — see Phase 3 |
+  | `RP_ID`, `RP_ORIGIN` | ✅ set (production only) |
+  | SES: `SES_FROM_EMAIL`, `AWS_*` | ✅ set |
+  | `BLOB_READ_WRITE_TOKEN` | ❌ **still missing — Phase 4 needs it for uploads** |
 - No production data to migrate (frunk never launched). Re-seed with `seed-office.ts`.
 - Re-point Capacitor at the new origin and verify a passkey ceremony inside the webview.
 - Desktop is out of scope (Decision 7) — no Tauri step.
-- Resolve the DNS/email trade in Decision 1 before switching nameservers.
+- ~~Resolve the DNS/email trade in Decision 1 before switching nameservers.~~ **Moot.** The
+  nameservers already left Cloudflare — `frunk.cloud` now answers from Namecheap BasicDNS
+  (`dns1/dns2.registrar-servers.com`) and email forwarding moved with it
+  (`eforward1-5.registrar-servers.com`). Cloudflare Email Routing is gone, so the trade
+  Decision 1 agonised over no longer exists.
+- **SES is not DNS-ready** and this now matters: SPF is `include:spf.efwd.registrar-servers.com`
+  only — no `include:amazonses.com` — with no DKIM and no DMARC record. Verification mail from
+  `noreply@frunk.cloud` will land in spam or be rejected. Harmless while auth is passkeys, but
+  Better Auth (Decision 2) puts `sendVerificationEmail` on the sign-up path, so **fix this
+  before that rework ships or nobody can register.**
 - Schedule the demo-account reaper.
 - Retire the Cloudflare Pages project. Update `CLAUDE.md` and `_PROJECTS.md`.
 - **Checkpoint:** prod green on one origin; auth end-to-end; Capacitor build passes.
