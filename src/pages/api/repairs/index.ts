@@ -35,7 +35,7 @@ export const GET: APIRoute = (context) =>
 			.from(table.repairs)
 			.innerJoin(table.vehicles, eq(table.repairs.vehicleId, table.vehicles.id))
 			.leftJoin(table.vendors, eq(table.repairs.vendorId, table.vendors.id))
-			.where(eq(table.vehicles.userId, user.uuid))
+			.where(eq(table.vehicles.userId, user.id))
 			.orderBy(desc(table.repairs.date));
 
 		return json({ repairs });
@@ -46,8 +46,8 @@ export const POST: APIRoute = (context) =>
 		const { user } = await requireSession(context);
 		const body = await readJson(context.request, createRepairSchema);
 
-		await ownedVehicle(body.vehicleId, user.uuid);
-		if (body.vendorId) await ownedVendor(body.vendorId, user.uuid);
+		await ownedVehicle(body.vehicleId, user.id);
+		if (body.vendorId) await ownedVendor(body.vendorId, user.id);
 
 		const [repair] = await getDb()
 			.insert(table.repairs)

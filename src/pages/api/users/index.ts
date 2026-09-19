@@ -21,9 +21,9 @@ export const GET: APIRoute = (context) =>
 		const { page, pageSize, sortBy, sortOrder, search } = parsed.data;
 		const db = getDb();
 		// `search` is bound as a parameter by Drizzle, not interpolated.
-		const where = search ? ilike(table.user.username, `%${search}%`) : undefined;
+		const where = search ? ilike(table.user.email, `%${search}%`) : undefined;
 
-		const sortColumn = { id: table.user.id, username: table.user.username, roles: table.user.roles }[
+		const sortColumn = { id: table.user.id, email: table.user.email, roles: table.user.roles }[
 			sortBy
 		];
 		const direction = sortOrder === 'desc' ? desc : asc;
@@ -33,9 +33,9 @@ export const GET: APIRoute = (context) =>
 			db
 				.select({
 					id: table.user.id,
-					uuid: table.user.uuid,
-					username: table.user.username,
-					avatar: table.user.avatar,
+					email: table.user.email,
+					name: table.user.name,
+					image: table.user.image,
 					roles: table.user.roles
 				})
 				.from(table.user)

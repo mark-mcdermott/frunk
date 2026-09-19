@@ -22,7 +22,7 @@ export const GET: APIRoute = (context) =>
 		const id = context.params.id;
 		if (!id) return notFound('Vehicle not found');
 
-		const vehicle = await ownedVehicle(id, user.uuid);
+		const vehicle = await ownedVehicle(id, user.id);
 		const db = getDb();
 
 		const [notes, repairs, vendors, galleryRows, schedules] = await Promise.all([
@@ -49,7 +49,7 @@ export const GET: APIRoute = (context) =>
 			db
 				.select()
 				.from(table.vendors)
-				.where(eq(table.vendors.userId, user.uuid))
+				.where(eq(table.vendors.userId, user.id))
 				.orderBy(table.vendors.name),
 			db
 				.select()
@@ -93,7 +93,7 @@ export const PATCH: APIRoute = (context) =>
 		const id = context.params.id;
 		if (!id) return notFound('Vehicle not found');
 
-		await ownedVehicle(id, user.uuid);
+		await ownedVehicle(id, user.id);
 		const body = await readJson(context.request, updateVehicleSchema);
 
 		const [vehicle] = await getDb()
@@ -111,7 +111,7 @@ export const DELETE: APIRoute = (context) =>
 		const id = context.params.id;
 		if (!id) return notFound('Vehicle not found');
 
-		await ownedVehicle(id, user.uuid);
+		await ownedVehicle(id, user.id);
 		// Notes, repairs, galleries and schedules cascade from the FK.
 		await getDb().delete(table.vehicles).where(eq(table.vehicles.id, id));
 
