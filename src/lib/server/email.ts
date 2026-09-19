@@ -32,9 +32,18 @@ export interface EmailMessage {
 }
 
 /**
- * Throws rather than returning a failure flag. Every caller so far is a request handler
- * that must answer 500 if the mail did not go, and a boolean invites ignoring it — which
- * for a verification email means a silently unusable account.
+ * Throws rather than returning a failure flag, so a caller cannot ignore a failed send
+ * by accident.
+ *
+ * ⚠️ **Better Auth does not honour that for verification mail.** It runs
+ * `sendVerificationEmail` as a *background task*, so this throw is logged
+ * ("Failed to run background task") and never reaches the request — sign-up still
+ * answers 200, the user row is created, and no verification row is written. A Resend
+ * outage therefore produces an account that looks created and can never be verified.
+ *
+ * The recovery path is Better Auth's own `POST /api/auth/send-verification-email`, so
+ * **the sign-up UI must offer "resend verification email"** rather than treating a 200
+ * as proof that mail went out. Verified against 1.7.5 on 2026-09-19.
  */
 export async function sendEmail({ to, subject, html, text, replyTo }: EmailMessage) {
 	if (!RESEND_API_KEY) {

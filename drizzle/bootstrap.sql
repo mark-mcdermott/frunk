@@ -8,21 +8,28 @@
 --
 -- GENERATED FILE — do not edit. Regenerate with:
 --   pnpm db:generate && pnpm db:bootstrap-sql
--- Source: 0000_minor_loa.sql
+-- Source: 0000_sad_silver_surfer.sql
 
+CREATE TABLE IF NOT EXISTS "account" (
+	"id" text PRIMARY KEY NOT NULL,
+	"user_id" text NOT NULL,
+	"account_id" text NOT NULL,
+	"provider_id" text NOT NULL,
+	"access_token" text,
+	"refresh_token" text,
+	"id_token" text,
+	"access_token_expires_at" timestamp with time zone,
+	"refresh_token_expires_at" timestamp with time zone,
+	"scope" text,
+	"password" text,
+	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
+	"updated_at" timestamp with time zone DEFAULT now() NOT NULL
+);
+--> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "auth_rate_limits" (
 	"key" text PRIMARY KEY NOT NULL,
 	"count" integer DEFAULT 0 NOT NULL,
 	"window_start" timestamp with time zone DEFAULT now() NOT NULL
-);
---> statement-breakpoint
-CREATE TABLE IF NOT EXISTS "credentials" (
-	"id" text PRIMARY KEY NOT NULL,
-	"user_id" text NOT NULL,
-	"public_key" text NOT NULL,
-	"counter" bigint DEFAULT 0 NOT NULL,
-	"transports" text,
-	"created_at" timestamp with time zone DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "galleries" (
@@ -84,6 +91,20 @@ CREATE TABLE IF NOT EXISTS "orders" (
 	"updated_at" timestamp with time zone DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
+CREATE TABLE IF NOT EXISTS "passkey" (
+	"id" text PRIMARY KEY NOT NULL,
+	"user_id" text NOT NULL,
+	"name" text,
+	"public_key" text NOT NULL,
+	"credential_id" text NOT NULL,
+	"counter" integer DEFAULT 0 NOT NULL,
+	"device_type" text NOT NULL,
+	"backed_up" boolean DEFAULT false NOT NULL,
+	"transports" text,
+	"aaguid" text,
+	"created_at" timestamp with time zone DEFAULT now()
+);
+--> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "repairs" (
 	"id" text PRIMARY KEY NOT NULL,
 	"vehicle_id" text NOT NULL,
@@ -107,24 +128,39 @@ CREATE TABLE IF NOT EXISTS "roles" (
 CREATE TABLE IF NOT EXISTS "session" (
 	"id" text PRIMARY KEY NOT NULL,
 	"user_id" text NOT NULL,
-	"expires_at" timestamp with time zone NOT NULL
+	"token" text NOT NULL,
+	"expires_at" timestamp with time zone NOT NULL,
+	"ip_address" text,
+	"user_agent" text,
+	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
+	"updated_at" timestamp with time zone DEFAULT now() NOT NULL,
+	CONSTRAINT "session_token_unique" UNIQUE("token")
+);
+--> statement-breakpoint
+CREATE TABLE IF NOT EXISTS "two_factor" (
+	"id" text PRIMARY KEY NOT NULL,
+	"user_id" text NOT NULL,
+	"secret" text NOT NULL,
+	"backup_codes" text NOT NULL,
+	"verified" boolean DEFAULT false,
+	"failed_verification_count" integer DEFAULT 0,
+	"locked_until" timestamp with time zone
 );
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "user" (
-	"id" serial PRIMARY KEY NOT NULL,
-	"uuid" text NOT NULL,
-	"age" integer,
-	"username" text NOT NULL,
+	"id" text PRIMARY KEY NOT NULL,
+	"name" text NOT NULL,
+	"email" text NOT NULL,
+	"email_verified" boolean DEFAULT false NOT NULL,
+	"image" text,
+	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
+	"updated_at" timestamp with time zone DEFAULT now() NOT NULL,
+	"two_factor_enabled" boolean DEFAULT false,
+	"is_anonymous" boolean DEFAULT false,
 	"roles" integer[] DEFAULT '{}' NOT NULL,
-	"avatar" text,
-	"email_verified" integer DEFAULT 0 NOT NULL,
-	"email_verification_token" text,
-	"email_verification_expires" timestamp with time zone,
+	"age" integer,
 	"cookie_consent" jsonb,
-	"totp_secret" text,
-	"totp_enabled" boolean DEFAULT false NOT NULL,
-	CONSTRAINT "user_uuid_unique" UNIQUE("uuid"),
-	CONSTRAINT "user_username_unique" UNIQUE("username")
+	CONSTRAINT "user_email_unique" UNIQUE("email")
 );
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "vehicle_photos" (
@@ -206,27 +242,31 @@ CREATE TABLE IF NOT EXISTS "vendors" (
 	"updated_at" timestamp with time zone DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
-CREATE TABLE IF NOT EXISTS "webauthn_challenges" (
-	"key" text PRIMARY KEY NOT NULL,
-	"challenge" text NOT NULL,
-	"user_id" text,
-	"expires_at" timestamp with time zone NOT NULL
+CREATE TABLE IF NOT EXISTS "verification" (
+	"id" text PRIMARY KEY NOT NULL,
+	"identifier" text NOT NULL,
+	"value" text NOT NULL,
+	"expires_at" timestamp with time zone NOT NULL,
+	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
+	"updated_at" timestamp with time zone DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
-DO $$ BEGIN ALTER TABLE "credentials" ADD CONSTRAINT "credentials_user_id_user_uuid_fk" FOREIGN KEY ("user_id") REFERENCES "public"."user"("uuid") ON DELETE cascade ON UPDATE no action; EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+DO $$ BEGIN ALTER TABLE "account" ADD CONSTRAINT "account_user_id_user_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."user"("id") ON DELETE cascade ON UPDATE no action; EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 DO $$ BEGIN ALTER TABLE "galleries" ADD CONSTRAINT "galleries_vehicle_id_vehicles_id_fk" FOREIGN KEY ("vehicle_id") REFERENCES "public"."vehicles"("id") ON DELETE cascade ON UPDATE no action; EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 DO $$ BEGIN ALTER TABLE "maintenance_schedules" ADD CONSTRAINT "maintenance_schedules_vehicle_id_vehicles_id_fk" FOREIGN KEY ("vehicle_id") REFERENCES "public"."vehicles"("id") ON DELETE cascade ON UPDATE no action; EXCEPTION WHEN duplicate_object THEN NULL; END $$;
-DO $$ BEGIN ALTER TABLE "notes" ADD CONSTRAINT "notes_user_id_user_uuid_fk" FOREIGN KEY ("user_id") REFERENCES "public"."user"("uuid") ON DELETE cascade ON UPDATE no action; EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+DO $$ BEGIN ALTER TABLE "notes" ADD CONSTRAINT "notes_user_id_user_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."user"("id") ON DELETE cascade ON UPDATE no action; EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 DO $$ BEGIN ALTER TABLE "notes" ADD CONSTRAINT "notes_vehicle_id_vehicles_id_fk" FOREIGN KEY ("vehicle_id") REFERENCES "public"."vehicles"("id") ON DELETE cascade ON UPDATE no action; EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 DO $$ BEGIN ALTER TABLE "notes" ADD CONSTRAINT "notes_repair_id_repairs_id_fk" FOREIGN KEY ("repair_id") REFERENCES "public"."repairs"("id") ON DELETE cascade ON UPDATE no action; EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 DO $$ BEGIN ALTER TABLE "notes" ADD CONSTRAINT "notes_vendor_id_vendors_id_fk" FOREIGN KEY ("vendor_id") REFERENCES "public"."vendors"("id") ON DELETE cascade ON UPDATE no action; EXCEPTION WHEN duplicate_object THEN NULL; END $$;
-DO $$ BEGIN ALTER TABLE "orders" ADD CONSTRAINT "orders_user_id_user_uuid_fk" FOREIGN KEY ("user_id") REFERENCES "public"."user"("uuid") ON DELETE set null ON UPDATE no action; EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+DO $$ BEGIN ALTER TABLE "orders" ADD CONSTRAINT "orders_user_id_user_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."user"("id") ON DELETE set null ON UPDATE no action; EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+DO $$ BEGIN ALTER TABLE "passkey" ADD CONSTRAINT "passkey_user_id_user_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."user"("id") ON DELETE cascade ON UPDATE no action; EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 DO $$ BEGIN ALTER TABLE "repairs" ADD CONSTRAINT "repairs_vehicle_id_vehicles_id_fk" FOREIGN KEY ("vehicle_id") REFERENCES "public"."vehicles"("id") ON DELETE cascade ON UPDATE no action; EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 DO $$ BEGIN ALTER TABLE "repairs" ADD CONSTRAINT "repairs_vendor_id_vendors_id_fk" FOREIGN KEY ("vendor_id") REFERENCES "public"."vendors"("id") ON DELETE set null ON UPDATE no action; EXCEPTION WHEN duplicate_object THEN NULL; END $$;
-DO $$ BEGIN ALTER TABLE "session" ADD CONSTRAINT "session_user_id_user_uuid_fk" FOREIGN KEY ("user_id") REFERENCES "public"."user"("uuid") ON DELETE cascade ON UPDATE no action; EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+DO $$ BEGIN ALTER TABLE "session" ADD CONSTRAINT "session_user_id_user_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."user"("id") ON DELETE cascade ON UPDATE no action; EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+DO $$ BEGIN ALTER TABLE "two_factor" ADD CONSTRAINT "two_factor_user_id_user_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."user"("id") ON DELETE cascade ON UPDATE no action; EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 DO $$ BEGIN ALTER TABLE "vehicle_photos" ADD CONSTRAINT "vehicle_photos_gallery_id_galleries_id_fk" FOREIGN KEY ("gallery_id") REFERENCES "public"."galleries"("id") ON DELETE cascade ON UPDATE no action; EXCEPTION WHEN duplicate_object THEN NULL; END $$;
-DO $$ BEGIN ALTER TABLE "vehicles" ADD CONSTRAINT "vehicles_user_id_user_uuid_fk" FOREIGN KEY ("user_id") REFERENCES "public"."user"("uuid") ON DELETE cascade ON UPDATE no action; EXCEPTION WHEN duplicate_object THEN NULL; END $$;
-DO $$ BEGIN ALTER TABLE "vendors" ADD CONSTRAINT "vendors_user_id_user_uuid_fk" FOREIGN KEY ("user_id") REFERENCES "public"."user"("uuid") ON DELETE cascade ON UPDATE no action; EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+DO $$ BEGIN ALTER TABLE "vehicles" ADD CONSTRAINT "vehicles_user_id_user_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."user"("id") ON DELETE cascade ON UPDATE no action; EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+DO $$ BEGIN ALTER TABLE "vendors" ADD CONSTRAINT "vendors_user_id_user_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."user"("id") ON DELETE cascade ON UPDATE no action; EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
 --
 -- Roles. The ids are load-bearing: ROLE_IDS in src/lib/roles.ts is { DEMO: 1, USER: 2,
