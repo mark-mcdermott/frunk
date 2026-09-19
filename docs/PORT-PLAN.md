@@ -35,8 +35,11 @@ would mean writing the UI twice.
 
 **What ports nearly as-is:** the Drizzle schema (11 tables) and `scripts/seed-office.ts`.
 `src/lib/server/{stripe,printful}.ts` are framework-agnostic and would port cleanly, but the
-store is deferred (Decision 6) so they are not needed yet. `password.ts` and the SES
-verification in `email.ts` are superseded by passkeys.
+store is deferred (Decision 6) so they are not needed yet. `password.ts` is superseded —
+Better Auth owns hashing (Decision 2). `email.ts` is a **template rather than a copy**: its
+message bodies are worth keeping, but its SES transport is replaced by Resend (Phase 5), and
+verification mail — dropped when auth was passkeys — returns under Better Auth, routed
+through the same shared `sendEmail()` helper as the contact form.
 
 ---
 
@@ -96,8 +99,10 @@ talks to the app island."
    - Confirm `frunk.cloud` and `www.frunk.cloud` both resolve to Vercel and that the
      certificate issued, once propagation settles.
 
-   Still unverified: no DKIM records were found for SES, so sending from
-   `noreply@frunk.cloud` may not be verified. Check independently.
+   **Email DNS is still unconfigured** — SPF covers Namecheap forwarding only, with no DKIM
+   and no DMARC. Superseded in detail by the Resend item in Phase 6; the short version is
+   that nothing can send as `noreply@frunk.cloud` until the domain is verified with a
+   provider, and Decision 2 makes that a prerequisite for registration working at all.
 2. **Auth — DECIDED: Better Auth.** *(Revised 2026-09-17. Supersedes "passkeys + TOTP
    ported from wolfpack", which was **built and locally verified** in Phase 3 before this
    reversal. Reopens Phase 3.)*
