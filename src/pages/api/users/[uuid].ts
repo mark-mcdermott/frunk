@@ -3,10 +3,10 @@ import { eq } from 'drizzle-orm';
 import { isAdmin } from '../../../lib/roles';
 import { getDb } from '../../../lib/server/db';
 import * as table from '../../../lib/server/db/schema';
+import { getAuth } from '../../../lib/server/auth/config';
 import { requireSession } from '../_lib/guard';
 import { forbidden, handler, json, noContent, notFound, readJson } from '../_lib/http';
 import { updateUserSchema } from '../_lib/schemas';
-import { clearSessionCookie, invalidateSession } from '../_lib/session';
 
 export const prerender = false;
 
@@ -17,9 +17,9 @@ export const prerender = false;
  */
 const PUBLIC_USER_COLUMNS = {
 	id: table.user.id,
-	uuid: table.user.id,
-	username: table.user.username,
-	avatar: table.user.avatar,
+	email: table.user.email,
+	name: table.user.name,
+	image: table.user.image,
 	age: table.user.age,
 	roles: table.user.roles
 } as const;
@@ -79,8 +79,15 @@ export const DELETE: APIRoute = (context) =>
 		if (!deleted) return notFound('User not found');
 
 		if (self) {
-			await invalidateSession(session.sessionId);
-			clearSessionCookie(context.cookies);
+			/*
+			 * Deleting your own account ends the session with it. Better Auth owns the
+			 * session row and the cookie now, so this is its sign-out rather than a
+			 * manual revoke-and-clear — and it has to run before the row is gone or it
+			 * has nothing to look up.
+			 */
+			await getAuth(new URL(context.request.url)).api.signOut({
+				headers: context.request.headers
+			});
 		}
 
 		return noContent();
