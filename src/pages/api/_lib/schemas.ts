@@ -241,3 +241,18 @@ const totpToken = z
 export const totpEnableSchema = z.object({ token: totpToken });
 
 export const totpRecoverSchema = z.object({ email, token: totpToken });
+
+/**
+ * The contact form — the one public, unauthenticated body the API accepts.
+ *
+ * `subject` is an enum rather than free text because it is interpolated into the email
+ * subject line, and a closed set cannot carry a header injection or a misleading subject.
+ * The length ceilings exist for the same reason the endpoint is rate limited: this is the
+ * only way an anonymous visitor can cause frunk to send mail.
+ */
+export const contactSchema = z.object({
+	name: nonEmpty.max(100),
+	email,
+	subject: z.enum(['general', 'support', 'feedback', 'privacy']),
+	message: nonEmpty.max(5000)
+});

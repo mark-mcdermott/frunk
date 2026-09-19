@@ -33,7 +33,13 @@ export default defineConfig({
 			RP_ORIGIN: envField.string({ context: 'server', access: 'secret', optional: true }),
 			// Seals the TOTP secret at rest. Required on any https deploy — see
 			// `assertProductionSecrets`.
-			ENCRYPTION_KEY: envField.string({ context: 'server', access: 'secret', optional: true })
+			ENCRYPTION_KEY: envField.string({ context: 'server', access: 'secret', optional: true }),
+			// Transactional email (Resend). Optional so a build without it still succeeds —
+			// `sendEmail` fails loudly at call time instead, which is the only place it matters.
+			RESEND_API_KEY: envField.string({ context: 'server', access: 'secret', optional: true }),
+			// Where the contact form lands. Defaults to the address in the footer and on the
+			// privacy page, which forwards via Namecheap (PORT-PLAN Decision 1).
+			CONTACT_EMAIL: envField.string({ context: 'server', access: 'secret', optional: true })
 		}
 	},
 	adapter: vercel(),

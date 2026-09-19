@@ -1,0 +1,177 @@
+---
+/**
+ * Contact — built to the `contact` mock, with its fabricated claims removed.
+ *
+ * The mock draws a corporate head office ("Frunk Inc., 548 Market St, Suite 100, San
+ * Francisco"), live chat "Mon–Fri, 9am–5pm PT", a Help Center, and a "we typically reply
+ * within 24 hours" SLA. None of those exist — frunk is one person, per the About page —
+ * and a fake registered address on a live site is a different order of wrong from an
+ * unfinished one. They are dropped rather than stubbed.
+ *
+ * The mock's email address is also `hello@frunk.app`; the real one is `hello@frunk.cloud`,
+ * which forwards via Namecheap (PORT-PLAN Decision 1).
+ *
+ * The form is `client:load` rather than `client:visible` — it is the reason people open
+ * this page, and hydrating it on scroll would mean the first click does nothing.
+ */
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import MockImage from '../components/MockImage.astro';
+import { ContactForm } from '../components/contact/ContactForm';
+import { Heart, Lock, Mail, MessageCircle } from 'lucide-react';
+
+const promises = [
+	{
+		icon: MessageCircle,
+		title: 'A real reply',
+		body: 'Every message is read and answered by a person, not a queue.'
+	},
+	{
+		icon: Lock,
+		title: 'Your privacy',
+		body: 'Your information is safe and never shared.'
+	},
+	{
+		icon: Heart,
+		title: 'Built by one person',
+		body: 'You are writing to the person who builds it.'
+	}
+];
+
+const faqs = [
+	{
+		q: 'What is Frunk?',
+		a: "Frunk is a home for everything that belongs to your car — documents, receipts, service history, manuals and photos — kept in one place and organized by vehicle."
+	},
+	{
+		q: 'Is my data secure?',
+		a: 'Your data is encrypted in transit and at rest, and private documents are never served from a public URL. You decide what to store and what to share.'
+	},
+	{
+		q: 'Can I try it before signing up?',
+		a: 'Yes — the demo gives you a real, working account with sample data. If you decide to keep it, attaching a passkey converts it in place and nothing you added is lost.'
+	}
+];
+---
+
+<BaseLayout
+	title="Contact — Frunk"
+	description="Have a question, need help, or want to learn more about Frunk? Get in touch."
+>
+	<Header />
+
+	<main>
+		<section class="surface-light">
+			<div class="mx-auto max-w-[1400px] px-6 pb-16 pt-16 sm:px-10 lg:px-16 lg:pb-20 lg:pt-20">
+				<div class="grid items-center gap-12 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
+					<div>
+						<p class="eyebrow">Contact us</p>
+						<h1 class="display dot mt-6 text-[clamp(2.25rem,5vw,3.5rem)]">
+							We&rsquo;d love to hear<br />from you
+						</h1>
+						<p class="mt-8 max-w-md text-[0.9375rem] leading-relaxed text-text-muted">
+							Have a question, need help, or want to learn more about Frunk?
+						</p>
+
+						<div class="mt-12 grid gap-8 sm:grid-cols-3">
+							{
+								promises.map((promise) => (
+									<div class="flex flex-col gap-2">
+										<promise.icon className="size-5 text-accent-bright" aria-hidden="true" />
+										<h2 class="text-[0.9375rem] font-semibold text-text">{promise.title}</h2>
+										<p class="text-[0.8125rem] leading-relaxed text-text-muted">{promise.body}</p>
+									</div>
+								))
+							}
+						</div>
+					</div>
+
+					<MockImage label="Frunk / front storage perspective" ratio="16 / 11" />
+				</div>
+			</div>
+		</section>
+
+		<section class="surface-light">
+			<div class="mx-auto max-w-[1400px] px-6 pb-20 sm:px-10 lg:px-16 lg:pb-28">
+				<div class="grid gap-6 lg:grid-cols-[minmax(0,1.4fr)_minmax(0,0.6fr)]">
+					<div class="card p-8 lg:p-10">
+						<h2 class="display-sm text-2xl">Send us a message</h2>
+						<p class="mt-2 text-[0.875rem] text-text-muted">
+							Fill out the form below and we&rsquo;ll get back to you shortly.
+						</p>
+						<div class="mt-8">
+							<ContactForm client:load />
+						</div>
+					</div>
+
+					<div class="card flex flex-col gap-6 p-8">
+						<h2 class="display-sm text-xl">Other ways to reach us</h2>
+						<div class="flex items-start gap-3">
+							<Mail className="mt-0.5 size-5 shrink-0 text-accent-bright" aria-hidden="true" />
+							<div>
+								<p class="text-[0.9375rem] font-semibold text-text">Email</p>
+								<a
+									href="mailto:hello@frunk.cloud"
+									class="text-[0.875rem] text-accent-text underline underline-offset-2"
+								>
+									hello@frunk.cloud
+								</a>
+							</div>
+						</div>
+						<p class="mt-auto border-t border-border pt-6 text-[0.8125rem] leading-relaxed text-text-muted">
+							There is no support desk and no phone queue — the form and that address both reach
+							the same inbox.
+						</p>
+					</div>
+				</div>
+			</div>
+		</section>
+
+		<section class="surface-light">
+			<div class="mx-auto max-w-[1400px] px-6 pb-16 sm:px-10 lg:px-16">
+				<div class="grid gap-10 lg:grid-cols-[minmax(0,0.6fr)_minmax(0,1.4fr)]">
+					<div>
+						<p class="eyebrow">Questions?</p>
+						<h2 class="display dot mt-6 text-[clamp(1.75rem,3.5vw,2.25rem)]">
+							Frequently<br />asked questions
+						</h2>
+					</div>
+
+					<div class="flex flex-col">
+						{
+							faqs.map((faq) => (
+								<details class="group border-b border-border first:border-t">
+									<summary class="flex cursor-pointer list-none items-center justify-between gap-6 py-5 text-[0.9375rem] text-text marker:content-none">
+										{faq.q}
+										<span
+											aria-hidden="true"
+											class="shrink-0 text-lg leading-none text-text-muted transition-transform group-open:rotate-45"
+										>
+											+
+										</span>
+									</summary>
+									<p class="pb-5 pr-10 text-[0.875rem] leading-relaxed text-text-muted">{faq.a}</p>
+								</details>
+							))
+						}
+					</div>
+				</div>
+			</div>
+		</section>
+
+		<section class="surface-light">
+			<div class="mx-auto max-w-[1400px] px-6 pb-24 sm:px-10 lg:px-16 lg:pb-28">
+				<div class="flex items-center gap-8">
+					<span aria-hidden="true" class="h-px flex-1 bg-border"></span>
+					<p class="display dot text-center text-[clamp(1.125rem,2.5vw,1.5rem)] italic text-text-muted">
+						There had to be a better way
+					</p>
+					<span aria-hidden="true" class="h-px flex-1 bg-border"></span>
+				</div>
+			</div>
+		</section>
+	</main>
+
+	<Footer />
+</BaseLayout>
