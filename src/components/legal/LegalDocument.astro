@@ -1,0 +1,133 @@
+---
+/**
+ * Shared shell for the legal pages, laid out per `docs/mocks/z_privacy-policy-user-tos-layout.md`:
+ * a numbered sidebar that sticks while the document scrolls, then the document itself.
+ *
+ * The sidebar is generated from the same `sections` array that renders the body, so the
+ * numbering and the anchors cannot drift apart — the failure mode of hand-written legal
+ * navigation, where deleting clause 6 silently leaves the contents listing eleven items.
+ *
+ * Two things the layout spec draws are **not** built: "Download PDF" and "Version history".
+ * Neither exists, and on a legal page — where a reader may specifically need the version
+ * they agreed to — an affordance that does nothing is worse than its absence.
+ */
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Header from '../Header.astro';
+import Footer from '../Footer.astro';
+
+/**
+ * A bullet is plain text, or a term-and-definition pair for the "Account Information:
+ * we collect …" shape the copy uses. Typed rather than accepting inline HTML, so no
+ * `set:html` is needed anywhere in this component — safe today because the copy is
+ * hardcoded, but not a pattern worth establishing on a page that may later render
+ * anything dynamic.
+ */
+export type LegalPoint = string | { term: string; text: string };
+
+/** A paragraph, or a bulleted list of points. */
+export type LegalBlock = string | LegalPoint[];
+
+export interface LegalSection {
+	heading: string;
+	blocks: LegalBlock[];
+}
+
+interface Props {
+	title: string;
+	description: string;
+	lastUpdated: string;
+	intro: string;
+	sections: LegalSection[];
+}
+
+const { title, description, lastUpdated, intro, sections } = Astro.props;
+
+const slug = (heading: string) =>
+	heading
+		.toLowerCase()
+		.replace(/[^a-z0-9]+/g, '-')
+		.replace(/^-|-$/g, '');
+---
+
+<BaseLayout title={`${title} — Frunk`} description={description}>
+	<Header />
+
+	<main class="surface-light">
+		<div class="mx-auto max-w-[1400px] px-6 py-16 sm:px-10 lg:px-16 lg:py-20">
+			<div class="grid gap-12 lg:grid-cols-[minmax(0,0.28fr)_minmax(0,0.72fr)] lg:gap-20">
+				<nav aria-label={`${title} sections`} class="lg:sticky lg:top-28 lg:self-start">
+					<p class="eyebrow">{title}</p>
+					<ol class="mt-6 flex flex-col gap-2.5">
+						{
+							sections.map((section, index) => (
+								<li class="flex gap-3 text-[0.875rem] leading-snug">
+									<span class="w-4 shrink-0 text-right text-text-faint tabular-nums">
+										{index + 1}
+									</span>
+									<a
+										href={`#${slug(section.heading)}`}
+										class="text-text-muted transition-colors hover:text-accent-text"
+									>
+										{section.heading}
+									</a>
+								</li>
+							))
+						}
+					</ol>
+					<p class="mt-8 border-t border-border pt-6 text-[0.75rem] text-text-faint">
+						Last updated {lastUpdated}
+					</p>
+				</nav>
+
+				<article>
+					<p class="eyebrow">Last updated {lastUpdated}</p>
+					<h1 class="display dot mt-6 text-[clamp(2.25rem,5vw,3.25rem)]">{title}</h1>
+					<p class="mt-8 max-w-2xl text-[0.9375rem] leading-relaxed text-text-muted">{intro}</p>
+
+					<div class="mt-14 flex flex-col gap-12">
+						{
+							sections.map((section, index) => (
+								<section id={slug(section.heading)} class="scroll-mt-28">
+									<h2 class="display-sm flex gap-3 text-xl">
+										<span class="text-text-faint tabular-nums">{index + 1}.</span>
+										{section.heading}
+									</h2>
+									<div class="mt-4 flex max-w-2xl flex-col gap-4">
+										{section.blocks.map((block) =>
+											Array.isArray(block) ? (
+												<ul class="flex flex-col gap-2.5">
+													{block.map((point) => (
+														<li class="flex gap-3 text-[0.9375rem] leading-relaxed text-text-muted">
+															<span
+																aria-hidden="true"
+																class="mt-2 size-1 shrink-0 rounded-full bg-accent-bright"
+															/>
+															<span>
+																{typeof point === 'string' ? (
+																	point
+																) : (
+																	<>
+																		<strong class="font-semibold text-text">{point.term}:</strong>{' '}
+																		{point.text}
+																	</>
+																)}
+															</span>
+														</li>
+													))}
+												</ul>
+											) : (
+												<p class="text-[0.9375rem] leading-relaxed text-text-muted">{block}</p>
+											)
+										)}
+									</div>
+								</section>
+							))
+						}
+					</div>
+				</article>
+			</div>
+		</div>
+	</main>
+
+	<Footer />
+</BaseLayout>

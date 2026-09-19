@@ -112,7 +112,15 @@ const year = new Date().getFullYear();
 		<div
 			class="mt-16 flex flex-col gap-6 border-t border-border pt-8 sm:flex-row sm:items-center sm:justify-between"
 		>
-			<p class="text-sm text-text-muted">&copy; {year} Frunk. All rights reserved.</p>
+			<div class="flex flex-wrap items-center gap-x-6 gap-y-2">
+				<p class="text-sm text-text-muted">&copy; {year} Frunk. All rights reserved.</p>
+				<a href="/privacy" class="text-sm text-text-muted transition-colors hover:text-text">
+					Privacy
+				</a>
+				<a href="/terms" class="text-sm text-text-muted transition-colors hover:text-text">
+					Terms
+				</a>
+			</div>
 			<ul class="flex flex-wrap items-center gap-x-6 gap-y-2">
 				{
 					socials.map((social) => (
