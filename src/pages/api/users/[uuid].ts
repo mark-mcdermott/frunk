@@ -17,7 +17,7 @@ export const prerender = false;
  */
 const PUBLIC_USER_COLUMNS = {
 	id: table.user.id,
-	uuid: table.user.uuid,
+	uuid: table.user.id,
 	username: table.user.username,
 	avatar: table.user.avatar,
 	age: table.user.age,
@@ -29,12 +29,12 @@ export const GET: APIRoute = (context) =>
 		const { user } = await requireSession(context);
 		const uuid = context.params.uuid;
 		if (!uuid) return notFound('User not found');
-		if (uuid !== user.uuid && !isAdmin(user.roles)) return forbidden();
+		if (uuid !== user.id && !isAdmin(user.roles)) return forbidden();
 
 		const [found] = await getDb()
 			.select(PUBLIC_USER_COLUMNS)
 			.from(table.user)
-			.where(eq(table.user.uuid, uuid));
+			.where(eq(table.user.id, uuid));
 
 		if (!found) return notFound('User not found');
 		return json({ user: found });
@@ -47,7 +47,7 @@ export const PATCH: APIRoute = (context) =>
 		if (!uuid) return notFound('User not found');
 
 		const admin = isAdmin(user.roles);
-		if (uuid !== user.uuid && !admin) return forbidden();
+		if (uuid !== user.id && !admin) return forbidden();
 
 		const body = await readJson(context.request, updateUserSchema);
 		if (body.roles && !admin) return forbidden();
@@ -55,7 +55,7 @@ export const PATCH: APIRoute = (context) =>
 		const [updated] = await getDb()
 			.update(table.user)
 			.set(body)
-			.where(eq(table.user.uuid, uuid))
+			.where(eq(table.user.id, uuid))
 			.returning(PUBLIC_USER_COLUMNS);
 
 		if (!updated) return notFound('User not found');
@@ -68,13 +68,13 @@ export const DELETE: APIRoute = (context) =>
 		const uuid = context.params.uuid;
 		if (!uuid) return notFound('User not found');
 
-		const self = uuid === session.user.uuid;
+		const self = uuid === session.user.id;
 		if (!self && !isAdmin(session.user.roles)) return forbidden();
 
 		const [deleted] = await getDb()
 			.delete(table.user)
-			.where(eq(table.user.uuid, uuid))
-			.returning({ uuid: table.user.uuid });
+			.where(eq(table.user.id, uuid))
+			.returning({ uuid: table.user.id });
 
 		if (!deleted) return notFound('User not found');
 

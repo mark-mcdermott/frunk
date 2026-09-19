@@ -19,7 +19,7 @@ export const PATCH: APIRoute = (context) =>
 		const id = context.params.id;
 		if (!id) return notFound('Maintenance schedule not found');
 
-		await ownedSchedule(id, user.uuid);
+		await ownedSchedule(id, user.id);
 		const body = await readJson(context.request, updateScheduleSchema);
 
 		const [schedule] = await getDb()
@@ -37,7 +37,7 @@ export const DELETE: APIRoute = (context) =>
 		const id = context.params.id;
 		if (!id) return notFound('Maintenance schedule not found');
 
-		await ownedSchedule(id, user.uuid);
+		await ownedSchedule(id, user.id);
 		await getDb().delete(table.maintenanceSchedules).where(eq(table.maintenanceSchedules.id, id));
 
 		return noContent();

@@ -14,7 +14,7 @@ export const GET: APIRoute = (context) =>
 		const id = context.params.id;
 		if (!id) return notFound('Vendor not found');
 
-		const vendor = await ownedVendor(id, user.uuid);
+		const vendor = await ownedVendor(id, user.id);
 
 		const [notes, repairs] = await Promise.all([
 			getDb().select().from(table.notes).where(eq(table.notes.vendorId, id)),
@@ -30,7 +30,7 @@ export const PATCH: APIRoute = (context) =>
 		const id = context.params.id;
 		if (!id) return notFound('Vendor not found');
 
-		await ownedVendor(id, user.uuid);
+		await ownedVendor(id, user.id);
 		const body = await readJson(context.request, updateVendorSchema);
 
 		const [vendor] = await getDb()
@@ -48,7 +48,7 @@ export const DELETE: APIRoute = (context) =>
 		const id = context.params.id;
 		if (!id) return notFound('Vendor not found');
 
-		await ownedVendor(id, user.uuid);
+		await ownedVendor(id, user.id);
 		// Repairs keep their history: `vendor_id` is ON DELETE SET NULL.
 		await getDb().delete(table.vendors).where(eq(table.vendors.id, id));
 

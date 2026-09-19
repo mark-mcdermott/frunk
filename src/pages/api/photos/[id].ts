@@ -14,7 +14,7 @@ export const PATCH: APIRoute = (context) =>
 		const id = context.params.id;
 		if (!id) return notFound('Photo not found');
 
-		await ownedPhoto(id, user.uuid);
+		await ownedPhoto(id, user.id);
 		const body = await readJson(context.request, updatePhotoSchema);
 
 		const [photo] = await getDb()
@@ -32,7 +32,7 @@ export const DELETE: APIRoute = (context) =>
 		const id = context.params.id;
 		if (!id) return notFound('Photo not found');
 
-		await ownedPhoto(id, user.uuid);
+		await ownedPhoto(id, user.id);
 		await getDb().delete(table.vehiclePhotos).where(eq(table.vehiclePhotos.id, id));
 
 		return noContent();

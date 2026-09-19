@@ -12,7 +12,7 @@ export const POST: APIRoute = (context) =>
 		const { user } = await requireSession(context);
 		const body = await readJson(context.request, createScheduleSchema);
 
-		await ownedVehicle(body.vehicleId, user.uuid);
+		await ownedVehicle(body.vehicleId, user.id);
 
 		const [schedule] = await getDb()
 			.insert(table.maintenanceSchedules)

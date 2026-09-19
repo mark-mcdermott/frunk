@@ -15,7 +15,7 @@ export const GET: APIRoute = (context) =>
 		const uuid = context.params.uuid;
 		if (!uuid) return notFound('Note not found');
 
-		const note = await ownedNote(uuid, user.uuid);
+		const note = await ownedNote(uuid, user.id);
 
 		const children = await getDb()
 			.select()
@@ -32,7 +32,7 @@ export const PATCH: APIRoute = (context) =>
 		const uuid = context.params.uuid;
 		if (!uuid) return notFound('Note not found');
 
-		await ownedNote(uuid, user.uuid);
+		await ownedNote(uuid, user.id);
 		const body = await readJson(context.request, updateNoteSchema);
 
 		const [note] = await getDb()
@@ -50,7 +50,7 @@ export const DELETE: APIRoute = (context) =>
 		const uuid = context.params.uuid;
 		if (!uuid) return notFound('Note not found');
 
-		await ownedNote(uuid, user.uuid);
+		await ownedNote(uuid, user.id);
 		const db = getDb();
 
 		/*
