@@ -1,0 +1,187 @@
+---
+/**
+ * About — built to the `about` mock (light and dark variants both committed).
+ *
+ * Sections alternate ground per DESIGN.md §4, so each <section> carries its own
+ * `.surface-*` class rather than inheriting the page theme.
+ *
+ * Photography is still `MockImage`: the studio renders live in the PSD outside the
+ * repo (CLAUDE.md, "Known rough edges"). Same ratios and rim light as the mock, so
+ * layout and contrast are verifiable now; swap for <Image> when the renders land.
+ */
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import MockImage from '../components/MockImage.astro';
+import { ArrowRight, Box, Lock, Shield, User } from 'lucide-react';
+
+const pillars = [
+	{
+		icon: Box,
+		title: 'Everything in one place',
+		lede: 'Your glovebox, but smarter.',
+		body: 'Store documents, receipts, manuals, and memories in one organized space.'
+	},
+	{
+		icon: Lock,
+		title: 'Private by default',
+		lede: 'Your data belongs to you.',
+		body: 'End-to-end encryption keeps your information secure and private.'
+	},
+	{
+		icon: Shield,
+		title: 'Built to last',
+		lede: 'Designed for long-term ownership.',
+		body: "We're building Frunk to be the home for your car's story for years to come."
+	}
+];
+
+/*
+ * Placeholder names carried over from the mock — flagged in CLAUDE.md as content debt
+ * to replace before the Phase 6 cutover. Kept rather than invented so the slot is
+ * visible and the replacement is obvious.
+ */
+const testimonials = [
+	{ quote: 'Finally, a place for everything car-related. Frunk just makes sense.', name: 'Avi W.' },
+	{ quote: "The cleanest, most thoughtful app I've seen for car owners.", name: 'Michael T.' },
+	{ quote: 'Privacy-first, beautifully designed, and actually useful.', name: 'Sarah K.' }
+];
+---
+
+<BaseLayout
+	title="About — Frunk"
+	description="Frunk started with a simple idea: your car has a story, and it shouldn't live in scattered places."
+>
+	<Header active="About" />
+
+	<main>
+		<section class="surface-light">
+			<div class="mx-auto max-w-[1400px] px-6 pb-16 pt-16 sm:px-10 lg:px-16 lg:pb-24 lg:pt-20">
+				<div class="grid items-center gap-12 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
+					<div>
+						<p class="eyebrow">About Frunk</p>
+						<h1 class="display dot mt-6 text-[clamp(2.25rem,5vw,3.5rem)]">
+							Built from<br />something real
+						</h1>
+						<p class="mt-8 max-w-md text-[0.9375rem] leading-relaxed text-text-muted">
+							Frunk started with a simple idea — your car has a story. Documents, memories, and
+							moments shouldn't live in scattered places.
+						</p>
+						<div class="mt-10 flex items-start gap-3">
+							<User className="mt-0.5 size-4 shrink-0 text-accent-bright" aria-hidden="true" />
+							<p class="text-[0.8125rem] leading-relaxed text-text-faint">
+								Frunk is built by one person,<br />for people who care about their cars.
+							</p>
+						</div>
+					</div>
+
+					<MockImage label="Frunk / front storage perspective" ratio="16 / 11" />
+				</div>
+			</div>
+		</section>
+
+		<section class="surface-light">
+			<div class="mx-auto max-w-[1400px] px-6 pb-20 sm:px-10 lg:px-16 lg:pb-28">
+				<h2 class="sr-only">What Frunk stands for</h2>
+				<div class="card grid gap-px overflow-hidden bg-border md:grid-cols-3">
+					{
+						pillars.map((pillar) => (
+							<article class="flex flex-col gap-3 bg-surface p-6 lg:p-8">
+								<pillar.icon className="size-5 text-accent-bright" aria-hidden="true" />
+								<h3 class="display-sm text-lg">{pillar.title}</h3>
+								<p class="text-[0.9375rem] text-text">{pillar.lede}</p>
+								<p class="text-[0.8125rem] leading-relaxed text-text-muted">{pillar.body}</p>
+							</article>
+						))
+					}
+				</div>
+			</div>
+		</section>
+
+		<section class="surface-dark">
+			<div class="mx-auto max-w-[1400px] px-6 py-20 sm:px-10 lg:px-16 lg:py-28">
+				<div class="grid items-center gap-12 lg:grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)]">
+					<div>
+						<p class="eyebrow">Our story</p>
+						<h2 class="display mt-6 text-[clamp(1.875rem,4vw,2.75rem)]">
+							Designed slowly.<br />Built with care.
+						</h2>
+						<p class="mt-8 max-w-md text-[0.9375rem] leading-relaxed text-text-muted">
+							Frunk isn't a fast product. It's something we're building deliberately — one feature
+							at a time.
+						</p>
+						<p class="mt-4 max-w-md text-[0.9375rem] leading-relaxed text-text-muted">
+							We focus on what matters: simplicity, privacy, and a beautiful experience you can
+							trust.
+						</p>
+						<a href="/signup" class="btn-primary mt-10">
+							Get started
+							<ArrowRight className="size-4" aria-hidden="true" />
+						</a>
+					</div>
+
+					<MockImage label="Frunk on a desk at night" ratio="16 / 10" />
+				</div>
+			</div>
+		</section>
+
+		<section class="surface-light">
+			<div class="mx-auto max-w-[1400px] px-6 py-20 sm:px-10 lg:px-16 lg:py-24">
+				<div class="grid gap-10 lg:grid-cols-[minmax(0,0.5fr)_minmax(0,1.5fr)]">
+					<h2 class="eyebrow max-w-[16rem] leading-relaxed">
+						Trusted by people who value what matters.
+					</h2>
+					<div class="grid gap-6 md:grid-cols-3">
+						{
+							testimonials.map((testimonial) => (
+								<figure class="card flex flex-col gap-4 p-6">
+									<span aria-hidden="true" class="text-2xl leading-none text-accent-bright">
+										&ldquo;
+									</span>
+									<blockquote class="text-[0.9375rem] leading-relaxed text-text">
+										{testimonial.quote}
+									</blockquote>
+									<figcaption class="mt-auto flex items-center gap-3 pt-2">
+										<span
+											aria-hidden="true"
+											class="size-7 shrink-0 rounded-full border border-border bg-surface-raised"
+										/>
+										<span class="text-[0.8125rem] text-text-muted">{testimonial.name}</span>
+									</figcaption>
+								</figure>
+							))
+						}
+					</div>
+				</div>
+			</div>
+		</section>
+
+		<section class="surface-dark">
+			<div class="mx-auto max-w-[1400px] px-6 pb-20 sm:px-10 lg:px-16 lg:pb-28">
+				<div
+					class="card relative isolate flex flex-col justify-center overflow-hidden px-8 py-14 sm:px-12 lg:px-16"
+				>
+					<div
+						aria-hidden="true"
+						class="absolute inset-y-0 left-0 -z-10 w-1/2 bg-[radial-gradient(ellipse_at_left,rgb(100_56_204/0.35),transparent_70%)]"
+					>
+					</div>
+					<div class="ml-auto max-w-md">
+						<h2 class="display dot text-[clamp(1.5rem,3vw,2rem)]">
+							Open a new kind<br />of glovebox
+						</h2>
+						<p class="mt-4 text-[0.9375rem] text-text-muted">
+							Your car has a story. Keep it all in Frunk.
+						</p>
+						<a href="/signup" class="btn-primary mt-8">
+							Get started
+							<ArrowRight className="size-4" aria-hidden="true" />
+						</a>
+					</div>
+				</div>
+			</div>
+		</section>
+	</main>
+
+	<Footer />
+</BaseLayout>
