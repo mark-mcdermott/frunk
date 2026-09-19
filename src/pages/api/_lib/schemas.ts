@@ -207,7 +207,7 @@ export const updateUserSchema = z.object({
 export const userListQuerySchema = z.object({
 	page: z.coerce.number().int().min(1).default(1),
 	pageSize: z.coerce.number().int().min(1).max(100).default(10),
-	sortBy: z.enum(['id', 'username', 'roles']).default('id'),
+	sortBy: z.enum(['id', 'email', 'roles']).default('id'),
 	sortOrder: z.enum(['asc', 'desc']).default('asc'),
 	search: z.string().trim().default('')
 });

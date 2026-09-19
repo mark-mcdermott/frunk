@@ -5,22 +5,33 @@
  * It lives here, framework-free and free of server imports, because both sides need
  * it: `api/_lib/session.ts` builds it and the React islands consume it. One definition
  * means a column added to the select cannot quietly diverge from what the UI expects.
+ *
+ * Field names follow Better Auth's (Decision 2), which is why `username` is now
+ * `email`, `avatar` is `image`, and `uuid` is gone — `id` is the identity.
  */
 export interface SessionUser {
-	id: number;
-	uuid: string;
-	/** An email address. `username` is the legacy column name. */
-	username: string;
-	avatar: string | null;
+	/** Better Auth's text id. This is the identity every `user_id` column targets. */
+	id: string;
+	email: string;
+	/** Required by Better Auth, so always present — may be the address's local part. */
+	name: string;
+	image: string | null;
 	roles: number[];
-	/** Whether a recovery code is set up. Never widen this to the secret itself. */
-	totpEnabled: boolean;
+	emailVerified: boolean;
+	/** Whether a recovery factor is set up. Never widen this to the secret itself. */
+	twoFactorEnabled: boolean;
 }
 
-/** The label for an account in the nav — the local part of the address. */
+/**
+ * The label for an account in the nav. Prefers the name Better Auth now requires,
+ * falling back to the address's local part when it is only a placeholder.
+ */
 export function displayName(user: SessionUser): string {
-	const [local] = user.username.split('@');
-	return local || user.username;
+	const name = user.name?.trim();
+	if (name) return name;
+
+	const [local] = user.email.split('@');
+	return local || user.email;
 }
 
 export function initial(user: SessionUser): string {

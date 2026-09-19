@@ -185,14 +185,34 @@ talks to the app island."
    ⚠️ **Six decisions were reasoned into the code being replaced. They must be re-verified
    against Better Auth's defaults, not silently lost** — the full reasoning stays in Phase 3:
 
-   | carried-forward decision | to check against Better Auth |
+   **Answered 2026-09-19** against Better Auth 1.7.5, running on a real database:
+
+   | carried-forward decision | outcome |
    |---|---|
-   | account row written in `verify`, not `options` | does registration create the user before the ceremony completes? |
-   | challenges consumed on read | is a spent challenge replayable? |
-   | `RP_ID`/`RP_ORIGIN` derived from request when unset | preview deploys have per-deploy hostnames; static config cannot cover them |
-   | unknown email answers 404 (deliberate oracle) | what does its default leak, and is it consistent with registration? |
-   | `totp/setup` refuses to overwrite working recovery | does re-running setup destroy a working recovery method? |
-   | every `astro:env` var is `access: 'secret'` | unaffected — an Astro concern, keep it |
+   | account row written in `verify`, not `options` | **Moot.** Email+password has no two-step ceremony, and `addPasskey` requires an existing session — so there is no window in which an abandoned ceremony can strand an empty row. |
+   | challenges consumed on read | **Not verified.** Needs a real authenticator; `verification` was empty after every attempt, which is consistent with cleanup but does not prove replay is refused. **Still open.** |
+   | `RP_ID`/`RP_ORIGIN` derived from request when unset | **Preserved.** `getAuth()` caches one instance per origin rather than taking static config — see `server/auth/config.ts`. |
+   | unknown email answers 404 (deliberate oracle) | **Reversed, and better.** Sign-in returns an identical `Invalid email or password` for known and unknown addresses, and **sign-up with an existing address also returns 200** with a phantom id, creating nothing. Better Auth is anti-enumeration on both endpoints. The old reasoning — "registration must reject a taken email, so the fact is already discoverable" — no longer holds, because registration does not reject. |
+   | `totp/setup` refuses to overwrite working recovery | **⚠️ REGRESSED.** Re-running `two-factor/enable` silently replaces a working secret: verified by comparing the stored value before and after. The old code refused precisely because walking away from a new QR code destroys a recovery method that worked a moment earlier. **Needs a guard.** |
+   | every `astro:env` var is `access: 'secret'` | Unaffected, kept. |
+
+   **And the encryption question is settled: Better Auth encrypts at rest.** The stored
+   `two_factor.secret` is hex (`e4b8f6f9…`) while the otpauth URI carries base32
+   (`O55FK5JZ…`); `backup_codes` is likewise not plaintext. So **`src/lib/server/auth/secrets.ts`
+   is redundant** and `ENCRYPTION_KEY` loses its only caller.
+
+   > ⚠️ **This changes what rotating `BETTER_AUTH_SECRET` costs.** If Better Auth derives
+   > that encryption from it, rotating does not merely log everyone out — it orphans every
+   > stored TOTP secret and backup code, exactly the failure `ENCRYPTION_KEY` was documented
+   > as having. Confirm the key derivation before treating rotation as routine.
+
+   **Two UX consequences that need building**, both from the anti-enumeration default:
+
+   - Signing up with an address that already exists shows "Check your email" and sends
+     nothing. The user is stranded with no feedback and no account.
+   - The same is true when the verification mail fails, since it is a background task
+     (see `server/email.ts`). "Resend verification email" is on the sign-up screen for
+     exactly this, but it cannot help someone who already has an account.
 3. **Component library — DECIDED: shadcn.** The earlier "no component library" call was
    made while the target was Svelte; on React, shadcn matches wolfpack and the S in every
    `_PROJECTS.md` stack acronym.

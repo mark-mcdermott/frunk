@@ -14,7 +14,7 @@ export const GET: APIRoute = (context) =>
 		const id = context.params.id;
 		if (!id) return notFound('Repair not found');
 
-		const repair = await ownedRepair(id, user.uuid);
+		const repair = await ownedRepair(id, user.id);
 		const notes = await getDb().select().from(table.notes).where(eq(table.notes.repairId, id));
 
 		return json({ repair, notes });
@@ -26,11 +26,11 @@ export const PATCH: APIRoute = (context) =>
 		const id = context.params.id;
 		if (!id) return notFound('Repair not found');
 
-		await ownedRepair(id, user.uuid);
+		await ownedRepair(id, user.id);
 		const body = await readJson(context.request, updateRepairSchema);
 
 		// Reassigning to a vendor only works if that vendor is also the caller's.
-		if (body.vendorId) await ownedVendor(body.vendorId, user.uuid);
+		if (body.vendorId) await ownedVendor(body.vendorId, user.id);
 
 		const [repair] = await getDb()
 			.update(table.repairs)
@@ -47,7 +47,7 @@ export const DELETE: APIRoute = (context) =>
 		const id = context.params.id;
 		if (!id) return notFound('Repair not found');
 
-		await ownedRepair(id, user.uuid);
+		await ownedRepair(id, user.id);
 		await getDb().delete(table.repairs).where(eq(table.repairs.id, id));
 
 		return noContent();

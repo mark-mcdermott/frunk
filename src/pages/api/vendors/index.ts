@@ -15,7 +15,7 @@ export const GET: APIRoute = (context) =>
 		const vendors = await getDb()
 			.select()
 			.from(table.vendors)
-			.where(eq(table.vendors.userId, user.uuid))
+			.where(eq(table.vendors.userId, user.id))
 			.orderBy(desc(table.vendors.createdAt));
 
 		return json({ vendors });
@@ -28,7 +28,7 @@ export const POST: APIRoute = (context) =>
 
 		const [vendor] = await getDb()
 			.insert(table.vendors)
-			.values({ ...body, id: crypto.randomUUID(), userId: user.uuid })
+			.values({ ...body, id: crypto.randomUUID(), userId: user.id })
 			.returning();
 
 		return json({ vendor }, 201);

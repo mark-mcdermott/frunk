@@ -16,12 +16,12 @@ import * as table from './db/schema';
  * the trial still theirs — see `api/auth/register/options.ts`.
  */
 
-const TEMPLATE_USERNAME = 'creed.bratton@dundermifflin.com';
+const TEMPLATE_EMAIL = 'creed.bratton@dundermifflin.com';
 
 /** The seed has not been run — `scripts/seed-office.ts` creates the template. */
 export class DemoTemplateMissing extends Error {
 	constructor() {
-		super(`No demo template user (${TEMPLATE_USERNAME}). Run pnpm db:seed-office.`);
+		super(`No demo template user (${TEMPLATE_EMAIL}). Run pnpm db:seed-office.`);
 	}
 }
 
@@ -41,31 +41,38 @@ function reidentify<T extends { id: unknown }>(row: T, id: string, now: Date) {
 
 const remap = (map: Map<string, string>, id: string | null) => (id ? (map.get(id) ?? null) : null);
 
-/** Clones the template into a fresh `DEMO` account and returns its uuid. */
-export async function cloneDemoAccount(): Promise<string> {
+/**
+ * Clones the template garage into an account that already exists.
+ *
+ * Better Auth's `anonymous` plugin creates the user and the session (Decision 5), so
+ * this no longer mints either — it only copies the sample data in. Splitting it that
+ * way is what makes "upgrade in place" fall out for free: attaching a credential to an
+ * anonymous account converts it without touching anything cloned here.
+ */
+export async function cloneDemoAccount(userId: string): Promise<string> {
 	const db = getDb();
 	const now = new Date();
 
 	const [template] = await db
 		.select()
 		.from(table.user)
-		.where(eq(table.user.username, TEMPLATE_USERNAME));
+		.where(eq(table.user.email, TEMPLATE_EMAIL));
 
 	if (!template) throw new DemoTemplateMissing();
 
-	const userId = crypto.randomUUID();
-	await db.insert(table.user).values({
-		uuid: userId,
-		username: `demo-${userId.slice(0, 8)}@frunk.app`,
-		age: template.age,
-		roles: [ROLE_IDS.DEMO],
-		avatar: template.avatar,
-		emailVerified: 1
-	});
+	/*
+	 * The account already exists — Better Auth's anonymous plugin created it along with
+	 * the session. `roles` is what the app gates on (Decision 5); `isAnonymous` is the
+	 * plugin's own bookkeeping, and the two must not be allowed to disagree.
+	 */
+	await db
+		.update(table.user)
+		.set({ roles: [ROLE_IDS.DEMO], age: template.age, image: template.image })
+		.where(eq(table.user.id, userId));
 
 	const [templateVendors, templateVehicles] = await Promise.all([
-		db.select().from(table.vendors).where(eq(table.vendors.userId, template.uuid)),
-		db.select().from(table.vehicles).where(eq(table.vehicles.userId, template.uuid))
+		db.select().from(table.vendors).where(eq(table.vendors.userId, template.id)),
+		db.select().from(table.vehicles).where(eq(table.vehicles.userId, template.id))
 	]);
 
 	const vendorIds = new Map(templateVendors.map((v) => [v.id, crypto.randomUUID()]));
@@ -156,7 +163,7 @@ export async function cloneDemoAccount(): Promise<string> {
 
 	// Notes hang off vehicles, repairs, vendors or the user directly, so they go last —
 	// every id they point at has to exist by now.
-	const userNotes = await db.select().from(table.notes).where(eq(table.notes.userId, template.uuid));
+	const userNotes = await db.select().from(table.notes).where(eq(table.notes.userId, template.id));
 	const seen = new Set(vehicleNotes.map((note) => note.uuid));
 	const templateNotes = [...vehicleNotes, ...userNotes.filter((note) => !seen.has(note.uuid))];
 
@@ -172,7 +179,7 @@ export async function cloneDemoAccount(): Promise<string> {
 					...rest,
 					uuid: noteIds.get(note.uuid)!,
 					parentNoteId: remap(noteIds, note.parentNoteId),
-					userId: note.userId === template.uuid ? userId : null,
+					userId: note.userId === template.id ? userId : null,
 					vehicleId: remap(vehicleIds, note.vehicleId),
 					repairId: remap(repairIds, note.repairId),
 					vendorId: remap(vendorIds, note.vendorId),

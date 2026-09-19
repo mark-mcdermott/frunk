@@ -39,7 +39,10 @@ export default defineConfig({
 			RESEND_API_KEY: envField.string({ context: 'server', access: 'secret', optional: true }),
 			// Where the contact form lands. Defaults to the address in the footer and on the
 			// privacy page, which forwards via Namecheap (PORT-PLAN Decision 1).
-			CONTACT_EMAIL: envField.string({ context: 'server', access: 'secret', optional: true })
+			CONTACT_EMAIL: envField.string({ context: 'server', access: 'secret', optional: true }),
+			// Signs Better Auth's sessions and tokens. Like ENCRYPTION_KEY, changing it
+			// invalidates everything derived from it — every active session logs out.
+			BETTER_AUTH_SECRET: envField.string({ context: 'server', access: 'secret', optional: true })
 		}
 	},
 	adapter: vercel(),
