@@ -170,7 +170,15 @@ That coupling dies with `legacy/`.
   `.claude/commit-style.md`. This overrides the global conventional-commits default.
 - **No AI attribution anywhere** — no co-author trailers, no generated-by lines in commits
   or PR bodies. A repo hook (`.claude/hooks/git-commit-guard.sh`) blocks it.
-- **Branch and open a PR; never merge automatically.** PRs open ready for review, not draft.
+- **Branch and open a PR.** PRs open ready for review, not draft.
+- **Automerge is on** (`.claude/settings.json`, set 2026-09-19). Merge once CI is green —
+  but **verify the PR's head SHA matches the branch tip first**. GitHub's recorded head can
+  go stale: on PR #34 it stayed pinned to the first commit through two further pushes, and
+  merging took 1 of 3 commits while reporting success. `gh pr view <n> --json headRefOid`
+  against `git rev-parse origin/<branch>` catches it in one command.
+- Branch protection is unavailable on this repo (private, free plan), so there are no
+  required status checks and GitHub's own auto-merge would merge *immediately* rather than
+  waiting for CI. Wait for green, then merge.
 - Strict TypeScript — no `any`. Prefer extracting a shared helper over repeating a cast.
 
 ## Known rough edges

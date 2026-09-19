@@ -1,4 +1,6 @@
 {
+  "automerge": "on",
+  "stack": "NASDAQ-VCRZ",
   "hooks": {
     "PreToolUse": [
       {
