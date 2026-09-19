@@ -12,6 +12,12 @@ import { SubmitButton } from './SubmitButton';
 interface Props {
 	onDone: () => void;
 	onSkip: () => void;
+	/**
+	 * Better Auth re-checks the password before handing out a TOTP secret — enrolling a
+	 * recovery factor is exactly the action worth confirming isn't someone on a borrowed
+	 * session. Sign-up passes the one just chosen so the user is not asked twice.
+	 */
+	password: string;
 }
 
 /**
@@ -24,7 +30,7 @@ interface Props {
  *
  * Skippable, because forcing it would trade one abandoned sign-up for another.
  */
-export function RecoverySetup({ onDone, onSkip }: Props) {
+export function RecoverySetup({ onDone, onSkip, password }: Props) {
 	const [secret, setSecret] = useState<{ uri: string; secret: string } | null>(null);
 	const [token, setToken] = useState('');
 	const [copied, setCopied] = useState(false);
@@ -33,13 +39,22 @@ export function RecoverySetup({ onDone, onSkip }: Props) {
 
 	useEffect(() => {
 		let live = true;
-		startRecoverySetup()
-			.then((issued) => live && setSecret(issued))
+		startRecoverySetup(password)
+			/*
+			 * Better Auth returns only the otpauth:// URI. The bare secret is the `secret`
+			 * parameter inside it, and it is shown so the code can be typed by hand when a
+			 * camera is not to hand.
+			 */
+			.then(({ totpURI }) => {
+				if (!live) return;
+				const bare = new URL(totpURI).searchParams.get('secret') ?? '';
+				setSecret({ uri: totpURI, secret: bare });
+			})
 			.catch((cause: unknown) => live && setError(authErrorMessage(cause)));
 		return () => {
 			live = false;
 		};
-	}, []);
+	}, [password]);
 
 	async function confirm(event: SubmitEvent<HTMLFormElement>) {
 		event.preventDefault();

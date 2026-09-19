@@ -1,135 +1,147 @@
-import {
-	browserSupportsWebAuthn,
-	startAuthentication,
-	startRegistration,
-	type PublicKeyCredentialCreationOptionsJSON,
-	type PublicKeyCredentialRequestOptionsJSON
-} from '@simplewebauthn/browser';
+import { createAuthClient } from 'better-auth/react';
+import { anonymousClient, inferAdditionalFields, twoFactorClient } from 'better-auth/client/plugins';
+import { passkeyClient } from '@better-auth/passkey/client';
+import type { Auth } from './server/auth/config';
 import type { SessionUser } from './user';
 
 /**
- * The browser half of the auth ceremonies (Decision 2).
+ * Better Auth's browser client (Decision 2).
  *
- * Each one is two requests around a call into the platform authenticator: ask the
- * server for a challenge, let the browser sign it with Touch ID / Windows Hello / a
- * security key, send the signature back. The middle step is the part that never
- * touches JavaScript we control — which is the point, and why there is no password
- * here to phish, reuse or leak.
+ * The exported function names are unchanged from the hand-rolled client so the auth
+ * islands did not all have to be rewritten at once — same trick as `ResolvedSession`
+ * on the server. What changed underneath is that the ceremonies are no longer ours:
+ * `signIn.passkey()` runs the whole WebAuthn exchange, where this file used to fetch
+ * options, call `navigator.credentials`, and post the result back itself.
+ *
+ * `inferAdditionalFields<Auth>` is what carries `roles`, `age` and `cookieConsent`
+ * through to the client types. Without it the session user is Better Auth's shape and
+ * `roles` — which every demo check reads — comes back as `unknown`.
  */
+export const authClient = createAuthClient({
+	plugins: [
+		passkeyClient(),
+		twoFactorClient(),
+		anonymousClient(),
+		inferAdditionalFields<Auth>()
+	]
+});
 
+/** Better Auth's session store is a nanostore, so islands can subscribe to it directly. */
+export const { useSession, signOut: endSession } = authClient;
+
+function toSessionUser(user: Record<string, unknown>): SessionUser {
+	return {
+		id: String(user.id),
+		email: String(user.email ?? ''),
+		name: String(user.name ?? ''),
+		image: (user.image as string | null) ?? null,
+		roles: Array.isArray(user.roles) ? (user.roles as number[]) : [],
+		emailVerified: Boolean(user.emailVerified),
+		twoFactorEnabled: Boolean(user.twoFactorEnabled)
+	};
+}
+
+/**
+ * Thrown so the forms can keep rendering one message from one place. Better Auth
+ * returns `{ data, error }` rather than rejecting, so every call below has to check.
+ */
 export class AuthError extends Error {
-	constructor(
-		message: string,
-		readonly status: number
-	) {
+	constructor(message: string) {
 		super(message);
 		this.name = 'AuthError';
 	}
 }
 
-export { browserSupportsWebAuthn };
-
-function errorMessage(payload: unknown): string | null {
-	if (payload && typeof payload === 'object' && 'error' in payload) {
-		const { error } = payload as { error: unknown };
-		if (typeof error === 'string') return error;
+function unwrap<T>(result: { data: T | null; error?: { message?: string } | null }): T {
+	if (result.error || !result.data) {
+		throw new AuthError(result.error?.message ?? 'Something went wrong. Please try again.');
 	}
-	return null;
+	return result.data;
+}
+
+export async function signUp(email: string, password: string, name: string): Promise<SessionUser> {
+	const data = unwrap(await authClient.signUp.email({ email, password, name }));
+	return toSessionUser(data.user as Record<string, unknown>);
+}
+
+export async function signIn(email: string, password: string): Promise<SessionUser> {
+	const data = unwrap(await authClient.signIn.email({ email, password }));
+	return toSessionUser(data.user as Record<string, unknown>);
 }
 
 /**
- * Same-origin, so the browser attaches the session cookie and an `Origin` header —
- * which Astro's CSRF check requires on every non-GET (docs/API.md).
+ * Adding a passkey needs an existing session — which is the mechanism behind Decision
+ * 5's "upgrade in place": a demo visitor is already signed in anonymously, so attaching
+ * a credential converts that same row and keeps everything they made.
  */
-async function post<T>(path: string, body?: unknown): Promise<T> {
-	const response = await fetch(path, {
-		method: 'POST',
-		headers: body === undefined ? undefined : { 'content-type': 'application/json' },
-		body: body === undefined ? undefined : JSON.stringify(body)
-	});
+export async function registerPasskey(name?: string): Promise<void> {
+	const result = await authClient.passkey.addPasskey({ name });
+	if (result?.error) throw new AuthError(result.error.message ?? 'Could not add that passkey.');
+}
 
-	if (response.status === 204) return undefined as T;
+export async function signInWithPasskey(): Promise<void> {
+	const result = await authClient.signIn.passkey();
+	if (result?.error) throw new AuthError(result.error.message ?? 'Could not sign in with a passkey.');
+}
 
-	const payload: unknown = await response.json().catch(() => null);
-	if (!response.ok) {
-		throw new AuthError(errorMessage(payload) ?? 'Something went wrong.', response.status);
+/** TOTP is recovery, not a second factor — it stands in for a passkey that is gone. */
+export async function recoverWithCode(code: string): Promise<void> {
+	unwrap(await authClient.twoFactor.verifyTotp({ code }));
+}
+
+export async function startRecoverySetup(password: string): Promise<{ totpURI: string }> {
+	/*
+	 * `enable` is typed as a union because the plugin can be configured for OTP as
+	 * well as TOTP. frunk only ever uses TOTP, so anything without a `totpURI` is a
+	 * misconfiguration rather than a state the UI should try to render.
+	 */
+	const data = unwrap(await authClient.twoFactor.enable({ password }));
+	if (!('totpURI' in data)) {
+		throw new AuthError('Recovery setup is misconfigured — expected a TOTP secret.');
 	}
-	return payload as T;
+	return { totpURI: data.totpURI };
 }
 
 /**
- * Register a passkey. Creates the account when signed out; adds a passkey to the
- * current account when signed in, which is both how a demo visitor converts and how
- * someone who came in through recovery gets back to a passkey.
+ * Was re-exported from `@simplewebauthn/browser`, which went with the hand-rolled
+ * ceremonies. The check itself is one property, so it does not need a dependency —
+ * it gates whether the sign-in screen offers a passkey button at all.
  */
-export async function registerPasskey(email: string): Promise<SessionUser> {
-	const optionsJSON = await post<PublicKeyCredentialCreationOptionsJSON>(
-		'/api/auth/register/options',
-		{ email }
-	);
-	const response = await startRegistration({ optionsJSON });
-	const { user } = await post<{ user: SessionUser }>('/api/auth/register/verify', {
-		email,
-		response
-	});
-	return user;
+export function browserSupportsWebAuthn(): boolean {
+	return typeof window !== 'undefined' && typeof window.PublicKeyCredential === 'function';
 }
 
-export async function signInWithPasskey(email: string): Promise<SessionUser> {
-	const optionsJSON = await post<PublicKeyCredentialRequestOptionsJSON>(
-		'/api/auth/login/options',
-		{ email }
-	);
-	const response = await startAuthentication({ optionsJSON });
-	const { user } = await post<{ user: SessionUser }>('/api/auth/login/verify', { email, response });
-	return user;
+export async function confirmRecoverySetup(code: string): Promise<void> {
+	unwrap(await authClient.twoFactor.verifyTotp({ code }));
 }
 
-/** The way back in with no passkey to hand. Opens a session; it does not create one. */
-export async function recoverWithCode(email: string, token: string): Promise<SessionUser> {
-	const { user } = await post<{ user: SessionUser }>('/api/auth/totp/recover', { email, token });
-	return user;
-}
-
-export async function startRecoverySetup(): Promise<{ uri: string; secret: string }> {
-	return post<{ uri: string; secret: string }>('/api/auth/totp/setup');
-}
-
-export async function confirmRecoverySetup(token: string): Promise<void> {
-	await post('/api/auth/totp/enable', { token });
-}
-
+/**
+ * Still frunk's own endpoint rather than `signIn.anonymous()` directly: it rate limits,
+ * clones the template garage, and applies the DEMO role, none of which the plugin does.
+ */
 export async function startDemo(): Promise<SessionUser> {
-	const { user } = await post<{ user: SessionUser }>('/api/demo');
-	return user;
+	const response = await fetch('/api/demo', {
+		method: 'POST',
+		headers: { 'content-type': 'application/json' }
+	});
+
+	if (!response.ok) {
+		const body = await response.json().catch(() => ({}));
+		throw new AuthError(body.error ?? 'The demo is not available right now.');
+	}
+
+	const body = (await response.json()) as { user: Record<string, unknown> };
+	return toSessionUser(body.user);
 }
 
 export async function signOut(): Promise<void> {
-	await post('/api/auth/signout');
+	await endSession();
 }
 
-/**
- * WebAuthn reports its failures as `DOMException`s whose names describe the spec
- * violation, not the situation — "NotAllowedError" is what a dismissed Touch ID prompt
- * produces, and showing that to someone is useless.
- */
 export function authErrorMessage(cause: unknown): string {
 	if (cause instanceof AuthError) return cause.message;
-
-	if (cause instanceof Error) {
-		switch (cause.name) {
-			case 'NotAllowedError':
-				return 'No passkey was used. The prompt was dismissed or it timed out.';
-			case 'InvalidStateError':
-				return 'This device already has a passkey for that account. Sign in instead.';
-			case 'NotSupportedError':
-				return 'This browser cannot create a passkey.';
-			case 'SecurityError':
-				return 'Passkeys need a secure connection to this site.';
-			case 'AbortError':
-				return 'That took too long. Try again.';
-		}
+	if (cause instanceof Error && cause.name === 'NotAllowedError') {
+		return 'That was cancelled or timed out. Try again.';
 	}
-
-	return 'Something went wrong. Try again.';
+	return 'Something went wrong. Please try again.';
 }

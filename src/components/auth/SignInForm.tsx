@@ -1,13 +1,13 @@
-import { KeyRound, Mail } from 'lucide-react';
+import { KeyRound, Lock, Mail } from 'lucide-react';
 import { useEffect, useState, type SubmitEvent } from 'react';
 import {
 	authErrorMessage,
 	browserSupportsWebAuthn,
 	recoverWithCode,
 	registerPasskey,
+	signIn,
 	signInWithPasskey
 } from '../../lib/auth-client';
-import { setUser } from '../../stores/user';
 import { AuthCard } from './AuthCard';
 import { AuthField } from './AuthField';
 import { DemoLink } from './DemoLink';
@@ -16,22 +16,22 @@ import { FormError } from './FormError';
 import { SubmitButton } from './SubmitButton';
 
 /**
- * `passkey` is the normal way in. `recover` is the way in with no passkey to hand, and
- * `recovered` is the state it leaves you in: signed in, but still with nothing on this
- * device — so the one thing worth doing next is offered right there.
+ * `password` is the normal way in. `recover` is the way in when the second factor is
+ * all you have, and `recovered` is the state it leaves you in: signed in, but with
+ * nothing on this device — so the one useful next step is offered right there.
  */
-type Mode = 'passkey' | 'recover' | 'recovered';
+type Mode = 'password' | 'recover' | 'recovered';
 
 const COPY: Record<Mode, { title: string; subtitle: string; label: string; pendingLabel: string }> =
 	{
-		passkey: {
+		password: {
 			title: 'Welcome back',
 			subtitle: 'Sign in to access your Frunk.',
 			label: 'Sign in',
-			pendingLabel: 'Waiting for your passkey…'
+			pendingLabel: 'Signing in…'
 		},
 		recover: {
-			title: 'Lost your passkey',
+			title: 'Lost your device',
 			subtitle: 'Enter the six-digit code from your authenticator app.',
 			label: 'Verify code',
 			pendingLabel: 'Checking…'
@@ -47,13 +47,16 @@ const COPY: Record<Mode, { title: string; subtitle: string; label: string; pendi
 /**
  * Sign-in, built to `docs/mocks/sign-in.webp`.
  *
- * The mock's password field and its Google / Apple / GitHub row are superseded by
- * Decision 2; "Forgot password?" becomes "Lost your passkey?", which is the same
- * promise about a different secret.
+ * Decision 2's move to Better Auth **restores the mock's password field**, which the
+ * hand-rolled passkey-only flow had removed. The passkey route is now the secondary
+ * button rather than the whole form, and it needs no email: the browser offers the
+ * credentials it holds for this origin and the server identifies the account from the
+ * one chosen.
  */
 export function SignInForm() {
-	const [mode, setMode] = useState<Mode>('passkey');
+	const [mode, setMode] = useState<Mode>('password');
 	const [email, setEmail] = useState('');
+	const [password, setPassword] = useState('');
 	const [token, setToken] = useState('');
 	const [pending, setPending] = useState(false);
 	const [error, setError] = useState<string | null>(null);
@@ -67,13 +70,15 @@ export function SignInForm() {
 		setPending(true);
 		try {
 			if (mode === 'recover') {
-				setUser(await recoverWithCode(email, token));
+				await recoverWithCode(token);
 				setMode('recovered');
+			} else if (mode === 'recovered') {
+				// Registers onto the session that recovery just opened.
+				await registerPasskey();
+				window.location.assign(AFTER_AUTH);
+				return;
 			} else {
-				// `recovered` registers onto the session just opened; `passkey` signs in.
-				setUser(
-					mode === 'recovered' ? await registerPasskey(email) : await signInWithPasskey(email)
-				);
+				await signIn(email, password);
 				window.location.assign(AFTER_AUTH);
 				return;
 			}
@@ -84,23 +89,49 @@ export function SignInForm() {
 		}
 	}
 
+	async function usePasskey() {
+		setError(null);
+		setPending(true);
+		try {
+			await signInWithPasskey();
+			window.location.assign(AFTER_AUTH);
+		} catch (cause) {
+			setError(authErrorMessage(cause));
+			setPending(false);
+		}
+	}
+
 	const copy = COPY[mode];
 
 	return (
 		<AuthCard title={copy.title} subtitle={copy.subtitle}>
 			<form onSubmit={submit} className="mt-8 flex flex-col gap-4">
-				<AuthField
-					id="email"
-					label="Email address"
-					icon={Mail}
-					type="email"
-					autoComplete="username webauthn"
-					required
-					readOnly={mode === 'recovered'}
-					placeholder="Email address"
-					value={email}
-					onChange={(event) => setEmail(event.target.value)}
-				/>
+				{mode === 'password' && (
+					<>
+						<AuthField
+							id="email"
+							label="Email address"
+							icon={Mail}
+							type="email"
+							autoComplete="username webauthn"
+							required
+							placeholder="Email address"
+							value={email}
+							onChange={(event) => setEmail(event.target.value)}
+						/>
+						<AuthField
+							id="password"
+							label="Password"
+							icon={Lock}
+							type="password"
+							autoComplete="current-password"
+							required
+							placeholder="Password"
+							value={password}
+							onChange={(event) => setPassword(event.target.value)}
+						/>
+					</>
+				)}
 
 				{mode === 'recover' && (
 					<AuthField
@@ -122,32 +153,38 @@ export function SignInForm() {
 					<button
 						type="button"
 						onClick={() => {
-							setMode(mode === 'recover' ? 'passkey' : 'recover');
+							setMode(mode === 'recover' ? 'password' : 'recover');
 							setError(null);
 						}}
 						className="self-end text-[0.875rem] text-accent-text underline decoration-dotted underline-offset-4 transition-opacity hover:opacity-80"
 					>
-						{mode === 'recover' ? 'Back to sign in' : 'Lost your passkey?'}
+						{mode === 'recover' ? 'Back to sign in' : 'Lost your device?'}
 					</button>
 				)}
 
-				<FormError
-					message={
-						supported || mode === 'recover'
-							? error
-							: 'This browser cannot use passkeys. Sign in with your recovery code instead.'
-					}
-				/>
+				<FormError message={error} />
 
 				<SubmitButton
 					label={copy.label}
 					pendingLabel={copy.pendingLabel}
 					pending={pending}
-					disabled={!supported && mode !== 'recover'}
+					disabled={mode === 'recovered' && !supported}
 				/>
 			</form>
 
-			{mode === 'passkey' && (
+			{mode === 'password' && supported && (
+				<button
+					type="button"
+					onClick={usePasskey}
+					disabled={pending}
+					className="mt-3 flex h-14 w-full items-center justify-center gap-3 rounded-[12px] border border-border-strong text-[0.9375rem] font-semibold text-text transition-colors hover:border-text-muted disabled:cursor-not-allowed disabled:opacity-60"
+				>
+					<KeyRound className="size-[1.125rem]" aria-hidden strokeWidth={1.75} />
+					Use a passkey
+				</button>
+			)}
+
+			{mode === 'password' && (
 				<div className="mt-7">
 					<DemoLink onError={(message) => setError(message || null)} />
 				</div>

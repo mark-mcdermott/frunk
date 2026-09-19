@@ -1,7 +1,6 @@
-import { Mail } from 'lucide-react';
-import { useEffect, useState, type SubmitEvent } from 'react';
-import { authErrorMessage, browserSupportsWebAuthn, registerPasskey } from '../../lib/auth-client';
-import { setUser } from '../../stores/user';
+import { Lock, Mail, User } from 'lucide-react';
+import { useState, type SubmitEvent } from 'react';
+import { authErrorMessage, signUp } from '../../lib/auth-client';
 import { AuthCard } from './AuthCard';
 import { AuthField } from './AuthField';
 import { DemoLink } from './DemoLink';
@@ -26,20 +25,17 @@ type Step = 'account' | 'recovery';
 export function SignUpForm() {
 	const [step, setStep] = useState<Step>('account');
 	const [email, setEmail] = useState('');
+	const [password, setPassword] = useState('');
+	const [name, setName] = useState('');
 	const [pending, setPending] = useState(false);
 	const [error, setError] = useState<string | null>(null);
-	// Assume support until the browser can be asked — this markup is rendered before
-	// hydration, where there is no navigator to consult.
-	const [supported, setSupported] = useState(true);
-
-	useEffect(() => setSupported(browserSupportsWebAuthn()), []);
 
 	async function createAccount(event: SubmitEvent<HTMLFormElement>) {
 		event.preventDefault();
 		setError(null);
 		setPending(true);
 		try {
-			setUser(await registerPasskey(email));
+			await signUp(email, password, name);
 			setStep('recovery');
 		} catch (cause) {
 			setError(authErrorMessage(cause));
@@ -56,14 +52,25 @@ export function SignUpForm() {
 				title="One last step"
 				subtitle="Set up a recovery code, in case you lose the device holding your passkey."
 			>
-				<RecoverySetup onDone={done} onSkip={done} />
+				<RecoverySetup onDone={done} onSkip={done} password={password} />
 			</AuthCard>
 		);
 	}
 
 	return (
-		<AuthCard title="Create your account" subtitle="No password. Your device is the key.">
+		<AuthCard title="Create your account" subtitle="A few details and you are in.">
 			<form onSubmit={createAccount} className="mt-8 flex flex-col gap-4">
+				<AuthField
+					id="name"
+					label="Full name"
+					icon={User}
+					autoComplete="name"
+					required
+					placeholder="Full name"
+					value={name}
+					onChange={(event) => setName(event.target.value)}
+				/>
+
 				<AuthField
 					id="email"
 					label="Email address"
@@ -77,20 +84,22 @@ export function SignUpForm() {
 					onChange={(event) => setEmail(event.target.value)}
 				/>
 
-				<FormError
-					message={
-						supported
-							? error
-							: 'This browser cannot create passkeys. Try a current Safari, Chrome, Edge or Firefox.'
-					}
+				<AuthField
+					id="password"
+					label="Password"
+					icon={Lock}
+					type="password"
+					autoComplete="new-password"
+					required
+					minLength={8}
+					placeholder="Password"
+					value={password}
+					onChange={(event) => setPassword(event.target.value)}
 				/>
 
-				<SubmitButton
-					label="Create account"
-					pendingLabel="Waiting for your passkey…"
-					pending={pending}
-					disabled={!supported}
-				/>
+				<FormError message={error} />
+
+				<SubmitButton label="Create account" pendingLabel="Creating…" pending={pending} />
 			</form>
 
 			<div className="mt-7">
