@@ -156,6 +156,32 @@ talks to the app island."
    Resend) rather than giving auth its own transport. Email DNS must be verified before this
    rework ships — see Phase 6.
 
+   **Identity — DECIDED 2026-09-19: adopt Better Auth's `user.id`; retire `user.uuid`.**
+
+   This is the substantive half of Decision 2 and it was not obvious from "swap the auth
+   library". Better Auth owns the user table and issues its own text primary key, while
+   frunk's identity is `user.uuid` — every entity's `user_id` is a text FK to it, and the
+   ownership pattern in `guard.ts` takes `userUuid` throughout. That is **109 references**
+   across `src/pages/api` and `src/lib/server`.
+
+   Three ways to reconcile were weighed:
+
+   | | what it does | cost |
+   |---|---|---|
+   | **A — adopt `user.id`** *(chosen)* | retarget every FK from `user.uuid` to `user.id`, rename `userUuid` → `userId` | large mechanical diff, one time |
+   | B — map onto existing tables | tell the Drizzle adapter `id`→`uuid`, `email`→`username` | permanent friction: `emailVerified` is `integer` where it wants `boolean`, PK is `serial` where it wants text; every future plugin re-checked against the mapping |
+   | C — two user tables, linked | Better Auth keeps its own; a join links them | two answers to "who is this person", forever |
+
+   A wins because the churn is mechanical rather than structural — both columns are `text`,
+   so it is a retarget and a rename, not a data migration — and because it ends the existing
+   oddity of `user` carrying *two* identities (`id serial` **and** `uuid text`). There is no
+   production data, which is the condition that makes it cheap; that condition will not
+   recur.
+
+   **This is why Phase 3 gates Phase 4.** All ~22 applet screens are user-scoped, so each one
+   threads a user identity through fetch and ownership check. Built against `uuid` and then
+   migrated, every screen is revisited. Built after this lands, they are written once.
+
    ⚠️ **Six decisions were reasoned into the code being replaced. They must be re-verified
    against Better Auth's defaults, not silently lost** — the full reasoning stays in Phase 3:
 
