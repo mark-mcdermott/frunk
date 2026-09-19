@@ -18,7 +18,7 @@ export const POST: APIRoute = (context) =>
 		const { user } = await requireSession(context);
 		const body = await readJson(context.request, createPhotoSchema);
 
-		await ownedGallery(body.galleryId, user.uuid);
+		await ownedGallery(body.galleryId, user.id);
 
 		const [photo] = await getDb()
 			.insert(table.vehiclePhotos)

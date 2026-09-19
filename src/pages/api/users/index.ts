@@ -33,7 +33,7 @@ export const GET: APIRoute = (context) =>
 			db
 				.select({
 					id: table.user.id,
-					uuid: table.user.uuid,
+					uuid: table.user.id,
 					username: table.user.username,
 					avatar: table.user.avatar,
 					roles: table.user.roles

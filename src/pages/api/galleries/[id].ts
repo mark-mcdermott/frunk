@@ -14,7 +14,7 @@ export const GET: APIRoute = (context) =>
 		const id = context.params.id;
 		if (!id) return notFound('Gallery not found');
 
-		const gallery = await ownedGallery(id, user.uuid);
+		const gallery = await ownedGallery(id, user.id);
 
 		const photos = await getDb()
 			.select()
@@ -31,7 +31,7 @@ export const PATCH: APIRoute = (context) =>
 		const id = context.params.id;
 		if (!id) return notFound('Gallery not found');
 
-		await ownedGallery(id, user.uuid);
+		await ownedGallery(id, user.id);
 		const { photoOrder, ...fields } = await readJson(context.request, updateGallerySchema);
 		const db = getDb();
 
@@ -74,7 +74,7 @@ export const DELETE: APIRoute = (context) =>
 		const id = context.params.id;
 		if (!id) return notFound('Gallery not found');
 
-		await ownedGallery(id, user.uuid);
+		await ownedGallery(id, user.id);
 		// Photo rows cascade from the FK. Phase 4 also deletes their blobs here.
 		await getDb().delete(table.galleries).where(eq(table.galleries.id, id));
 

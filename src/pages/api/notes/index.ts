@@ -22,7 +22,7 @@ export const GET: APIRoute = (context) =>
 			})
 			.from(table.notes)
 			.innerJoin(table.vehicles, eq(table.notes.vehicleId, table.vehicles.id))
-			.where(eq(table.vehicles.userId, user.uuid))
+			.where(eq(table.vehicles.userId, user.id))
 			.orderBy(desc(table.notes.createdAt));
 
 		return json({
@@ -36,14 +36,14 @@ export const POST: APIRoute = (context) =>
 		const body = await readJson(context.request, createNoteSchema);
 
 		// A note is only creatable against a parent the caller owns.
-		if (body.vehicleId) await ownedVehicle(body.vehicleId, user.uuid);
-		if (body.repairId) await ownedRepair(body.repairId, user.uuid);
-		if (body.vendorId) await ownedVendor(body.vendorId, user.uuid);
-		if (body.parentNoteId) await ownedNote(body.parentNoteId, user.uuid);
+		if (body.vehicleId) await ownedVehicle(body.vehicleId, user.id);
+		if (body.repairId) await ownedRepair(body.repairId, user.id);
+		if (body.vendorId) await ownedVendor(body.vendorId, user.id);
+		if (body.parentNoteId) await ownedNote(body.parentNoteId, user.id);
 
 		const [note] = await getDb()
 			.insert(table.notes)
-			.values({ ...body, uuid: crypto.randomUUID(), userId: user.uuid })
+			.values({ ...body, uuid: crypto.randomUUID(), userId: user.id })
 			.returning();
 
 		return json({ note }, 201);
