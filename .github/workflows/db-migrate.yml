@@ -14,6 +14,11 @@
 #
 # This never runs on git push. A migration is a deliberate act, not a side effect of a
 # deploy — Vercel builds must not carry it.
+#
+# `seed-office` is also here, for the same reason: the production connection string is
+# Sensitive on Vercel and cannot be read back, so this workflow is the only path from a
+# laptop to a seeded production template garage. The seed clears its own fixtures first,
+# so re-running it is safe.
 name: Database migrate
 
 on:
@@ -27,8 +32,9 @@ on:
         options:
           - status # connect and report what is there, change nothing
           - push # apply the schema, then seed roles
+          - seed-office # seed roles, then the Office fixtures (Creed is the demo template)
       confirm:
-        description: Type the database name to allow "push" (ignored for "status")
+        description: Type the database name to allow a write (ignored for "status")
         required: false
         type: string
 
@@ -43,15 +49,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      # The Astro app — and its db:* scripts — live on the port branch. `main` is still
-      # the SvelteKit app pointed at the legacy database, so running there would apply
-      # the wrong schema from the wrong config.
-      - name: Refuse to run from the SvelteKit branch
+      # The db:* scripts belong to the Astro app. A ref without it (an old SvelteKit-era
+      # branch) would apply the wrong schema from the wrong config.
+      - name: Refuse to run without the Astro app
         run: |
-          if [ "${{ github.ref_name }}" = "main" ]; then
-            echo "::error::Run this from the Astro port branch, not main."
-            exit 1
-          fi
           if [ ! -f astro.config.mjs ]; then
             echo "::error::No astro.config.mjs on ${{ github.ref_name }} — wrong branch."
             exit 1
@@ -67,8 +68,8 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Guard "push" behind a typed confirmation
-        if: inputs.action == 'push'
+      - name: Guard a write behind a typed confirmation
+        if: inputs.action != 'status'
         env:
           DATABASE_URL: ${{ secrets.ASTRO_DATABASE_URL }}
         run: |
@@ -78,7 +79,7 @@ jobs:
           fi
           name="$(node -e 'process.stdout.write(new URL(process.env.DATABASE_URL).pathname.split("?")[0].slice(1))')"
           if [ "${{ inputs.confirm }}" != "$name" ]; then
-            echo "::error::Type the database name in the confirm box to run a push."
+            echo "::error::Type the database name in the confirm box to run a write."
             echo "Run this workflow with action=status first — it prints the name."
             exit 1
           fi
@@ -91,6 +92,8 @@ jobs:
             import pg from 'pg';
             const c = new pg.Client({ connectionString: process.env.DATABASE_URL });
             await c.connect();
+            // The host names the Neon branch (CLAUDE.md lists both endpoints); it is not a secret.
+            console.log('Host:', new URL(process.env.DATABASE_URL).hostname);
             console.log('Database:', (await c.query('select current_database()')).rows[0].current_database);
             const t = await c.query(\"select table_name from information_schema.tables where table_schema='public' order by 1\");
             console.log('Tables:', t.rows.length ? t.rows.map(r => r.table_name).join(', ') : '(none)');
@@ -98,6 +101,10 @@ jobs:
             if (hasRoles) {
               const r = await c.query('select id, name from roles order by id');
               console.log('Roles:', r.rows.length ? r.rows.map(x => x.id + '=' + x.name).join(', ') : '(none)');
+            }
+            if (t.rows.some(r => r.table_name === 'user')) {
+              const u = await c.query('select count(*)::int as n, bool_or(email = \\'creed.bratton@dundermifflin.com\\') as template from \"user\"');
+              console.log('Users:', u.rows[0].n, '— demo template present:', u.rows[0].template);
             }
             await c.end();
           "
@@ -109,13 +116,19 @@ jobs:
         run: pnpm db:push --force
 
       - name: Seed roles
-        if: inputs.action == 'push'
+        if: inputs.action != 'status'
         env:
           DATABASE_URL: ${{ secrets.ASTRO_DATABASE_URL }}
         run: pnpm db:seed-roles
 
+      - name: Seed the Office fixtures
+        if: inputs.action == 'seed-office'
+        env:
+          DATABASE_URL: ${{ secrets.ASTRO_DATABASE_URL }}
+        run: pnpm db:seed-office
+
       - name: Report new state
-        if: inputs.action == 'push'
+        if: inputs.action != 'status'
         env:
           DATABASE_URL: ${{ secrets.ASTRO_DATABASE_URL }}
         run: |
