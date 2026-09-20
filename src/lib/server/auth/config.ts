@@ -1,13 +1,13 @@
 import { betterAuth } from 'better-auth';
 import { drizzleAdapter } from 'better-auth/adapters/drizzle';
-import { APIError, createAuthMiddleware } from 'better-auth/api';
+import { APIError, createAuthMiddleware, getSessionFromCtx } from 'better-auth/api';
 import { anonymous, bearer, twoFactor } from 'better-auth/plugins';
 import { passkey } from '@better-auth/passkey';
 import { BETTER_AUTH_SECRET } from 'astro:env/server';
 import { getDb } from '../db';
 import * as schema from '../db/schema';
 import { sendEmail } from '../email';
-import { ROLE_IDS } from '../../roles';
+import { isDemo, ROLE_IDS } from '../../roles';
 import { relyingParty, RP_NAME } from './relying-party';
 
 /**
@@ -29,6 +29,26 @@ import { relyingParty, RP_NAME } from './relying-party';
  * — so the derivation is deliberately kept rather than replaced with a constant.
  */
 const instances = new Map<string, ReturnType<typeof build>>();
+
+/**
+ * Answered to an email sign-up made from a demo session (409). The sign-up form
+ * shows it verbatim, so it has to say what to do instead.
+ */
+const DEMO_SIGN_UP_REFUSED =
+	'You are in a demo account. Add a passkey from your profile to keep this garage, or sign out first to create a separate account.';
+
+/** `roles` is declared to Better Auth as an additional field, so it arrives loosely typed. */
+function rolesOf(user: Record<string, unknown>): number[] {
+	return Array.isArray(user.roles) ? (user.roles as number[]) : [];
+}
+
+/**
+ * `roles` is what the app gates on (Decision 5); the anonymous plugin's own flag is
+ * checked as well so the two can never disagree about who the guard applies to.
+ */
+function isDemoAccount(user: Record<string, unknown>): boolean {
+	return isDemo(rolesOf(user)) || Boolean(user.isAnonymous);
+}
 
 function build(rp: { id: string; origin: string }) {
 	return betterAuth({
@@ -79,14 +99,31 @@ function build(rp: { id: string; origin: string }) {
 
 		hooks: {
 			/*
+			 * Decision 5, guarded: an email sign-up from a demo session is refused.
+			 * Better Auth's sign-up always mints a *second* account — nothing about it
+			 * promotes the one the request came from — so the garage could only be left
+			 * behind. Worse, the anonymous plugin then treated the next sign-in from that
+			 * browser as a *link* and deleted the demo account, garage included
+			 * (reproduced 2026-09-20; `tests/demo-conversion.test.ts` holds the line).
+			 * The passkey hook below is the conversion. This turns the other door into a
+			 * sign pointing at it.
+			 */
+			before: createAuthMiddleware(async (ctx) => {
+				if (ctx.path !== '/sign-up/email') return;
+
+				const session = await getSessionFromCtx(ctx, { disableRefresh: true });
+				if (!session || !isDemoAccount(session.user)) return;
+
+				throw new APIError('CONFLICT', { message: DEMO_SIGN_UP_REFUSED });
+			}),
+			/*
 			 * Decision 5, the other half: a demo account becomes a real one the moment a
 			 * passkey is registered on it. The passkey plugin only adds the credential —
 			 * it knows nothing about roles — so the promotion happens here, after the
 			 * ceremony has verified, and only then. Two columns change: `roles` from DEMO
 			 * to USER, so the demo reaper (Phase 6) never sees a convertible account as
-			 * disposable; and `isAnonymous` to false, because the anonymous plugin treats
-			 * a still-flagged user who later signs up with an email as a *link* and, by
-			 * default, deletes the "anonymous" account afterwards — garage and all.
+			 * disposable; and `isAnonymous` to false, so the anonymous plugin's link hooks
+			 * stop treating the account as one — the two flags must not disagree.
 			 */
 			after: createAuthMiddleware(async (ctx) => {
 				if (ctx.path !== '/passkey/verify-registration') return;
@@ -94,8 +131,7 @@ function build(rp: { id: string; origin: string }) {
 
 				const user = ctx.context.session?.user;
 				if (!user) return;
-				const roles = Array.isArray(user.roles) ? (user.roles as number[]) : [];
-				if (!roles.includes(ROLE_IDS.DEMO)) return;
+				if (!rolesOf(user).includes(ROLE_IDS.DEMO)) return;
 
 				await ctx.context.internalAdapter.updateUser(user.id, {
 					roles: [ROLE_IDS.USER],
@@ -114,8 +150,14 @@ function build(rp: { id: string; origin: string }) {
 			twoFactor({ issuer: RP_NAME }),
 			/** The Capacitor client is cross-origin, so cookies do not reach it. */
 			bearer(),
-			/** Decision 5: a demo visitor is a real account, upgraded in place. */
-			anonymous()
+			/**
+			 * Decision 5: a demo visitor is a real account, upgraded in place. The
+			 * plugin's default is to *delete* the anonymous account the moment its browser
+			 * signs into any other account — garage, uploads and all, with no ceremony
+			 * asking. Retiring a demo is the reaper's job (Phase 6), on its own predicate
+			 * and its own schedule, so that delete is switched off here.
+			 */
+			anonymous({ disableDeleteAnonymousUser: true })
 		]
 	});
 }
