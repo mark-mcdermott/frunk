@@ -54,7 +54,8 @@ export const PATCH: APIRoute = (context) =>
 
 		const [updated] = await getDb()
 			.update(table.user)
-			.set(body)
+			// `updatedAt` also keeps `.set` non-empty when a PATCH body is `{}`.
+			.set({ ...body, updatedAt: new Date() })
 			.where(eq(table.user.id, uuid))
 			.returning(PUBLIC_USER_COLUMNS);
 
@@ -71,24 +72,26 @@ export const DELETE: APIRoute = (context) =>
 		const self = uuid === session.user.id;
 		if (!self && !isAdmin(session.user.roles)) return forbidden();
 
+		if (self) {
+			/*
+			 * Deleting your own account ends the session with it. Better Auth owns the
+			 * session row and the cookie now, so this is its sign-out rather than a
+			 * manual revoke-and-clear — and it has to run before the row is gone or it
+			 * has nothing to look up. (It ran *after* the delete until 2026-09-19,
+			 * surviving only because the cascade had already destroyed the session and
+			 * the stale cookie 401'd on the next request anyway.)
+			 */
+			await getAuth(new URL(context.request.url)).api.signOut({
+				headers: context.request.headers
+			});
+		}
+
 		const [deleted] = await getDb()
 			.delete(table.user)
 			.where(eq(table.user.id, uuid))
 			.returning({ uuid: table.user.id });
 
 		if (!deleted) return notFound('User not found');
-
-		if (self) {
-			/*
-			 * Deleting your own account ends the session with it. Better Auth owns the
-			 * session row and the cookie now, so this is its sign-out rather than a
-			 * manual revoke-and-clear — and it has to run before the row is gone or it
-			 * has nothing to look up.
-			 */
-			await getAuth(new URL(context.request.url)).api.signOut({
-				headers: context.request.headers
-			});
-		}
 
 		return noContent();
 	});
