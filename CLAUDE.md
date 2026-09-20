@@ -158,10 +158,16 @@ Five things about it are easy to get wrong:
   split is what makes conversion free — attaching a credential upgrades the same row.
   `roles` stays authoritative for gating; `isAnonymous` is the plugin's bookkeeping.
   `POST /api/demo` needs `pnpm db:seed-office`.
-- **Better Auth encrypts TOTP secrets and backup codes at rest**, so
-  `src/lib/server/auth/secrets.ts` and `ENCRYPTION_KEY` are now dead code. Verify before
-  deleting whether that encryption derives from `BETTER_AUTH_SECRET` — if it does,
-  rotating that secret orphans every recovery method rather than just logging people out.
+- **`BETTER_AUTH_SECRET` is effectively unrotatable.** Better Auth encrypts TOTP secrets
+  and backup codes at rest *with a key derived from it* — verified 2026-09-19 by enabling
+  TOTP under one secret, restarting under another, and watching `get-totp-uri` fail with a
+  ChaCha decryption error. Sign-in still works (password hashes are independent), so the
+  damage is silent: rotating does not merely log people out, it destroys every user's only
+  way back after a lost passkey. **Store it outside Vercel**, where Sensitive values cannot
+  be read back.
+
+  Because that encryption exists, `src/lib/server/auth/secrets.ts` and `ENCRYPTION_KEY`
+  are now dead code and can be removed.
 
 **Island classification rule:** does a live browser runtime need to exist for this to
 render? Yes → `client:only`. No → `client:load` / `client:visible`. Cross-island state is a
