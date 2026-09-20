@@ -144,6 +144,26 @@ export interface NoteInput {
 	repairId?: string;
 }
 
+export interface VendorInput {
+	name: string;
+	address: string | null;
+	phone: string | null;
+	website: string | null;
+}
+
+export interface ScheduleInput {
+	vehicleId?: string;
+	name: string;
+	intervalMiles: number | null;
+	intervalMonths: number | null;
+}
+
+/** `updateScheduleSchema` accepts these two; create does not. */
+export type ScheduleUpdate = Omit<ScheduleInput, 'vehicleId'> & {
+	lastCompletedDate?: string | null;
+	lastCompletedMileage?: number | null;
+};
+
 export interface Vendor {
 	id: string;
 	name: string;
@@ -261,3 +281,33 @@ export const updateNote = (uuid: string, body: Pick<NoteInput, 'title' | 'body'>
 
 export const deleteNote = (uuid: string) =>
 	request<void>(`/api/notes/${uuid}`, { method: 'DELETE' });
+
+export const createVendor = (body: VendorInput) =>
+	request<{ vendor: Vendor }>('/api/vendors', {
+		method: 'POST',
+		body: JSON.stringify(body)
+	}).then((r) => r.vendor);
+
+export const updateVendor = (id: string, body: VendorInput) =>
+	request<{ vendor: Vendor }>(`/api/vendors/${id}`, {
+		method: 'PATCH',
+		body: JSON.stringify(body)
+	}).then((r) => r.vendor);
+
+export const deleteVendor = (id: string) =>
+	request<void>(`/api/vendors/${id}`, { method: 'DELETE' });
+
+export const createSchedule = (body: ScheduleInput) =>
+	request<{ schedule: Schedule }>('/api/maintenance-schedules', {
+		method: 'POST',
+		body: JSON.stringify(body)
+	}).then((r) => r.schedule);
+
+export const updateSchedule = (id: string, body: ScheduleUpdate) =>
+	request<{ schedule: Schedule }>(`/api/maintenance-schedules/${id}`, {
+		method: 'PATCH',
+		body: JSON.stringify(body)
+	}).then((r) => r.schedule);
+
+export const deleteSchedule = (id: string) =>
+	request<void>(`/api/maintenance-schedules/${id}`, { method: 'DELETE' });

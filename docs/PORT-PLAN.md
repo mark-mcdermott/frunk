@@ -722,10 +722,29 @@ which vehicle you meant.
 - **Neither index paginates**, though both mocks do. The endpoints have no cursor and
   return everything, so paging would be decoration over a full result set. It goes in with
   the endpoint's `LIMIT`.
-- Still to build: galleries, maintenance schedules, user admin, vendor detail/edit, the
-  repair and note *detail* screens (list → edit covers the data today; the singles mostly
-  add attachments and note nesting) — and the uploads and per-route code splitting Phase 4
-  also owns.
+**Landed 2026-09-19 — vendors and maintenance schedules are full CRUD**
+(`feat/vendors-and-schedules`).
+
+- **Vendors closed a dead end this port created**: the repair form's "Add a vendor" hint
+  linked to a vendors screen that had no way to add one. The form validates that a
+  website starts with a scheme — the column is free text, and a stored `example.com`
+  renders as a relative link pointing inside the app.
+- **The vendor delete confirmation says what actually happens**: repairs are kept and
+  their `vendor_id` goes null (`docs/API.md`), so the copy promises exactly that instead
+  of implying the service history goes too.
+- **The vendor index intentionally contradicts its mock.** `vendor-index.webp` draws
+  detached cards; DESIGN.md §5 says rows live in one card with hairline dividers, the
+  other three index screens follow the spec, and one screen looking different for no
+  reason costs more than matching a mock that contradicts the spec derived from it.
+- **Schedules are edited in place on the vehicle panel, not on a route.** Three fields
+  attached to the vehicle already on screen, no identity of their own, no mock either
+  way — `/vehicles/:id/schedules/new` is navigation the record does not earn. The form
+  enforces `createScheduleSchema`'s refinement (at least one interval) client-side.
+- Still to build: galleries (**with uploads** — `POST /api/photos` records an `imageUrl`
+  that must already exist, so a gallery without Blob is a box that cannot be filled),
+  user admin, the repair and note *detail* screens (list → edit covers the data today;
+  the singles mostly add attachments and note nesting) — and the per-route code
+  splitting Phase 4 also owns.
 - Rebuild the app screens in React against the mocks: vehicles index and detail, vendors,
   repairs, notes, galleries, maintenance schedules, user admin. Follow `docs/DESIGN.md`
   for every component.

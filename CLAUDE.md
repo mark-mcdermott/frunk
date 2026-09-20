@@ -13,9 +13,11 @@ app. The SvelteKit app lives in **`legacy/`** — it is the reference for the po
 excluded from the Astro build and typecheck. It still deploys to Cloudflare Pages from
 `main` and stays live until Phase 6.
 
-**Phases 0–3 are done. Phase 4 is underway** — vehicles, repairs and notes are full CRUD
-and vendors are read-only; galleries, maintenance schedules and user admin are not built,
-and neither are uploads. Read
+**Phases 0–3 are done. Phase 4 is underway** — vehicles, repairs, notes, vendors and
+maintenance schedules are full CRUD; galleries and user admin are not built, and neither
+are uploads. Galleries wait for Vercel Blob deliberately: `POST /api/photos` records an
+`imageUrl` that must already exist, so without uploads a gallery is a box that cannot be
+filled. Read
 `docs/PORT-PLAN.md` before doing anything here; it records what is settled and what is
 outstanding.
 
