@@ -31,17 +31,15 @@ export default defineConfig({
 			// Vercel's per-deploy preview hostnames.
 			RP_ID: envField.string({ context: 'server', access: 'secret', optional: true }),
 			RP_ORIGIN: envField.string({ context: 'server', access: 'secret', optional: true }),
-			// Seals the TOTP secret at rest. Required on any https deploy — see
-			// `assertProductionSecrets`.
-			ENCRYPTION_KEY: envField.string({ context: 'server', access: 'secret', optional: true }),
 			// Transactional email (Resend). Optional so a build without it still succeeds —
 			// `sendEmail` fails loudly at call time instead, which is the only place it matters.
 			RESEND_API_KEY: envField.string({ context: 'server', access: 'secret', optional: true }),
 			// Where the contact form lands. Defaults to the address in the footer and on the
 			// privacy page, which forwards via Namecheap (PORT-PLAN Decision 1).
 			CONTACT_EMAIL: envField.string({ context: 'server', access: 'secret', optional: true }),
-			// Signs Better Auth's sessions and tokens. Like ENCRYPTION_KEY, changing it
-			// invalidates everything derived from it — every active session logs out.
+			// Signs Better Auth's sessions AND derives the key that encrypts TOTP secrets
+			// and backup codes at rest. Treat it as permanent: rotating logs everyone out
+			// *and* destroys every recovery method (verified 2026-09-19 — see CLAUDE.md).
 			BETTER_AUTH_SECRET: envField.string({ context: 'server', access: 'secret', optional: true })
 		}
 	},
