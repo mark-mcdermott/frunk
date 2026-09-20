@@ -419,7 +419,8 @@ The old SvelteKit app moved to `legacy/` rather than being deleted — it is the
 Phase 2's 25 load functions and Phase 4's 60 components, and it is excluded from the Astro
 build and typecheck. Delete the directory at the end of Phase 5. `legacy/` also holds the
 Capacitor shells (`android/`, `ios/`, `capacitor.config.ts`), which are pinned to the
-SvelteKit dev port and `build/` output; Phase 6 re-points them at the Astro origin.
+SvelteKit dev port and `build/` output; ~~Phase 6 re-points them at the Astro origin~~
+**moved to the repo root and re-pointed 2026-09-20 — see Phase 6.**
 
 ## Phase 2 — Data layer: REST endpoints — **DONE 2026-09-03**
 
@@ -977,7 +978,37 @@ Playwright, chromium only, eight specs in ~20 s, wired into CI as its own job.
   | `BLOB_READ_WRITE_TOKEN`                | ✅ set by connecting the `frunk-uploads` store (2026-09-19)             |
 
 - No production data to migrate (frunk never launched). Re-seed with `seed-office.ts`.
-- Re-point Capacitor at the new origin and verify a passkey ceremony inside the webview.
+- ~~Re-point Capacitor at the new origin and verify a passkey ceremony inside the webview.~~
+  **Done 2026-09-20** (`feat/capacitor`), with a finding that changes the native plan:
+
+  - The shells moved from `legacy/` to the repo root with their history, on Capacitor 8.5.
+    `capacitor.config.ts` loads the deployed origin (`CAP_SERVER_URL`, default
+    `https://frunk.cloud`) rather than bundling: the applet's routes are server-rendered
+    catch-alls with no static entry, and a bundled `capacitor://localhost` origin could never
+    be the relying party. `webDir` is a placeholder page the shell never shows. The iOS
+    build passes from the command line (`xcodebuild … -sdk iphonesimulator`); Android was
+    not built here — this Mac has no Java runtime.
+  - **Verified in the iOS 26 simulator against a local server on `localhost`** (a secure
+    context, unlike a LAN IP): the site loads, the demo starts, the garage renders, the
+    profile edits. **The passkey ceremony is refused.** `navigator.credentials.create()`
+    in WKWebView throws `NotAllowedError` — "The request is not allowed by the user agent
+    or the platform in the current context" — before any sheet appears. That is WebKit's
+    documented stance: WebAuthn inside `WKWebView` is reserved for apps with the web
+    browser entitlement. **Email + password works** in the webview, so sign-in is not
+    blocked, but demo→real conversion is — and that is the funnel the whole demo design
+    serves.
+  - **Next, in order:** (1) try the cheap remedy — an Associated Domains entitlement
+    (`webcredentials:frunk.cloud`) plus an `apple-app-site-association` file served from
+    the site, which needs the Apple Team ID and is what recent iOS releases require before
+    allowing WebAuthn from an embedded webview for that relying party; (2) if that is not
+    honoured, a native passkey plugin bridging to `ASAuthorizationController` (and Android's
+    Credential Manager with `assetlinks.json`), whose `clientDataJSON` origin is the
+    associated domain, so Better Auth's verifier accepts it unchanged. Either way the
+    Team ID gates it.
+  - Two fixes found by the test: the headers ran under the status bar (`viewport-fit=cover`
+    plus `env(safe-area-inset-*)` padding on both headers and the applet's bottom), and the
+    profile's demo branch never rendered a failed ceremony — the button just reset.
+
 - Desktop is out of scope (Decision 7) — no Tauri step.
 - ~~Resolve the DNS/email trade in Decision 1 before switching nameservers.~~ **Moot.** The
   nameservers already left Cloudflare — `frunk.cloud` now answers from Namecheap BasicDNS

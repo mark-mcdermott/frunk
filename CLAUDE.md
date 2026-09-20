@@ -56,7 +56,12 @@ outstanding.
 - **Resend** for transactional email — the contact form (Phase 5) and, once Decision 2's
   Better Auth rework lands, verification mail. Both behind one `src/lib/server/email.ts`.
   Supersedes AWS SES, which was never wired into this app
-- **Capacitor** (iOS/Android) stays in scope, re-pointed in Phase 6
+- **Capacitor** (iOS/Android) — the shells live at the repo root (`ios/`, `android/`,
+  `capacitor.config.ts`) and **load the deployed origin** rather than bundling; `pnpm
+cap:sync` after a dependency change, `CAP_SERVER_URL=http://localhost:<port>` to point a
+  build at a dev server. **WKWebView refuses WebAuthn** (`NotAllowedError`, verified in the
+  simulator 2026-09-20), so passkeys inside the app need Associated Domains or a native
+  plugin — see Phase 6 in the plan. Email + password works there.
 
 Dropped for now: the merch store (Stripe + Printful), Tauri desktop, Skeleton UI.
 
@@ -115,8 +120,9 @@ Editor when you have no terminal. See "Database setup" in `docs/API.md`.
 `pnpm install` is required after any gap — dependencies drift and the build fails
 misleadingly when `node_modules` is stale.
 
-The legacy commands (`pnpm test`, `db:push`, `cap:*`) still live in `legacy/package.json`
-and run from that directory with its own `pnpm install`.
+The legacy commands (`pnpm test`, `db:push`) still live in `legacy/package.json` and run
+from that directory with its own `pnpm install`. Its `cap:*` scripts are dead — the shells
+moved to the root.
 
 ## Verify loop
 

@@ -20,7 +20,10 @@ interface Props {
 const { active } = Astro.props;
 ---
 
-<header class="pointer-events-none sticky top-0 z-50 px-4 pt-4 sm:px-6 sm:pt-6">
+<!-- The extra top padding is the notch: under viewport-fit=cover the page runs beneath the
+     status bar (Capacitor, Safari in landscape), so the pill sits below it and the page's
+     own ground shows through above. Zero everywhere else. -->
+<header class="pointer-events-none sticky top-0 z-50 px-4 pt-[calc(1rem+env(safe-area-inset-top,0px))] sm:px-6 sm:pt-[calc(1.5rem+env(safe-area-inset-top,0px))]">
 	<div class="pointer-events-auto mx-auto flex max-w-[1400px] items-center justify-between gap-6 rounded-[20px] bg-white px-6 py-4 shadow-[0_8px_40px_-12px_rgb(11_15_24_/_0.18)] sm:px-8 sm:py-5">
 		<a href="/" class="wordmark text-[#0b0f18] text-lg sm:text-xl" aria-label="Frunk, home">
 			FRUNK
