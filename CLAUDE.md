@@ -144,6 +144,12 @@ once**: both use `frunk_test` and port 4455, so the second inherits the first's 
 rate-limit counters (a spurious 429 from `/api/demo` is the symptom). Set `TEST_DB` and
 `TEST_PORT` in one of them.
 
+**Nothing else may run `astro` in a checkout while a dev server is up in it** — the
+harness's or your own. `astro check` (and so `pnpm check`) alongside a running
+`astro dev` leaves that server's Vite dependency cache stale, and every page it serves
+from then on answers 504 "Outdated Optimize Dep" until it is restarted. Run the verify
+loop first, then the suite.
+
 `pnpm test:e2e` runs the **browser journeys** (`tests/e2e/`, Playwright, chromium only)
 through the same harness (`tests/run.sh --e2e`). Eight specs, serial, in filename order,
 sharing one demo account (the demo endpoint allows three per hour; the run uses two).
@@ -258,6 +264,13 @@ Five things about it are easy to get wrong:
   demos are reaped after seven days** by `GET /api/cron/reap-demos` — a Vercel cron
   (`vercel.json`, production only) presenting `CRON_SECRET`; the predicate is DEMO role,
   no passkey, older than the window, and the account's blobs go with its rows.
+- **TOTP is recovery in intent and a second factor in mechanism.** Better Auth's plugin
+  does not know the difference: once a code is enrolled, `sign-in/email` answers
+  `{ twoFactorRedirect: true }` plus a challenge cookie instead of a session, and only
+  `verify-totp` against that cookie opens one (verified over HTTP 2026-09-20). A cold
+  `verify-totp` — the old "Lost your device?" form — is a 401. `signIn()` in
+  `auth-client.ts` returns the challenge as a value and `SignInForm` carries on to the
+  code; `recoverWithCode` trusts the device for thirty days. The recovery journey walks it.
 - **`BETTER_AUTH_SECRET` is effectively unrotatable.** Better Auth encrypts TOTP secrets
   and backup codes at rest _with a key derived from it_ — verified 2026-09-19 by enabling
   TOTP under one secret, restarting under another, and watching `get-totp-uri` fail with a
