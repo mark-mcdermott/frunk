@@ -14,9 +14,15 @@ excluded from the Astro build and typecheck. It still deploys to Cloudflare Page
 `main` and stays live until Phase 6.
 
 **Phases 0–3 are done. Phase 4 is nearly done** — vehicles, repairs, notes, vendors,
-maintenance schedules, galleries and user admin are all built, and uploads are live on
-**Vercel Blob** (store `frunk-uploads`, **private**). The profile/account screen, the
+maintenance schedules, galleries, user admin and the profile screen are all built, and
+uploads are live on **Vercel Blob** (store `frunk-uploads`, **private**). The
 repair/note detail screens and per-route code splitting remain.
+
+**Profile edits go through Better Auth's `updateUser`**, not `PATCH /api/users/:id` —
+that endpoint refreshes the client session store, so the header avatar and name update
+without a reload. The applet's sign-out, account deletion, TOTP recovery setup
+(`RecoverySetup`, finally reachable again) and the demo→real passkey conversion all
+live on `/profile`.
 
 **Query client rules** (`AppRoot.tsx`): `networkMode: 'always'` on queries *and*
 mutations — TanStack's default pauses fetches whenever `navigator.onLine` is false,

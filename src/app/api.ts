@@ -384,3 +384,7 @@ export const updateUser = (id: string, body: { name?: string; roles?: number[] }
 
 export const deleteUser = (id: string) =>
 	request<void>(`/api/users/${id}`, { method: 'DELETE' });
+
+/** Removes one of the caller's own uploaded files — see `DELETE /api/uploads`. */
+export const deleteUpload = (url: string) =>
+	request<void>(`/api/uploads?url=${encodeURIComponent(url)}`, { method: 'DELETE' });
