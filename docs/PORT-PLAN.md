@@ -801,9 +801,31 @@ stays at `requireAdmin`, and a non-admin who types /users gets the API's 403 ren
 - Deleting yourself is blocked on the admin screen (the API allows it — that is account
   deletion — but it belongs to the profile flow); removing your own admin role warns
   before you save.
-- Still to build: the profile/account screen (avatar, TOTP `RecoverySetup` finally gets
-  its home, self-deletion), the repair and note *detail* screens — and the per-route
-  code splitting Phase 4 also owns.
+**Landed 2026-09-20 — the profile screen** (`feat/profile`), which pays off three debts
+at once: the applet finally has **sign out**, `RecoverySetup` is **reachable again**
+(sign-up offered it once; there was no second chance until now), and the demo→real
+**passkey conversion** (Decision 5) has a home a demo user can actually find.
+
+- **Name and avatar save through Better Auth's own `updateUser`**, not our PATCH — it
+  refreshes the client session store, so the header chip updates the moment the save
+  lands. Verified live: heading, header aria-label and both avatar images changed with
+  no reload; column and blob checked after every step (replace deletes the old blob,
+  remove nulls the column and empties the store).
+- **`DELETE /api/uploads?url=` exists for exactly this**: the entity endpoints clean
+  their own blobs server-side, but the avatar column is written by Better Auth's
+  endpoint, which cannot — so the client requests cleanup after the save lands, and
+  the same `u/<userId>/` prefix rule makes a foreign pathname a 404.
+- **Recovery is gated on the account password** (Better Auth re-checks it before
+  handing out a TOTP secret), so the profile asks for it first; a demo account — which
+  has no password — sees the convert-by-passkey prompt instead.
+- **Self-deletion verified end to end**: confirm → row gone, sessions table empty,
+  landed on the marketing page signed out.
+- The mock's Notifications and Appearance rows are omitted — no notification system,
+  no applet theming — and **the shell's dead Theme button is gone** (it never did
+  anything; the avatar, now a link to /profile, took its slot). Applet theming is an
+  open item; `setTheme()` in `src/lib/theme.ts` still has no caller anywhere.
+- Still to build: the repair and note *detail* screens — and the per-route code
+  splitting Phase 4 also owns.
 - Rebuild the app screens in React against the mocks: vehicles index and detail, vendors,
   repairs, notes, galleries, maintenance schedules, user admin. Follow `docs/DESIGN.md`
   for every component.

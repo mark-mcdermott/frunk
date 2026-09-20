@@ -153,6 +153,16 @@ export async function signOut(): Promise<void> {
 	await endSession();
 }
 
+/**
+ * Name and avatar go through Better Auth's own endpoint rather than
+ * `PATCH /api/users/:id`, because this one refreshes the session store — the header
+ * avatar updates the moment the save lands, with no reload and no manual cache poke.
+ */
+export async function updateProfile(body: { name?: string; image?: string | null }): Promise<void> {
+	const result = await authClient.updateUser(body);
+	if (result?.error) throw new AuthError(result.error.message ?? 'Could not save your profile.');
+}
+
 export function authErrorMessage(cause: unknown): string {
 	if (cause instanceof AuthError) return cause.message;
 	if (cause instanceof Error && cause.name === 'NotAllowedError') {

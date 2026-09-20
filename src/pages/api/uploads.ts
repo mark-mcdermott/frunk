@@ -1,11 +1,13 @@
 import type { APIRoute } from 'astro';
 import {
 	ALLOWED_TYPES,
+	deleteManagedFiles,
+	managedPathname,
 	MAX_FILE_BYTES,
 	putUserFile
 } from '../../lib/server/files';
 import { requireSession } from './_lib/guard';
-import { fail, handler, json } from './_lib/http';
+import { fail, handler, json, noContent, notFound } from './_lib/http';
 
 export const prerender = false;
 
@@ -47,4 +49,22 @@ export const POST: APIRoute = (context) =>
 			console.error('Upload failed:', cause);
 			return fail(503, 'File storage is not available right now');
 		}
+	});
+
+/**
+ * `DELETE /api/uploads?url=/api/files/u/<id>/…` removes one of the caller's own
+ * files. It exists for the avatar, whose column is written through Better Auth's
+ * endpoint — the entity routes clean their own blobs server-side, but that path
+ * cannot, so the client asks for the cleanup after the profile save lands. The
+ * prefix check makes a foreign pathname a 404, same rule as serving.
+ */
+export const DELETE: APIRoute = (context) =>
+	handler(async () => {
+		const { user } = await requireSession(context);
+
+		const pathname = managedPathname(context.url.searchParams.get('url'));
+		if (!pathname || !pathname.startsWith(`u/${user.id}/`)) return notFound('File not found');
+
+		await deleteManagedFiles([`/api/files/${pathname}`]);
+		return noContent();
 	});
