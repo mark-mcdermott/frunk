@@ -29,6 +29,7 @@
 		"@neondatabase/serverless": "^1.1.0",
 		"@simplewebauthn/browser": "^13.3.0",
 		"@simplewebauthn/server": "^13.3.3",
+		"@tanstack/react-query": "^5.103.1",
 		"astro": "^7.2.10",
 		"better-auth": "^1.7.5",
 		"class-variance-authority": "^0.7.1",
@@ -41,6 +42,7 @@
 		"qrcode.react": "^4.2.0",
 		"react": "^19.2.0",
 		"react-dom": "^19.2.0",
+		"react-router": "^8.4.0",
 		"resend": "^6.28.1",
 		"tailwind-merge": "^3.6.0",
 		"zod": "^4.5.4"
