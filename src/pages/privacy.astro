@@ -11,7 +11,9 @@
  * 2. §2 "Process transactions and send related information" — the merch store is dropped
  *    (Decision 6). Frunk processes no payments.
  * 3. §4 "Secure password hashing" — same as 1. Replaced with what is actually true: the
- *    TOTP recovery secret is sealed with AES-256-GCM at rest (`src/lib/server/auth/secrets.ts`).
+ *    TOTP recovery secret is encrypted at rest (by Better Auth, keyed from
+ *    `BETTER_AUTH_SECRET`). The algorithm is deliberately not named — an earlier draft
+ *    said AES-256-GCM, which stopped being true when Better Auth took over TOTP.
  * 4. §7 "Payment processors for merchandise orders" — dropped with the store.
  *
  * The rest survives a provider change because it names categories, not vendors.
@@ -78,7 +80,7 @@ const sections: LegalSection[] = [
 			[
 				'HTTPS encryption for all data transmission',
 				'Passkeys for sign-in, so no password is transmitted or stored',
-				'Encryption at rest for recovery secrets, using AES-256-GCM',
+				'Encryption at rest for account recovery secrets',
 				'Cloud storage with encryption at rest for uploaded files'
 			]
 		]

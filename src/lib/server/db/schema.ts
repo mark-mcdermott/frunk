@@ -144,12 +144,12 @@ export const passkey = pgTable('passkey', {
 /**
  * Replaces `user.totp_secret` / `user.totp_enabled`.
  *
- * ⚠️ The old columns were sealed with AES-256-GCM (`src/lib/server/auth/secrets.ts`)
- * so that a database dump alone could not mint valid codes — a TOTP seed is symmetric,
- * and a code is enough to recover an account. **Whether Better Auth encrypts `secret`
- * and `backupCodes` at rest has to be confirmed before `secrets.ts` is deleted.** If it
- * stores them in plaintext, keeping the sealing layer is a deliberate requirement, not
- * a leftover.
+ * ⚠️ `secret` and `backupCodes` are encrypted at rest by Better Auth, with a key derived
+ * from `BETTER_AUTH_SECRET` (confirmed 2026-09-19: the stored secret is ciphertext, and
+ * a restart under a different secret fails decryption). A database dump alone therefore
+ * cannot mint valid codes — a TOTP seed is symmetric, and a code is enough to recover
+ * an account. The flip side is that `BETTER_AUTH_SECRET` can never be rotated without
+ * destroying every user's recovery method.
  */
 export const twoFactor = pgTable('two_factor', {
 	id: text('id').primaryKey(),
