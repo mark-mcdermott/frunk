@@ -14,7 +14,7 @@ import {
 	useSession
 } from '../../lib/auth-client';
 import { isDemo } from '../../lib/roles';
-import { displayName, initial } from '../../lib/user';
+import { displayName, hasPlaceholderEmail, initial } from '../../lib/user';
 import { formatDate } from '../format';
 
 /**
@@ -52,7 +52,16 @@ export function ProfilePage() {
 	const { data } = useSession();
 	const user = data?.user ? toSessionUser(data.user) : null;
 	const joined = (data?.user as { createdAt?: string | Date } | undefined)?.createdAt;
-	const demo = user ? isDemo(user.roles) && user.email.endsWith('.invalid') : false;
+	const demo = user ? isDemo(user.roles) : false;
+	/*
+	 * A converted account keeps the placeholder address the demo was minted with, and
+	 * it has no password — so recovery, which needs one, cannot be enrolled yet. Both
+	 * facts follow from the placeholder, which is the only trace conversion leaves.
+	 */
+	const placeholder = user ? hasPlaceholderEmail(user) : false;
+	/* Set when *this* session did the converting, so the success message survives the
+	   role flip that the server-side hook applies the moment the passkey registers. */
+	const [converted, setConverted] = useState(false);
 
 	const [name, setName] = useState('');
 	const [nameError, setNameError] = useState<string | null>(null);
@@ -100,7 +109,10 @@ export function ProfilePage() {
 
 	const addPasskey = useMutation({
 		mutationFn: () => registerPasskey(),
-		onSuccess: () => setSecurity('passkey-added'),
+		onSuccess: () => {
+			if (demo) setConverted(true);
+			setSecurity('passkey-added');
+		},
 		onError: (cause) => setSecurityError(authErrorMessage(cause))
 	});
 
@@ -178,7 +190,7 @@ export function ProfilePage() {
 					<div className="min-w-0">
 						<p className="truncate text-xl font-semibold text-text">{displayName(user)}</p>
 						<p className="mt-0.5 truncate text-[0.875rem] text-text-muted">
-							{demo ? 'Demo account' : user.email}
+							{demo ? 'Demo account' : placeholder ? 'No email on file' : user.email}
 						</p>
 						{joined && (
 							<p className="mt-0.5 text-[0.8125rem] text-text-faint">
@@ -215,10 +227,16 @@ export function ProfilePage() {
 							value={name}
 							onChange={setName}
 						/>
-						{!demo && (
+						{!demo && !placeholder && (
 							<p className="text-[0.8125rem] text-text-muted">
 								Signed in as <span className="text-text">{user.email}</span>. Changing the address
 								needs a verified email flow, which is not built yet.
+							</p>
+						)}
+						{!demo && placeholder && (
+							<p className="text-[0.8125rem] text-text-muted">
+								This account started as a demo and has no email address yet. Adding one needs a
+								verified email flow, which is not built yet.
 							</p>
 						)}
 						<div className="flex items-center gap-3">
@@ -244,8 +262,8 @@ export function ProfilePage() {
 				</Section>
 
 				<Section title="Security">
-					{demo ? (
-						security === 'passkey-added' ? (
+					{demo || converted ? (
+						converted ? (
 							<p className="flex items-center gap-2 text-[0.9375rem] text-positive">
 								<ShieldCheck className="size-5" strokeWidth={1.75} aria-hidden />
 								Passkey added — this account is yours now, data and all.
@@ -286,7 +304,13 @@ export function ProfilePage() {
 								)}
 							</div>
 
-							{user.twoFactorEnabled || security === 'recovery-done' ? (
+							{placeholder ? (
+								<p className="max-w-md text-[0.875rem] text-text-muted">
+									Recovery needs a password, and an account that started as a demo has none yet.
+									Setting one is coming with account settings — until then, keep a second passkey on
+									another device.
+								</p>
+							) : user.twoFactorEnabled || security === 'recovery-done' ? (
 								<p className="flex items-center gap-2 text-[0.875rem] text-positive">
 									<ShieldCheck className="size-4" strokeWidth={1.75} aria-hidden />
 									Recovery is set up — a lost device is not a lost account.

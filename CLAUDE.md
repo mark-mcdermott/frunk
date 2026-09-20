@@ -228,8 +228,13 @@ Five things about it are easy to get wrong:
 - **A demo account is a real account** (Decision 5). The `anonymous` plugin creates the
   user and session; `cloneDemoAccount(userId)` only copies the template garage in. That
   split is what makes conversion free — attaching a credential upgrades the same row.
-  `roles` stays authoritative for gating; `isAnonymous` is the plugin's bookkeeping.
-  `POST /api/demo` needs `pnpm db:seed-office`.
+  **Conversion is an `after` hook in `config.ts`** on `/passkey/verify-registration`: it
+  flips `roles` from DEMO to USER and clears `isAnonymous`. The second one matters —
+  the anonymous plugin treats a still-flagged user who later signs up with an email as
+  a _link_ and deletes the "anonymous" account afterwards, garage included. A converted
+  account keeps its placeholder address (`hasPlaceholderEmail`) and has no password, so
+  it cannot enrol TOTP recovery until a set-password flow exists. `roles` stays
+  authoritative for gating. `POST /api/demo` needs `pnpm db:seed-office`.
 - **`BETTER_AUTH_SECRET` is effectively unrotatable.** Better Auth encrypts TOTP secrets
   and backup codes at rest _with a key derived from it_ — verified 2026-09-19 by enabling
   TOTP under one secret, restarting under another, and watching `get-totp-uri` fail with a

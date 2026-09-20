@@ -3,7 +3,7 @@ import { ChevronDown, LogOut } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { isDemo } from '../../lib/roles';
 import { signOut } from '../../lib/auth-client';
-import { displayName, initial } from '../../lib/user';
+import { displayName, hasPlaceholderEmail, initial } from '../../lib/user';
 import { $authStatus, $user, loadUser, setUser } from '../../stores/user';
 
 /**
@@ -141,7 +141,11 @@ export function UserNav() {
 								{displayName(user)}
 							</p>
 							<p className="truncate text-[0.75rem] text-[rgb(11_15_24_/_0.62)]">
-								{demo ? 'Demo account' : user.email}
+								{demo
+									? 'Demo account'
+									: hasPlaceholderEmail(user)
+										? 'No email on file'
+										: user.email}
 							</p>
 						</div>
 
