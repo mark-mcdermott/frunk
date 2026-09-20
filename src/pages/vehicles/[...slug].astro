@@ -1,0 +1,21 @@
+---
+/**
+ * Mounts the applet for everything under `/vehicles`.
+ *
+ * Scoped per section rather than one root-level `[...slug].astro`, which the plan
+ * originally called for. A global catch-all would swallow every unknown URL and render
+ * the app instead of a 404, on a site whose marketing pages are public and indexed —
+ * five small files keep real 404s working.
+ *
+ * `client:only` because this needs a live browser runtime: router, Query cache and
+ * session all exist only after hydration, so there is nothing meaningful to prerender.
+ */
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { AppRoot } from '../../app/AppRoot';
+
+export const prerender = false;
+---
+
+<BaseLayout title="Frunk" description="Your vehicles, documents and service history.">
+	<AppRoot client:only="react" />
+</BaseLayout>
