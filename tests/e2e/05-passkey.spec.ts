@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { attachVirtualAuthenticator, hydrated, sql, startDemo } from './support';
+import { attachVirtualAuthenticator, sql, startDemo } from './support';
 
 /**
  * Decision 5, end to end: a demo account gains a passkey and becomes signable-into
@@ -29,7 +29,6 @@ test('a demo account converts by adding a passkey and signs back in with it', as
 	await expect(page).toHaveURL(/\/$/);
 
 	await page.goto('/signin');
-	await hydrated(page);
 	await page.getByRole('button', { name: 'Use a passkey' }).click();
 
 	await expect(page).toHaveURL(/\/vehicles$/);

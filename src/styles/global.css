@@ -176,6 +176,40 @@
 
 @layer components {
 	/*
+	 * A skeleton bar: the shape of content that has not arrived. Token-based so it reads
+	 * on either ground — a translucent tint (`--border`) with a `--border-strong` sheen
+	 * sweeping across it. Motion is decoration, so it stops under reduced-motion and the
+	 * bar stays as a plain block.
+	 */
+	.skeleton {
+		position: relative;
+		overflow: hidden;
+		border-radius: 8px;
+		background-color: var(--border);
+	}
+
+	.skeleton::after {
+		content: '';
+		position: absolute;
+		inset: 0;
+		background: linear-gradient(90deg, transparent, var(--border-strong), transparent);
+		transform: translateX(-100%);
+		animation: skeleton-sheen 1.6s ease-in-out infinite;
+	}
+
+	@keyframes skeleton-sheen {
+		to {
+			transform: translateX(100%);
+		}
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.skeleton::after {
+			animation: none;
+		}
+	}
+
+	/*
 	 * The wordmark: heavy sans, wide tracking, always closed by a violet period.
 	 * The dot is the brand signature (DESIGN.md §1) — it is decorative, so it is
 	 * drawn with ::after rather than sitting in the accessible name.
