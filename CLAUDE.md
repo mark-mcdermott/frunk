@@ -132,14 +132,17 @@ typescript-eslint, `react-hooks`, `jsx-a11y`, the Astro plugin) and Prettier (ta
 quotes, no trailing commas, 100 columns, Tailwind class sorting — the legacy app's style,
 carried over) both run in CI's `check` job. `legacy/` is excluded from both.
 
-`react-hooks/set-state-in-effect` is a **warning** on purpose: every form page seeds its
-state from the loaded row inside an effect. The fix is a key-remounted form initialised
-from the row; it is scheduled, and the rule flips to `error` with it.
+`react-hooks/set-state-in-effect` is an **error**. Every form page is a loader that renders
+a form component keyed on the row (`<VendorForm key={existing?.id ?? 'new'} …>`), so state
+is seeded at mount from a prop and never set in an effect. That is the pattern to reach for.
 
 `pnpm test:unit` runs the API integration suite (Decision 11) — the four-case ownership
 matrix per entity, over HTTP against a throwaway `frunk_test` database. `tests/run.sh`
 owns the server and database; read its header before changing it, because Astro's dev
-server fails silently in two separate ways under Vitest.
+server fails silently in two separate ways under Vitest. **Two checkouts cannot run it at
+once**: both use `frunk_test` and port 4455, so the second inherits the first's rows and
+rate-limit counters (a spurious 429 from `/api/demo` is the symptom). Set `TEST_DB` and
+`TEST_PORT` in one of them.
 
 `pnpm test:e2e` runs the **browser journeys** (`tests/e2e/`, Playwright, chromium only)
 through the same harness (`tests/run.sh --e2e`). Eight specs, serial, in filename order,
