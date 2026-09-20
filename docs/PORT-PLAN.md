@@ -884,11 +884,19 @@ Playwright, chromium only, eight specs in ~20 s, wired into CI as its own job.
   React does not own. The applet's Suspense fallback uses the same `.skeleton`
   primitive (`PageSkeleton`), so "loading" is one visual language. The journeys'
   hydration wait was deleted with the race.
-- **Two findings**: (1) ~~adding a passkey to a demo account leaves `roles = [DEMO]`~~
+- **Three findings**: (1) ~~adding a passkey to a demo account leaves `roles = [DEMO]`~~
   **fixed 2026-09-20** (`feat/demo-conversion`) — see the reaper bullet in Phase 6.
   (2) ~~`src/lib/server/auth/totp.ts` has no importers since Better Auth took over TOTP;
   dead code, still to delete.~~ **Deleted 2026-09-20** (`chore/loose-ends`); `otplib` is a
-  dev dependency now, kept for the recovery journey.
+  dev dependency now, kept for the recovery journey. (3) ~~"Keep my data" pointed at
+  email sign-up, which is not a conversion: Better Auth's sign-up mints a _second_
+  account, and the anonymous plugin then deleted the demo account — garage included — on
+  the next sign-in from that browser.~~ **Fixed 2026-09-20** (`fix/demo-email-signup`),
+  reproduced first in the API suite as three vehicles, then none: `/sign-up/email` is
+  refused (409) from a demo session, the plugin's delete is switched off
+  (`disableDeleteAnonymousUser`) so only the reaper retires a demo, and both "Keep my
+  data" and the sign-up page send a demo visitor to the profile's passkey prompt.
+  `tests/demo-conversion.test.ts` holds it.
 - **Two ways the journeys lie if written carelessly**, both recorded in `support.ts`:
   a base32 regex on the secret button's `textContent` runs into the sr-only label
   ("Invalid code" that looks like a server bug); and database checks must be scoped

@@ -47,6 +47,9 @@ export interface TestUser {
 
 let counter = 0;
 
+/** Every account the suite creates has this password; a test that signs in again needs it. */
+export const TEST_PASSWORD = 'a-sufficiently-long-test-password';
+
 /**
  * A signed-in user, ready to own things.
  *
@@ -56,7 +59,7 @@ let counter = 0;
  */
 export async function signUpAndSignIn(): Promise<TestUser> {
 	const email = `test-${Date.now()}-${counter++}@example.com`;
-	const password = 'a-sufficiently-long-test-password';
+	const password = TEST_PASSWORD;
 
 	const created = await api('/api/auth/sign-up/email', {
 		method: 'POST',

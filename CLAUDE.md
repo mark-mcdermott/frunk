@@ -235,12 +235,18 @@ Five things about it are easy to get wrong:
   user and session; `cloneDemoAccount(userId)` only copies the template garage in. That
   split is what makes conversion free — attaching a credential upgrades the same row.
   **Conversion is an `after` hook in `config.ts`** on `/passkey/verify-registration`: it
-  flips `roles` from DEMO to USER and clears `isAnonymous`. The second one matters —
-  the anonymous plugin treats a still-flagged user who later signs up with an email as
-  a _link_ and deletes the "anonymous" account afterwards, garage included. A converted
-  account keeps its placeholder address (`hasPlaceholderEmail`) and has no password, so
-  it cannot enrol TOTP recovery until a set-password flow exists. `roles` stays
-  authoritative for gating. `POST /api/demo` needs `pnpm db:seed-office`. **Unconverted
+  flips `roles` from DEMO to USER and clears `isAnonymous`, so the two flags never
+  disagree. **Email sign-up is not a conversion path and is refused (409) while a demo
+  session exists** — a `before` hook on `/sign-up/email` in the same file. Better Auth's
+  sign-up always mints a _second_ account, and the anonymous plugin then treated the next
+  sign-in from that browser as a _link_ and deleted the demo account, garage included
+  (reproduced 2026-09-20: three vehicles, then none). That delete is now off
+  (`anonymous({ disableDeleteAnonymousUser: true })`): no auth ceremony deletes a demo
+  account, only the reaper does. "Keep my data" and the sign-up page both send a demo
+  visitor to `/profile`'s passkey prompt; `tests/demo-conversion.test.ts` asserts both
+  guards in Postgres. A converted account keeps its placeholder address
+  (`hasPlaceholderEmail`) and has no password, so it cannot enrol TOTP recovery until a
+  set-password flow exists. `roles` stays authoritative for gating. `POST /api/demo` needs `pnpm db:seed-office`. **Unconverted
   demos are reaped after seven days** by `GET /api/cron/reap-demos` — a Vercel cron
   (`vercel.json`, production only) presenting `CRON_SECRET`; the predicate is DEMO role,
   no passkey, older than the window, and the account's blobs go with its rows.
