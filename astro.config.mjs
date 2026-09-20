@@ -41,6 +41,9 @@ export default defineConfig({
 			// and backup codes at rest. Treat it as permanent: rotating logs everyone out
 			// *and* destroys every recovery method (verified 2026-09-19 — see CLAUDE.md).
 			BETTER_AUTH_SECRET: envField.string({ context: 'server', access: 'secret', optional: true }),
+			// Presented by Vercel's cron as `Authorization: Bearer …` — production only,
+			// since only production runs crons. Unset, `/api/cron/*` answers 503.
+			CRON_SECRET: envField.string({ context: 'server', access: 'secret', optional: true }),
 			// Vercel Blob (store: frunk-uploads, private). Optional so a build without it
 			// succeeds — the upload and file endpoints answer 503 at call time instead.
 			BLOB_READ_WRITE_TOKEN: envField.string({

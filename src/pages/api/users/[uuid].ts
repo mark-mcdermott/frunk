@@ -4,6 +4,7 @@ import { isAdmin } from '../../../lib/roles';
 import { getDb } from '../../../lib/server/db';
 import * as table from '../../../lib/server/db/schema';
 import { getAuth } from '../../../lib/server/auth/config';
+import { deleteUserFiles } from '../../../lib/server/files';
 import { requireSession } from '../_lib/guard';
 import { forbidden, handler, json, noContent, notFound, readJson } from '../_lib/http';
 import { updateUserSchema } from '../_lib/schemas';
@@ -92,6 +93,9 @@ export const DELETE: APIRoute = (context) =>
 			.returning({ uuid: table.user.id });
 
 		if (!deleted) return notFound('User not found');
+
+		// The cascade takes every row; the uploads under `u/<id>/` need taking too.
+		await deleteUserFiles(uuid);
 
 		return noContent();
 	});
