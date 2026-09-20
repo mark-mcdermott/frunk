@@ -107,9 +107,9 @@ function build(rp: { id: string; origin: string }) {
 			passkey({ rpID: rp.id, rpName: RP_NAME, origin: rp.origin }),
 			/**
 			 * TOTP is recovery, not a second factor — it stands in for a passkey the user
-			 * no longer has. See the ⚠️ on the `two_factor` table in `db/schema.ts`:
-			 * whether Better Auth encrypts `secret` at rest is unconfirmed, and
-			 * `secrets.ts` stays until it is.
+			 * no longer has. Better Auth encrypts the secret and backup codes at rest with
+			 * a key derived from `BETTER_AUTH_SECRET`, which is why that secret can never
+			 * be rotated — see the ⚠️ on the `two_factor` table in `db/schema.ts`.
 			 */
 			twoFactor({ issuer: RP_NAME }),
 			/** The Capacitor client is cross-origin, so cookies do not reach it. */
