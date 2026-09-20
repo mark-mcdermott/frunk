@@ -24,6 +24,17 @@ test('logs a repair on a vehicle, attaches a note, and cleans up', async ({ page
 	).toBe('8999');
 	const repairUrl = page.url();
 
+	// Edit: the form opens seeded from the row, and a changed cost lands in cents.
+	await page.getByRole('link', { name: 'Edit', exact: true }).click();
+	await expect(page.getByLabel('Description')).toHaveValue('Journey strut replacement');
+	await page.getByLabel('Cost').fill('120.5');
+	await page.getByRole('button', { name: 'Save Changes' }).click();
+	await expect(page).toHaveURL(repairUrl);
+	await expect(page.getByText('$120.50')).toBeVisible();
+	expect(
+		await sql(`select cost from repairs where description = 'Journey strut replacement'`)
+	).toBe('12050');
+
 	await page.getByRole('link', { name: 'Add Note' }).click();
 	await expect(page.getByRole('link', { name: 'this repair' })).toBeVisible();
 	await page.getByLabel('Title').fill('Journey receipt');
@@ -49,10 +60,19 @@ test('logs a repair on a vehicle, attaches a note, and cleans up', async ({ page
 		);
 	}
 
+	// Edit: seeded from the row; a repair-attached note returns to its repair on save.
+	await page.getByRole('link', { name: 'Edit', exact: true }).click();
+	await expect(page.getByLabel('Title')).toHaveValue('Journey receipt');
+	await page.getByLabel('Title').fill('Journey receipt (paid)');
+	await page.getByRole('button', { name: 'Save Changes' }).click();
+	await expect(page).toHaveURL(repairUrl);
+	expect(await sql(`select count(*) from notes where title = 'Journey receipt (paid)'`)).toBe('1');
+
+	await page.getByRole('link', { name: 'Journey receipt (paid)', exact: true }).click();
 	await page.getByRole('button', { name: 'Delete', exact: true }).click();
 	await page.getByRole('button', { name: 'Delete permanently' }).click();
 	await expect(page).toHaveURL(/\/notes$/);
-	expect(await sql(`select count(*) from notes where title = 'Journey receipt'`)).toBe('0');
+	expect(await sql(`select count(*) from notes where title = 'Journey receipt (paid)'`)).toBe('0');
 
 	await page.goto(`${repairUrl}/edit`);
 	await page.getByRole('button', { name: 'Delete Repair' }).click();
