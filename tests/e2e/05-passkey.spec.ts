@@ -15,7 +15,18 @@ test('a demo account converts by adding a passkey and signs back in with it', as
 	await attachVirtualAuthenticator(page);
 	const { user } = await startDemo(page.request);
 
-	await page.goto('/profile');
+	// Both doors a demo visitor can find lead to the profile's passkey prompt, never to
+	// email sign-up — Better Auth's sign-up mints a second account, and the garage would
+	// be left behind. The API suite holds the server-side refusal.
+	await page.goto('/signup');
+	await expect(page.getByRole('link', { name: 'Keep my data' })).toHaveAttribute(
+		'href',
+		'/profile'
+	);
+	await expect(page.getByRole('heading', { name: 'You are in a demo' })).toBeVisible();
+	await page.getByRole('link', { name: 'Add a passkey on your profile' }).click();
+
+	await expect(page).toHaveURL(/\/profile$/);
 	await expect(page.getByText('This is a demo account')).toBeVisible();
 	await page.getByRole('button', { name: 'Add a passkey' }).click();
 	await expect(page.getByText('Passkey added — this account is yours now')).toBeVisible();
