@@ -14,9 +14,15 @@ excluded from the Astro build and typecheck. It still deploys to Cloudflare Page
 `main` and stays live until Phase 6.
 
 **Phases 0–3 are done. Phase 4 is nearly done** — vehicles, repairs, notes, vendors,
-maintenance schedules and galleries are full CRUD, and uploads are live on **Vercel
-Blob** (store `frunk-uploads`, **private**). User admin, the repair/note detail screens
-and per-route code splitting remain.
+maintenance schedules, galleries and user admin are all built, and uploads are live on
+**Vercel Blob** (store `frunk-uploads`, **private**). The profile/account screen, the
+repair/note detail screens and per-route code splitting remain.
+
+**Query client rules** (`AppRoot.tsx`): `networkMode: 'always'` on queries *and*
+mutations — TanStack's default pauses fetches whenever `navigator.onLine` is false,
+which renders as an infinite "Loading…"/"Saving…", and that signal is unreliable in
+exactly the webviews Capacitor will put this app in. And **no retry on 4xx** — a 403 is
+a 403 every time; only 5xx/network failures earn the one retry.
 
 **How files work:** the database never stores a blob URL — it stores the app-relative
 serving path (`/api/files/u/<userId>/…`). Uploads go through `POST /api/uploads` (raw

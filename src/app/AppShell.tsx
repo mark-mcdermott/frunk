@@ -1,7 +1,8 @@
 import { Monitor } from 'lucide-react';
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
 import { Link, NavLink, useLocation } from 'react-router';
-import { useSession } from '../lib/auth-client';
+import { toSessionUser, useSession } from '../lib/auth-client';
+import { isAdmin } from '../lib/roles';
 import { initial } from '../lib/user';
 
 /**
@@ -26,6 +27,13 @@ const SECTIONS = [
 	{ label: 'Notes', to: '/notes' },
 	{ label: 'Vendors', to: '/vendors' }
 ];
+
+/**
+ * Hiding the entry is presentation, not protection — the auth boundary stays at the
+ * API (`requireAdmin`), and a non-admin who types /users in by hand gets its 403
+ * rendered as an error state. The nav check just keeps the link honest.
+ */
+const ADMIN_SECTIONS = [{ label: 'Users', to: '/users' }];
 
 export interface Crumb {
 	label: string;
@@ -70,7 +78,7 @@ function CrumbLink({ to, children }: { to: string; children: ReactNode }) {
 
 function Breadcrumbs({ trail }: { trail: Crumb[] }) {
 	const { pathname } = useLocation();
-	const section = SECTIONS.find((s) => pathname.startsWith(s.to));
+	const section = [...SECTIONS, ...ADMIN_SECTIONS].find((s) => pathname.startsWith(s.to));
 
 	const crumbs: Crumb[] = [
 		{ label: 'Home', to: '/' },
@@ -106,7 +114,8 @@ function Breadcrumbs({ trail }: { trail: Crumb[] }) {
 
 export function AppShell({ children }: { children: ReactNode }) {
 	const { data } = useSession();
-	const user = data?.user;
+	const user = data?.user ? toSessionUser(data.user) : null;
+	const sections = user && isAdmin(user.roles) ? [...SECTIONS, ...ADMIN_SECTIONS] : SECTIONS;
 	const [trail, setTrail] = useState<Crumb[]>([]);
 	const set = useMemo(() => (crumbs: Crumb[]) => setTrail(crumbs), []);
 
@@ -119,7 +128,7 @@ export function AppShell({ children }: { children: ReactNode }) {
 					</a>
 
 					<nav aria-label="Sections" className="hidden items-center gap-8 md:flex">
-						{SECTIONS.map((section) => (
+						{sections.map((section) => (
 							<NavLink
 								key={section.to}
 								to={section.to}
@@ -159,15 +168,7 @@ export function AppShell({ children }: { children: ReactNode }) {
 								title={user.name || user.email}
 								className="flex size-8 shrink-0 items-center justify-center rounded-full border border-border bg-surface-raised text-[0.8125rem] font-semibold text-text"
 							>
-								{initial({
-									id: user.id,
-									email: user.email,
-									name: user.name ?? '',
-									image: user.image ?? null,
-									roles: [],
-									emailVerified: Boolean(user.emailVerified),
-									twoFactorEnabled: false
-								})}
+								{initial(user)}
 							</span>
 						)}
 					</div>

@@ -197,9 +197,15 @@ export const updateScheduleSchema = z.object({
 	lastCompletedMileage: optionalInt
 });
 
+/**
+ * `name` and `image`, not `username` and `avatar` — those were the pre-port column
+ * names, kept here by mistake through the Better Auth rename, so a PATCH carrying
+ * them targeted columns that no longer exist. Email is deliberately absent: address
+ * changes belong to Better Auth's verified change-email flow, not a raw column write.
+ */
 export const updateUserSchema = z.object({
-	username: nonEmpty.max(320).optional(),
-	avatar: optionalText,
+	name: nonEmpty.max(200).optional(),
+	image: optionalText,
 	age: optionalInt,
 	roles: z.array(z.number().int()).optional()
 });
