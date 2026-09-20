@@ -527,7 +527,13 @@ database, no secrets. The lesson is already encoded in `db-migrate.yml` — a mi
 manual, uses its own `ASTRO_DATABASE_URL` secret, and refuses to run from `main`. **No
 workflow that runs automatically should hold a schema-push step.**
 
-## Phase 3 — Auth — **REOPENED 2026-09-17** _(was DONE 2026-09-03)_
+## Phase 3 — Auth — **DONE 2026-09-19** _(reopened 2026-09-17 for Better Auth; first done 2026-09-03)_
+
+> **Closed 2026-09-19.** The Better Auth rework landed, Decision 2's carried-forward table is
+> answered, and Phase 4 was built on `user.id`. One row of that table is still open —
+> challenge replay refusal was never asserted with a real authenticator; the journeys' CDP
+> virtual authenticator could now do it. `secrets.ts`, `ENCRYPTION_KEY` and `totp.ts` are
+> deleted (2026-09-20).
 
 > Decision 2 was reversed to Better Auth after this phase completed. **Everything below
 > describes work that was built and verified**, and is kept rather than deleted: the
@@ -879,8 +885,9 @@ Playwright, chromium only, eight specs in ~20 s, wired into CI as its own job.
   hydration wait was deleted with the race.
 - **Two findings**: (1) ~~adding a passkey to a demo account leaves `roles = [DEMO]`~~
   **fixed 2026-09-20** (`feat/demo-conversion`) — see the reaper bullet in Phase 6.
-  (2) `src/lib/server/auth/totp.ts` has no importers since Better Auth took over TOTP;
-  dead code, still to delete.
+  (2) ~~`src/lib/server/auth/totp.ts` has no importers since Better Auth took over TOTP;
+  dead code, still to delete.~~ **Deleted 2026-09-20** (`chore/loose-ends`); `otplib` is a
+  dev dependency now, kept for the recovery journey.
 - **Two ways the journeys lie if written carelessly**, both recorded in `support.ts`:
   a base32 regex on the secret button's `textContent` runs into the sr-only label
   ("Invalid code" that looks like a server bug); and database checks must be scoped
@@ -940,8 +947,12 @@ Playwright, chromium only, eight specs in ~20 s, wired into CI as its own job.
   an API key — PostHog, or `POST /api/events` into Neon. **Deferred; do not block Phase 5.**
 - **Status 2026-09-20:** `about`, `contact` (with `POST /api/contact` through Resend),
   `privacy` and `terms` exist and are live. `pricing` exists but is disabled
-  (`_pricing.astro`) by decision until there is a price. **Vercel Analytics is not
-  installed.** The legal pages are live and **unreviewed** — review before real users.
+  (`_pricing.astro`) by decision until there is a price. ~~**Vercel Analytics is not
+  installed.**~~ **Installed 2026-09-20** (`chore/loose-ends`): `<Analytics />` from
+  `@vercel/analytics/astro` in `BaseLayout.astro`, so every page carries it. The legal
+  pages are live and **unreviewed** — review before real users. (The privacy page's
+  "AES-256-GCM" claim was corrected the same day: Better Auth encrypts recovery secrets,
+  and the algorithm is no longer named.)
 - **Checkpoint:** whole site navigable; view-source shows static HTML on every marketing
   page; contact form delivers.
 
@@ -959,10 +970,10 @@ Playwright, chromium only, eight specs in ~20 s, wired into CI as its own job.
   | variable                               | state                                                                   |
   | -------------------------------------- | ----------------------------------------------------------------------- |
   | `DATABASE_URL` + Neon integration vars | ✅ set (preview + production)                                           |
-  | `ENCRYPTION_KEY`                       | ✅ set — see Phase 3                                                    |
+  | ~~`ENCRYPTION_KEY`~~                   | 🗑 removed 2026-09-20 — Better Auth encrypts at rest (see Phase 3)       |
   | `RP_ID`, `RP_ORIGIN`                   | ✅ set (production only)                                                |
-  | `RESEND_API_KEY`                       | ❌ **needed for Phase 5** — replaces SES                                |
-  | ~~SES: `SES_FROM_EMAIL`, `AWS_*`~~     | 🗑 delete from Vercel — superseded by Resend, and nothing ever read them |
+  | `RESEND_API_KEY`                       | ✅ set (production + preview), verified 2026-09-20                      |
+  | ~~SES: `SES_FROM_EMAIL`, `AWS_*`~~     | 🗑 **still on Vercel as of 2026-09-20** — delete; nothing ever read them |
   | `BLOB_READ_WRITE_TOKEN`                | ✅ set by connecting the `frunk-uploads` store (2026-09-19)             |
 
 - No production data to migrate (frunk never launched). Re-seed with `seed-office.ts`.
