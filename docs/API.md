@@ -244,13 +244,17 @@ Both seed scripts print the database they are about to write to before they touc
 ## Environment
 
 All of it goes in a gitignored `.env` at the repo root. Only `DATABASE_URL` is required.
+The schema is declared in `astro.config.mjs`; this table mirrors it.
 
-|                  |                                                                           |
-| ---------------- | ------------------------------------------------------------------------- |
-| `DATABASE_URL`   | Required. Points at the **new, blank** Neon database, not the legacy one. |
-| `RP_ID`          | The WebAuthn relying-party id — `frunk.cloud` in production.              |
-| `RP_ORIGIN`      | `https://frunk.cloud`.                                                    |
-| `ENCRYPTION_KEY` | Seals the TOTP secret at rest. Required on any https deploy.              |
+|                         |                                                                                     |
+| ----------------------- | ----------------------------------------------------------------------------------- |
+| `DATABASE_URL`          | Required. Points at the **new, blank** Neon database, not the legacy one.           |
+| `BETTER_AUTH_SECRET`    | Signs sessions and encrypts TOTP secrets at rest. **Never rotate** — see CLAUDE.md. |
+| `RP_ID`                 | The WebAuthn relying-party id — `frunk.cloud` in production.                        |
+| `RP_ORIGIN`             | `https://frunk.cloud`.                                                              |
+| `RESEND_API_KEY`        | Transactional email. Without it `sendEmail` fails at call time, not at build.       |
+| `CONTACT_EMAIL`         | Where the contact form lands. Defaults to the footer address.                       |
+| `BLOB_READ_WRITE_TOKEN` | Vercel Blob (`frunk-uploads`, private). Without it uploads answer 503.              |
 
 **`RP_ID` and `RP_ORIGIN` are optional, and unset is the right answer in development
 and on preview deploys.** Left blank they are derived from the request, which is the only

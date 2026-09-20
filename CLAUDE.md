@@ -244,7 +244,7 @@ Five things about it are easy to get wrong:
   be read back.
 
   Because that encryption exists, `src/lib/server/auth/secrets.ts` and `ENCRYPTION_KEY`
-  are now dead code and can be removed.
+  were dead code; both are gone (the module on 2026-09-20, the Vercel variable with it).
 
 **Island classification rule:** does a live browser runtime need to exist for this to
 render? Yes → `client:only`. No → `client:load` / `client:visible`. Cross-island state is a
