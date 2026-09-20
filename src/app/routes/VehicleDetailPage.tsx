@@ -22,11 +22,11 @@ import {
 	deleteRepair,
 	getVehicle,
 	keys,
-	type Gallery,
 	type Note,
 	type Repair
 } from '../api';
 import { useCrumbs } from '../AppShell';
+import { GalleryEditor } from '../components/GalleryEditor';
 import { ScheduleEditor } from '../components/ScheduleEditor';
 import { formatCost, formatMiles, formatNumericDate } from '../format';
 
@@ -40,10 +40,8 @@ import { formatCost, formatMiles, formatNumericDate } from '../format';
  * those screens exist. Each `+ Add` passes `?vehicle=<id>` so the form arrives already
  * attached and never asks which vehicle you meant.
  *
- * Maintenance schedules are edited in place (see `ScheduleEditor`). **Galleries stay
- * read-only**, and deliberately: creating one is trivial, but `POST /api/photos` records
- * an `imageUrl` that must already exist, so without Vercel Blob a gallery is a box that
- * cannot be filled. It ships with uploads, not before.
+ * Maintenance schedules and galleries are edited in place (`ScheduleEditor`,
+ * `GalleryEditor`) — each is a small record attached to the vehicle already on screen.
  */
 
 
@@ -225,29 +223,6 @@ function RepairCard({ repair, onDelete }: { repair: Repair; onDelete: () => void
 }
 
 
-function GalleryBlock({ gallery }: { gallery: Gallery }) {
-	return (
-		<div>
-			<h3 className="text-[0.9375rem] font-semibold text-text">{gallery.name}</h3>
-			{gallery.description && (
-				<p className="mt-1 text-[0.8125rem] text-text-muted">{gallery.description}</p>
-			)}
-
-			<div className="mt-4 flex flex-wrap gap-4">
-				{gallery.photos.map((photo) => (
-					<figure key={photo.id} className="relative w-44 overflow-hidden rounded-control">
-						<img src={photo.imageUrl} alt={photo.caption ?? ''} className="h-28 w-full object-cover" />
-						{photo.caption && (
-							<figcaption className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 to-transparent px-3 py-2 text-[0.75rem] text-white">
-								{photo.caption}
-							</figcaption>
-						)}
-					</figure>
-				))}
-			</div>
-		</div>
-	);
-}
 
 export function VehicleDetailPage() {
 	const { id = '' } = useParams();
@@ -419,19 +394,7 @@ export function VehicleDetailPage() {
 			</Panel>
 
 			<Panel icon={<Camera className="size-5" />} title="Galleries">
-				{data.galleries.length === 0 ? (
-					<Empty
-						icon={<Camera className="size-5" strokeWidth={1.5} />}
-						title="No galleries yet"
-						line="Group photos by exterior, interior or details."
-					/>
-				) : (
-					<div className="grid gap-8 md:grid-cols-2">
-						{data.galleries.map((gallery) => (
-							<GalleryBlock key={gallery.id} gallery={gallery} />
-						))}
-					</div>
-				)}
+				<GalleryEditor vehicleId={vehicle.id} galleries={data.galleries} />
 			</Panel>
 		</div>
 	);

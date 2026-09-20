@@ -13,6 +13,7 @@ import {
 } from '../api';
 import { useCrumbs } from '../AppShell';
 import { SelectField, TextAreaField, TextField, type Option } from '../components/Field';
+import { FileField } from '../components/FileField';
 
 /**
  * Add and edit a note, built to `docs/mocks/note-edit.webp`.
@@ -24,14 +25,15 @@ import { SelectField, TextAreaField, TextField, type Option } from '../component
  * `title`, `body`, `imageUrl` and `order` — reparenting is not in the API, so the form
  * states where the note lives rather than offering a select that would silently fail.
  *
- * **No image field.** The mock has one; uploads are a Vercel Blob job and
- * `BLOB_READ_WRITE_TOKEN` is not provisioned, so "Change Image" would do nothing.
+ * The attachment uploads to the private Blob store (`FileField`) and accepts PDFs,
+ * because "the note is the receipt" is this feature's whole use case.
  */
 
 interface FormState {
 	vehicleId: string | null;
 	title: string;
 	body: string;
+	imageUrl: string | null;
 }
 
 type Errors = Partial<Record<'vehicleId' | 'title', string>>;
@@ -46,7 +48,8 @@ export function NoteFormPage() {
 	const [form, setForm] = useState<FormState>(() => ({
 		vehicleId: params.get('vehicle'),
 		title: '',
-		body: ''
+		body: '',
+		imageUrl: null
 	}));
 	const [errors, setErrors] = useState<Errors>({});
 	const [confirmingDelete, setConfirmingDelete] = useState(false);
@@ -69,7 +72,8 @@ export function NoteFormPage() {
 			setForm({
 				vehicleId: existing.vehicleId,
 				title: existing.title,
-				body: existing.body ?? ''
+				body: existing.body ?? '',
+				imageUrl: existing.imageUrl
 			});
 		}
 	}, [existing]);
@@ -97,11 +101,13 @@ export function NoteFormPage() {
 			editing
 				? updateNote(uuid as string, {
 						title: state.title.trim(),
-						body: state.body.trim() || null
+						body: state.body.trim() || null,
+						imageUrl: state.imageUrl
 					})
 				: createNote({
 						title: state.title.trim(),
 						body: state.body.trim() || null,
+						imageUrl: state.imageUrl,
 						vehicleId: state.vehicleId ?? undefined
 					}),
 		onSuccess: () => {
@@ -208,6 +214,12 @@ export function NoteFormPage() {
 						maxLength={500}
 						value={form.body}
 						onChange={(value) => setForm((prev) => ({ ...prev, body: value }))}
+					/>
+
+					<FileField
+						label="Attachment"
+						value={form.imageUrl}
+						onChange={(imageUrl) => setForm((prev) => ({ ...prev, imageUrl }))}
 					/>
 				</div>
 

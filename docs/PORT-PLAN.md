@@ -355,7 +355,8 @@ This replaces `vite dev` + SvelteKit's server routes.
   a separate database means the port cannot disturb the live Cloudflare app. The cost is
   that the schema has to be pushed and the roles seeded before anything works — see
   "Database setup" in `docs/API.md`.
-- **A Vercel Blob store does not exist yet.** Not blocking: Blob is unused until Phase 4.
+- ~~A Vercel Blob store does not exist yet.~~ **`frunk-uploads` (private, iad1) exists and
+  is connected (2026-09-19).**
 - ~~Audit R2 for live user data worth migrating.~~ **Nothing to migrate.** Two buckets exist:
   - `frunk-avatars` — bound as `R2_AVATARS` in `wrangler.toml`. frunk never launched, so it
     holds no real user data. Uploads were also guarded by `!import.meta.env.DEV`, so they
@@ -740,10 +741,38 @@ which vehicle you meant.
   attached to the vehicle already on screen, no identity of their own, no mock either
   way — `/vehicles/:id/schedules/new` is navigation the record does not earn. The form
   enforces `createScheduleSchema`'s refinement (at least one interval) client-side.
-- Still to build: galleries (**with uploads** — `POST /api/photos` records an `imageUrl`
-  that must already exist, so a gallery without Blob is a box that cannot be filled),
-  user admin, the repair and note *detail* screens (list → edit covers the data today;
-  the singles mostly add attachments and note nesting) — and the per-route code
+**Landed 2026-09-19 — uploads on Vercel Blob, and galleries are full CRUD**
+(`feat/uploads-and-galleries`). The store is **`frunk-uploads`, private, iad1**, created
+and connected via `vercel blob create-store` (the dashboard-API route 403s for blob
+creation; the CLI from a linked repo is what works). An earlier unconnected attempt left
+an empty orphan store — **`frunk-files` (store_nfhGNM9xPPxInwlz), delete it interactively
+with `vercel blob delete-store store_nfhGNM9xPPxInwlz`** (the CLI refuses to do it
+non-interactively, correctly).
+
+- **Private is the point.** The legacy R2 setup served documents from public `r2.dev`
+  URLs — any leaked link world-readable forever. Here a blob is only reachable through
+  `GET /api/files/[...path]`, which requires a session and checks the `u/<userId>/`
+  pathname prefix — a foreign user's file answers **404**, the house no-existence-oracle
+  rule. Verified over HTTP: owner 200 byte-identical, no session 401, second demo user
+  404, 11 MB 413, zip 415.
+- **The database never stores a blob URL** — it stores the `/api/files/…` serving path.
+  `<img src>` works unchanged (same-origin cookie), external seeded R2 URLs keep
+  rendering, and the store could be swapped without a data migration.
+- **Deletes clean their blobs**: photo delete, gallery delete (pathnames collected
+  before the FK cascade erases the rows), note delete (children included), vehicle
+  delete (cover + photos + note attachments), and a PATCH that replaces or clears the
+  cover image deletes the old blob — verified against the live store each time.
+  Cleanup is best-effort *after* the rows are gone: a blob failure logs and leaves an
+  orphan rather than failing the request.
+- **Known orphan case, accepted:** upload-then-abandon (a file picked in a form that is
+  never saved). Bounded, invisible to users, reconcilable later by diffing the store
+  against the columns.
+- Cover image on the vehicle form and attachment on the note form share `FileField`
+  (upload on pick, preview, PDF chip); galleries get `GalleryEditor` on the vehicle
+  panel — create/delete gallery, add/remove photos. Captions, drag-to-reorder
+  (`photoOrder`) and gallery rename ride a later polish pass.
+- Still to build: user admin, the repair and note *detail* screens (list → edit covers
+  the data today; the singles mostly add note nesting) — and the per-route code
   splitting Phase 4 also owns.
 - Rebuild the app screens in React against the mocks: vehicles index and detail, vendors,
   repairs, notes, galleries, maintenance schedules, user admin. Follow `docs/DESIGN.md`
@@ -805,7 +834,7 @@ which vehicle you meant.
   | `RP_ID`, `RP_ORIGIN` | ✅ set (production only) |
   | `RESEND_API_KEY` | ❌ **needed for Phase 5** — replaces SES |
   | ~~SES: `SES_FROM_EMAIL`, `AWS_*`~~ | 🗑 delete from Vercel — superseded by Resend, and nothing ever read them |
-  | `BLOB_READ_WRITE_TOKEN` | ❌ **still missing — Phase 4 needs it for uploads** |
+  | `BLOB_READ_WRITE_TOKEN` | ✅ set by connecting the `frunk-uploads` store (2026-09-19) |
 - No production data to migrate (frunk never launched). Re-seed with `seed-office.ts`.
 - Re-point Capacitor at the new origin and verify a passkey ceremony inside the webview.
 - Desktop is out of scope (Decision 7) — no Tauri step.

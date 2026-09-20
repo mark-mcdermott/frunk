@@ -13,11 +13,18 @@ app. The SvelteKit app lives in **`legacy/`** — it is the reference for the po
 excluded from the Astro build and typecheck. It still deploys to Cloudflare Pages from
 `main` and stays live until Phase 6.
 
-**Phases 0–3 are done. Phase 4 is underway** — vehicles, repairs, notes, vendors and
-maintenance schedules are full CRUD; galleries and user admin are not built, and neither
-are uploads. Galleries wait for Vercel Blob deliberately: `POST /api/photos` records an
-`imageUrl` that must already exist, so without uploads a gallery is a box that cannot be
-filled. Read
+**Phases 0–3 are done. Phase 4 is nearly done** — vehicles, repairs, notes, vendors,
+maintenance schedules and galleries are full CRUD, and uploads are live on **Vercel
+Blob** (store `frunk-uploads`, **private**). User admin, the repair/note detail screens
+and per-route code splitting remain.
+
+**How files work:** the database never stores a blob URL — it stores the app-relative
+serving path (`/api/files/u/<userId>/…`). Uploads go through `POST /api/uploads` (raw
+body, 10 MB, images+PDF); serving goes through `GET /api/files/[...path]`, which checks
+the session and the `u/<userId>/` pathname prefix on every request (foreign file = 404,
+no existence oracle). `src/lib/server/files.ts` is the only module that touches
+`@vercel/blob`. Delete/replace endpoints clean their blobs; an upload abandoned before
+its form is saved leaves an orphan (accepted, see the plan). Read
 `docs/PORT-PLAN.md` before doing anything here; it records what is settled and what is
 outstanding.
 

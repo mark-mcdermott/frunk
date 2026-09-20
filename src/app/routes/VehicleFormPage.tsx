@@ -13,6 +13,7 @@ import {
 } from '../api';
 import { useCrumbs } from '../AppShell';
 import { plainOptions, SelectField, TextField } from '../components/Field';
+import { FileField } from '../components/FileField';
 
 /**
  * Add and edit a vehicle, built to `docs/mocks/vehicle-edit.webp`.
@@ -30,8 +31,9 @@ import { plainOptions, SelectField, TextField } from '../components/Field';
  *   someone enumerates every marque is worse than typing it.
  * - **Engine is two fields.** The mock shows one ("258ci I6") but the schema has
  *   `engineSize` and `engineType`. The detail screen joins them back for display.
- * - **Cover Image is absent.** Uploads are a Vercel Blob job and `BLOB_READ_WRITE_TOKEN`
- *   is not provisioned yet, so "Change Image" would do nothing.
+ * - Cover Image uploads to the private Blob store (`FileField`) — the form stores the
+ *   `/api/files/…` serving URL, and the PATCH endpoint deletes the old blob when the
+ *   image is replaced or cleared.
  *
  * Nickname and Current Mileage are added, though the mock omits them: the garage list
  * renders both, and without them here there is no way to set either.
@@ -61,6 +63,7 @@ interface FormState {
 	engineType: string;
 	transmission: string;
 	currentMileage: string;
+	image: string | null;
 }
 
 const BLANK: FormState = {
@@ -74,7 +77,8 @@ const BLANK: FormState = {
 	engineSize: '',
 	engineType: '',
 	transmission: '',
-	currentMileage: ''
+	currentMileage: '',
+	image: null
 };
 
 function toForm(vehicle: Vehicle): FormState {
@@ -89,7 +93,8 @@ function toForm(vehicle: Vehicle): FormState {
 		engineSize: vehicle.engineSize ?? '',
 		engineType: vehicle.engineType ?? '',
 		transmission: vehicle.transmission ?? '',
-		currentMileage: vehicle.currentMileage == null ? '' : String(vehicle.currentMileage)
+		currentMileage: vehicle.currentMileage == null ? '' : String(vehicle.currentMileage),
+		image: vehicle.image
 	};
 }
 
@@ -108,7 +113,8 @@ function toPayload(form: FormState): VehicleInput {
 		engineSize: orNull(form.engineSize),
 		engineType: orNull(form.engineType),
 		transmission: orNull(form.transmission),
-		currentMileage: form.currentMileage.trim() ? Number(form.currentMileage) : null
+		currentMileage: form.currentMileage.trim() ? Number(form.currentMileage) : null,
+		image: form.image
 	};
 }
 
@@ -278,6 +284,12 @@ export function VehicleFormPage() {
 						inputMode="numeric"
 						error={errors.currentMileage}
 						{...field('currentMileage')}
+					/>
+					<FileField
+						label="Cover Image"
+						imagesOnly
+						value={form.image}
+						onChange={(image) => setForm((prev) => ({ ...prev, image }))}
 					/>
 				</div>
 

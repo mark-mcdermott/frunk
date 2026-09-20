@@ -2,6 +2,7 @@ import type { APIRoute } from 'astro';
 import { desc, eq } from 'drizzle-orm';
 import { getDb } from '../../../lib/server/db';
 import * as table from '../../../lib/server/db/schema';
+import { deleteManagedFiles } from '../../../lib/server/files';
 import { ownedGallery, requireSession } from '../_lib/guard';
 import { handler, json, noContent, notFound, readJson } from '../_lib/http';
 import { updateGallerySchema } from '../_lib/schemas';
@@ -75,8 +76,17 @@ export const DELETE: APIRoute = (context) =>
 		if (!id) return notFound('Gallery not found');
 
 		await ownedGallery(id, user.id);
-		// Photo rows cascade from the FK. Phase 4 also deletes their blobs here.
-		await getDb().delete(table.galleries).where(eq(table.galleries.id, id));
+		const db = getDb();
+
+		// The FK cascade erases the photo rows, so their blob pathnames have to be
+		// collected first or the files are orphaned in the store.
+		const photos = await db
+			.select({ imageUrl: table.vehiclePhotos.imageUrl })
+			.from(table.vehiclePhotos)
+			.where(eq(table.vehiclePhotos.galleryId, id));
+
+		await db.delete(table.galleries).where(eq(table.galleries.id, id));
+		await deleteManagedFiles(photos.map((p) => p.imageUrl));
 
 		return noContent();
 	});
