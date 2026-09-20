@@ -20,6 +20,8 @@ export default tseslint.config(
 	{
 		ignores: [
 			'legacy/**',
+			// Worktrees that background sessions leave behind carry a whole second copy.
+			'.claude/**',
 			'android/**',
 			'ios/**',
 			'src-tauri/**',
@@ -61,13 +63,11 @@ export default tseslint.config(
 			...reactHooks.configs.flat.recommended.rules,
 			...jsxA11y.flatConfigs.recommended.rules,
 			/*
-			 * A warning, not an error, for now. Every form page seeds its state from the
-			 * loaded row inside an effect — one extra render per load, which this rule
-			 * rightly flags. The fix is a key-remounted form component initialised from
-			 * the row, and it gets its own PR once the journeys cover every edit path it
-			 * would touch (vendor and repair edits have none yet). Flip to 'error' then.
+			 * An error since 2026-09-20. Every form page used to seed its state from the loaded
+			 * row inside an effect; each is now a loader that renders a form keyed on the row,
+			 * seeded at mount. Reach for that pattern, not for an effect.
 			 */
-			'react-hooks/set-state-in-effect': 'warn',
+			'react-hooks/set-state-in-effect': 'error',
 			// Label text may sit two elements deep — the role checkboxes carry a name
 			// line and a hint line inside one wrapping span. Depth 3 sees through that.
 			'jsx-a11y/label-has-associated-control': ['error', { depth: 3 }]

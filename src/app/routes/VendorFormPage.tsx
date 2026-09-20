@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { ArrowLeft, Trash2 } from 'lucide-react';
-import { useEffect, useState, type SubmitEvent } from 'react';
+import { useState, type SubmitEvent } from 'react';
 import { Link, useNavigate, useParams } from 'react-router';
 import {
 	createVendor,
@@ -33,32 +33,51 @@ interface FormState {
 
 const BLANK: FormState = { name: '', address: '', phone: '', website: '' };
 
+function toForm(vendor: Vendor): FormState {
+	return {
+		name: vendor.name,
+		address: vendor.address ?? '',
+		phone: vendor.phone ?? '',
+		website: vendor.website ?? ''
+	};
+}
+
 /** An emptied optional field sends `null`, which is what clears the column. */
 const orNull = (value: string) => (value.trim() ? value.trim() : null);
 
 export function VendorFormPage() {
 	const { id } = useParams();
+	const vendors = useQuery({ queryKey: keys.vendors, queryFn: listVendors });
+	const existing = vendors.data?.find((vendor) => vendor.id === id);
+
+	if (id && vendors.isPending) {
+		return <p className="py-10 text-[0.9375rem] text-text-muted">Loading…</p>;
+	}
+
+	if (id && !existing) {
+		return (
+			<p role="alert" className="py-10 text-[0.9375rem] text-destructive">
+				{vendors.isError && vendors.error instanceof Error
+					? vendors.error.message
+					: 'Vendor not found'}
+			</p>
+		);
+	}
+
+	// Keyed on the row: a different vendor mounts a fresh form seeded from its row, which
+	// is React's answer to "state initialised from a prop" — no effect, no extra render.
+	return <VendorForm key={existing?.id ?? 'new'} existing={existing} />;
+}
+
+function VendorForm({ existing }: { existing: Vendor | undefined }) {
+	const { id } = useParams();
 	const editing = Boolean(id);
 	const navigate = useNavigate();
 	const client = useQueryClient();
 
-	const [form, setForm] = useState<FormState>(BLANK);
+	const [form, setForm] = useState<FormState>(() => (existing ? toForm(existing) : BLANK));
 	const [errors, setErrors] = useState<Partial<Record<'name' | 'website', string>>>({});
 	const [confirmingDelete, setConfirmingDelete] = useState(false);
-
-	const vendors = useQuery({ queryKey: keys.vendors, queryFn: listVendors });
-	const existing = vendors.data?.find((vendor) => vendor.id === id);
-
-	useEffect(() => {
-		if (existing) {
-			setForm({
-				name: existing.name,
-				address: existing.address ?? '',
-				phone: existing.phone ?? '',
-				website: existing.website ?? ''
-			});
-		}
-	}, [existing]);
 
 	useCrumbs(
 		editing ? [{ label: existing?.name ?? 'Vendor' }, { label: 'Edit' }] : [{ label: 'New vendor' }]
@@ -107,20 +126,6 @@ export function VendorFormPage() {
 			phone: orNull(form.phone),
 			website: orNull(form.website)
 		});
-	}
-
-	if (editing && vendors.isPending) {
-		return <p className="py-10 text-[0.9375rem] text-text-muted">Loading…</p>;
-	}
-
-	if (editing && !existing) {
-		return (
-			<p role="alert" className="py-10 text-[0.9375rem] text-destructive">
-				{vendors.isError && vendors.error instanceof Error
-					? vendors.error.message
-					: 'Vendor not found'}
-			</p>
-		);
 	}
 
 	const busy = save.isPending || remove.isPending;
