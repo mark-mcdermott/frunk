@@ -1,6 +1,10 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router';
 import { AppShell } from './AppShell';
+import { NoteFormPage } from './routes/NoteFormPage';
+import { NotesPage } from './routes/NotesPage';
+import { RepairFormPage } from './routes/RepairFormPage';
+import { RepairsPage } from './routes/RepairsPage';
 import { VehicleDetailPage } from './routes/VehicleDetailPage';
 import { VehicleFormPage } from './routes/VehicleFormPage';
 import { VehiclesPage } from './routes/VehiclesPage';
@@ -46,6 +50,12 @@ export function AppRoot() {
 						<Route path="/vehicles/new" element={<VehicleFormPage />} />
 						<Route path="/vehicles/:id" element={<VehicleDetailPage />} />
 						<Route path="/vehicles/:id/edit" element={<VehicleFormPage />} />
+						<Route path="/repairs" element={<RepairsPage />} />
+						<Route path="/repairs/new" element={<RepairFormPage />} />
+						<Route path="/repairs/:id/edit" element={<RepairFormPage />} />
+						<Route path="/notes" element={<NotesPage />} />
+						<Route path="/notes/new" element={<NoteFormPage />} />
+						<Route path="/notes/:uuid/edit" element={<NoteFormPage />} />
 						<Route path="/vendors" element={<VendorsPage />} />
 						{/* Unknown app paths go to the garage rather than a blank island. */}
 						<Route path="*" element={<Navigate to="/vehicles" replace />} />

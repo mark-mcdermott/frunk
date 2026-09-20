@@ -3,6 +3,7 @@ import { Car, Folder, Pencil, Plus, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 import { Link } from 'react-router';
 import { deleteVehicle, keys, listVehicles, type Vehicle } from '../api';
+import { formatDate, formatTime } from '../format';
 
 /**
  * The garage, built to `docs/mocks/vehicles-index.webp`.
@@ -16,17 +17,6 @@ import { deleteVehicle, keys, listVehicles, type Vehicle } from '../api';
  * "1,247 documents" would look finished and mean nothing.
  */
 
-function formatDate(iso: string) {
-	return new Date(iso).toLocaleDateString(undefined, {
-		month: 'short',
-		day: 'numeric',
-		year: 'numeric'
-	});
-}
-
-function formatTime(iso: string) {
-	return new Date(iso).toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' });
-}
 
 /** Label above, value bold, time muted beneath — the mock's right-aligned stacks. */
 function Stamp({ label, iso }: { label: string; iso: string }) {
