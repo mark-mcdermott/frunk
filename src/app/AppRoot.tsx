@@ -4,6 +4,7 @@ import { BrowserRouter, Navigate, Route, Routes } from 'react-router';
 import { AppShell } from './AppShell';
 import { NoteFormPage } from './routes/NoteFormPage';
 import { NotesPage } from './routes/NotesPage';
+import { ProfilePage } from './routes/ProfilePage';
 import { RepairFormPage } from './routes/RepairFormPage';
 import { RepairsPage } from './routes/RepairsPage';
 import { UserFormPage } from './routes/UserFormPage';
@@ -82,6 +83,7 @@ export function AppRoot() {
 						<Route path="/vendors" element={<VendorsPage />} />
 						<Route path="/vendors/new" element={<VendorFormPage />} />
 						<Route path="/vendors/:id/edit" element={<VendorFormPage />} />
+						<Route path="/profile" element={<ProfilePage />} />
 						<Route path="/users" element={<UsersPage />} />
 						<Route path="/users/:id/edit" element={<UserFormPage />} />
 						{/* Unknown app paths go to the garage rather than a blank island. */}
