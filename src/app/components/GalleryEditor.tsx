@@ -138,7 +138,7 @@ function GalleryBlock({ gallery, vehicleId }: { gallery: Gallery; vehicleId: str
 							type="button"
 							aria-label={`Delete photo${photo.caption ? ` ${photo.caption}` : ''}`}
 							onClick={() => removePhoto.mutate(photo.id)}
-							className="absolute right-2 top-2 flex size-7 items-center justify-center rounded-full bg-black/60 text-white opacity-0 transition-opacity focus-visible:opacity-100 group-hover:opacity-100"
+							className="absolute top-2 right-2 flex size-7 items-center justify-center rounded-full bg-black/60 text-white opacity-0 transition-opacity group-hover:opacity-100 focus-visible:opacity-100"
 						>
 							<X className="size-3.5" strokeWidth={2} aria-hidden />
 						</button>

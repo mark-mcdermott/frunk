@@ -84,7 +84,12 @@ export function VendorsPage() {
 	const [search, setSearch] = useState('');
 	const [confirming, setConfirming] = useState<Vendor | null>(null);
 
-	const { data: vendors, isPending, isError, error } = useQuery({
+	const {
+		data: vendors,
+		isPending,
+		isError,
+		error
+	} = useQuery({
 		queryKey: keys.vendors,
 		queryFn: listVendors
 	});

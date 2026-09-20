@@ -40,6 +40,7 @@ Use `TaskCreate` for each feature in the checklist. This is critical — tasks s
 ### 3. Initialize Progress File
 
 **If `.claude/one-shot-progress.md` already exists**, back it up before starting fresh:
+
 ```bash
 mkdir -p .claude/one-shot-progress-bak
 mv .claude/one-shot-progress.md ".claude/one-shot-progress-bak/one-shot-progress-bak-$(date +%m-%d-%y-%H-%M-%S).md"
@@ -51,6 +52,7 @@ Write the initial progress file:
 # One-Shot Progress
 
 ## Checklist
+
 - [ ] Feature 1
 - [ ] Feature 2
 - ...
@@ -60,6 +62,7 @@ Write the initial progress file:
 (none yet)
 
 ## Current State
+
 Starting build.
 ```
 
@@ -70,19 +73,25 @@ Save to `.claude/one-shot-progress.md`.
 Check what's available and install what's needed:
 
 **For e2e tests (Playwright):**
+
 ```bash
 npx playwright --version
 ```
+
 If not installed and e2e tests will be needed:
+
 ```bash
 npm install -D @playwright/test && npx playwright install
 ```
 
 **For unit tests (Vitest/Jest):**
+
 ```bash
 npx vitest --version || npx jest --version
 ```
+
 If neither is installed and unit tests will be needed, prefer Vitest:
+
 ```bash
 npm install -D vitest
 ```
@@ -96,54 +105,70 @@ Before starting each feature, **re-read `.claude/one-shot-progress.md`** to re-o
 Then update the task status to `in_progress` and follow this cycle:
 
 #### a. Choose Test Type
+
 Pick unit or e2e based on what the feature is:
+
 - User-facing flow (page, form, navigation) → **e2e** (Playwright)
 - Utility, helper, validation, business logic → **unit** (Vitest/Jest)
 - API route/middleware → judge by complexity
 
 #### b. Write the Test (RED)
+
 - Write a test for the feature using the appropriate framework
 - Follow existing test conventions in the project
 
 #### c. Confirm Failure
+
 ```bash
 # e2e:
 npx playwright test <test-file> --reporter=list
 # unit:
 npx vitest run <test-file>
 ```
+
 - Must fail. If it passes, the test isn't testing anything new.
 
 #### d. Build the Feature (GREEN)
+
 - Implement the minimum to make the test pass
 - Follow existing project patterns
 
 #### e. Confirm Pass
+
 Run the same test command from step c.
+
 - If it fails, fix and rerun. Do not weaken the test.
 - If it passes, continue.
 
 #### f. Run Full Test Suite
+
 ```bash
 # Run all available test suites
 npx playwright test --reporter=list 2>/dev/null; npx vitest run 2>/dev/null
 ```
+
 - Ensure nothing else broke. Fix regressions before moving on.
 
 #### f. Commit
+
 Read `.claude/commit-style.md` for the current commit style. Commit using that style.
+
 ```bash
 git add [relevant files]
 git commit -m "<message following .claude/commit-style.md>"
 ```
+
 Commit after each passing feature. This protects work and keeps diffs small.
 
 **Commit rules (CRITICAL)**:
+
 - Follow the format and rules in `.claude/commit-style.md`.
 - No AI attribution. No co-author lines, no signatures, no references to Claude/AI.
 
 #### g. Slop Check
+
 Quickly review your own work for this feature. Fix any issues before committing:
+
 - Files created that aren't imported/used anywhere
 - Wrapper functions or abstractions that are only used once (inline them)
 - Utility files that duplicate what a library already provides
@@ -155,6 +180,7 @@ Quickly review your own work for this feature. Fix any issues before committing:
 Mark the task as `completed`.
 
 Update `.claude/one-shot-progress.md`:
+
 - Check off the feature in the checklist
 - Add an entry under "Completed Features" with a brief note on what was built and any key decisions
 - Update "Current State" to reflect what's next
@@ -171,7 +197,7 @@ After all features are complete:
    - Push the branch
    - Create a PR covering all completed work, with no AI attribution
    - Report the PR URL to the user
-5. Report to the user:
+6. Report to the user:
    - What was built (brief summary)
    - All tests passing
    - Number of commits made

@@ -50,8 +50,8 @@ export function SignUpForm() {
 				subtitle={`We sent a verification link to ${email}. Open it to finish setting up your account.`}
 			>
 				<p className="mt-6 text-[0.875rem] leading-relaxed text-text-muted">
-					You will not be able to sign in until the address is verified. The link expires, so
-					if it has been a while, send a new one.
+					You will not be able to sign in until the address is verified. The link expires, so if it
+					has been a while, send a new one.
 				</p>
 
 				<FormError message={error} />

@@ -60,10 +60,12 @@ Follow `/one-shot` step 3, but write the progress file to `<WORKTREE_PATH>/.clau
 # One-Shot Progress
 
 ## Worktree
+
 **Path**: <WORKTREE_PATH>
 **CRITICAL**: ALL file operations must use absolute paths under this directory. If you find yourself using the main repo path, STOP and correct immediately. Alert the user.
 
 ## Checklist
+
 - [ ] Feature 1
 - [ ] Feature 2
 - ...
@@ -73,6 +75,7 @@ Follow `/one-shot` step 3, but write the progress file to `<WORKTREE_PATH>/.clau
 (none yet)
 
 ## Current State
+
 Starting build.
 ```
 
@@ -88,6 +91,7 @@ Follow the same workflow as `/one-shot` (parse checklist, create tasks, ensure t
 ### 4. After Completion
 
 Report to the user:
+
 - What was built (brief summary)
 - All tests passing
 - Number of commits made

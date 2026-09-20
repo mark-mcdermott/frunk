@@ -60,7 +60,9 @@ export function VendorFormPage() {
 		}
 	}, [existing]);
 
-	useCrumbs(editing ? [{ label: existing?.name ?? 'Vendor' }, { label: 'Edit' }] : [{ label: 'New vendor' }]);
+	useCrumbs(
+		editing ? [{ label: existing?.name ?? 'Vendor' }, { label: 'Edit' }] : [{ label: 'New vendor' }]
+	);
 
 	const save = useMutation({
 		mutationFn: (payload: VendorInput) =>

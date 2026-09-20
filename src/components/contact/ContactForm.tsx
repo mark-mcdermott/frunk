@@ -177,8 +177,8 @@ export function ContactForm() {
 			<SubmitButton label="Send message" pendingLabel="Sending…" pending={pending} />
 
 			<p className="text-[0.8125rem] leading-relaxed text-text-faint">
-				Your message reaches one person, and your address is used only to reply. By submitting
-				this form, you agree to our{' '}
+				Your message reaches one person, and your address is used only to reply. By submitting this
+				form, you agree to our{' '}
 				<a href="/privacy" className="text-accent-text underline underline-offset-2">
 					Privacy Policy
 				</a>

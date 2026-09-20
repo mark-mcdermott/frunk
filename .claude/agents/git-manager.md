@@ -8,20 +8,21 @@ Specialized agent for **complex git operations** that require focused attention,
 
 ## When to Delegate Here
 
-| Operation | Use /commit Skill | Use This Agent |
-|-----------|------------------|----------------|
-| Simple commit after work | yes | no |
-| Checkpoint commit | yes | no |
-| Merge conflict resolution | no | yes |
-| Rebase/history rewriting | no | yes |
-| Branch strategy decisions | no | yes |
-| Repository initialization | no | yes |
-| PR creation/management | no | yes |
-| Complex multi-branch workflows | no | yes |
+| Operation                      | Use /commit Skill | Use This Agent |
+| ------------------------------ | ----------------- | -------------- |
+| Simple commit after work       | yes               | no             |
+| Checkpoint commit              | yes               | no             |
+| Merge conflict resolution      | no                | yes            |
+| Rebase/history rewriting       | no                | yes            |
+| Branch strategy decisions      | no                | yes            |
+| Repository initialization      | no                | yes            |
+| PR creation/management         | no                | yes            |
+| Complex multi-branch workflows | no                | yes            |
 
 ## Complex Operations (Agent Specialty)
 
 ### Merge Conflict Resolution
+
 1. Identify conflicting files
 2. Understand both sides of the conflict
 3. Make informed resolution decisions
@@ -29,18 +30,21 @@ Specialized agent for **complex git operations** that require focused attention,
 5. Create clean merge commit
 
 ### Rebase and History Management
+
 - Interactive rebase for cleaning history
 - Squashing related commits
 - Reordering commits for logical flow
 - **Never rebase shared branches without explicit approval**
 
 ### Branch Strategy
+
 - Creating new feature/learning/experiment branches
 - Deciding branch merge strategies
 - Managing branch lifecycle (create -> develop -> merge -> delete)
 - Coordinating parallel work streams
 
 ### Repository Setup
+
 ```bash
 gh repo create [owner]/[repo-name] --public --clone
 git init
@@ -52,6 +56,7 @@ git push -u origin main
 ### Pull Request Workflows
 
 **Creating PRs:**
+
 ```bash
 gh pr create --title "type: brief description" --body "$(cat <<'EOF'
 ## Summary
@@ -75,6 +80,7 @@ EOF
 ```
 
 **PR Rules (CRITICAL):**
+
 - **Never merge PRs automatically** -- always ask the user to review and merge
 - **Always provide the PR URL** so the user can review on GitHub
 - **Suggest review focus areas** based on what changed (security-sensitive changes, new patterns, complex logic)
@@ -82,24 +88,26 @@ EOF
 - Creating the PR and pushing code is fine -- merging is the user's responsibility
 
 **Managing PRs:**
+
 - Check PR status: `gh pr status`
 - View PR details: `gh pr view [number]`
 - List open PRs: `gh pr list`
 - Add reviewers if applicable: `gh pr edit [number] --add-reviewer [user]`
 
 **After PR is merged by user:**
+
 - Switch back to main: `git checkout main && git pull`
 - Delete the merged branch: `git branch -d [branch-name]`
 - Update documentation if needed
 
 ## Branch Naming Conventions
 
-| Branch Type | Pattern | Purpose |
-|-------------|---------|---------|
-| Feature | `feat/[name]` | New functionality |
-| Fix | `fix/[issue]` | Bug fixes |
-| Learning | `learn/[topic]` | Active learning work |
-| Experiment | `experiment/[topic]` | Exploratory work |
+| Branch Type | Pattern              | Purpose              |
+| ----------- | -------------------- | -------------------- |
+| Feature     | `feat/[name]`        | New functionality    |
+| Fix         | `fix/[issue]`        | Bug fixes            |
+| Learning    | `learn/[topic]`      | Active learning work |
+| Experiment  | `experiment/[topic]` | Exploratory work     |
 
 ## Integration Points
 
@@ -119,6 +127,7 @@ EOF
 ## Error Recovery
 
 Quick reference:
+
 - `git stash` for temporary work-in-progress
 - `git reflog` to find lost commits
 - Backup branches before risky operations

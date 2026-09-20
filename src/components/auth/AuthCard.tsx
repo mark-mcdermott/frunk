@@ -25,7 +25,7 @@ export function AuthCard({ title, subtitle, children }: Props) {
 			<a
 				href="/"
 				aria-label="Back to the home page"
-				className="absolute right-5 top-5 grid size-9 place-items-center rounded-full text-text-faint transition-colors hover:bg-surface hover:text-text"
+				className="absolute top-5 right-5 grid size-9 place-items-center rounded-full text-text-faint transition-colors hover:bg-surface hover:text-text"
 			>
 				<X className="size-5" strokeWidth={1.75} aria-hidden />
 			</a>

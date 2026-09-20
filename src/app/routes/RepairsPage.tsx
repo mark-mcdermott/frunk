@@ -36,8 +36,14 @@ const STATUS_LABELS: Record<RepairStatus, string> = {
 type FilterKey = 'all' | RepairStatus;
 
 const SORTS = {
-	'date-desc': { label: 'Date (newest)', compare: (a: RepairRow, b: RepairRow) => cmp(b.date, a.date) },
-	'date-asc': { label: 'Date (oldest)', compare: (a: RepairRow, b: RepairRow) => cmp(a.date, b.date) },
+	'date-desc': {
+		label: 'Date (newest)',
+		compare: (a: RepairRow, b: RepairRow) => cmp(b.date, a.date)
+	},
+	'date-asc': {
+		label: 'Date (oldest)',
+		compare: (a: RepairRow, b: RepairRow) => cmp(a.date, b.date)
+	},
 	'cost-desc': {
 		label: 'Cost (highest)',
 		compare: (a: RepairRow, b: RepairRow) => (b.cost ?? 0) - (a.cost ?? 0)
@@ -131,7 +137,12 @@ export function RepairsPage() {
 	const [filter, setFilter] = useState<FilterKey>('all');
 	const [sort, setSort] = useState<keyof typeof SORTS>('date-desc');
 
-	const { data: repairs, isPending, isError, error } = useQuery({
+	const {
+		data: repairs,
+		isPending,
+		isError,
+		error
+	} = useQuery({
 		queryKey: keys.repairs,
 		queryFn: listRepairs
 	});

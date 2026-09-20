@@ -13,7 +13,7 @@ Colour values below were sampled from the mock pixels, not eyeballed.
 
 **Product line:** "The glovebox that follows you."
 **Tagline:** "Everything that matters. Within reach."
-**Pull quote:** *"There had to be a better way."* — set in display serif italic.
+**Pull quote:** _"There had to be a better way."_ — set in display serif italic.
 
 **Wordmark:** `FRUNK.` — heavy sans, wide tracking (~0.15em), always followed by a
 **violet period**. The dot is the brand signature; it also appears as the active-nav
@@ -30,37 +30,37 @@ Keep that restraint: no gradients-as-decoration, no rounded-everything, no emoji
 
 ### Dark (primary surface for the app)
 
-| Token | Value | Use |
-|---|---|---|
-| `--bg` | `#03060F` | Page background |
-| `--surface` | `#050A14` | Cards, list panels |
-| `--surface-raised` | `#080C16` | Nested cards, inputs on dark |
-| `--surface-elevated` | `#0C1019` | Footer, header, black buttons |
-| `--border` | `rgba(255,255,255,0.08)` | Hairline card + divider borders |
+| Token                | Value                    | Use                             |
+| -------------------- | ------------------------ | ------------------------------- |
+| `--bg`               | `#03060F`                | Page background                 |
+| `--surface`          | `#050A14`                | Cards, list panels              |
+| `--surface-raised`   | `#080C16`                | Nested cards, inputs on dark    |
+| `--surface-elevated` | `#0C1019`                | Footer, header, black buttons   |
+| `--border`           | `rgba(255,255,255,0.08)` | Hairline card + divider borders |
 
 ### Light (marketing and content pages)
 
-| Token | Value | Use |
-|---|---|---|
-| `--bg` | `#FEFEFE` | Page background |
+| Token       | Value     | Use                     |
+| ----------- | --------- | ----------------------- |
+| `--bg`      | `#FEFEFE` | Page background         |
 | `--surface` | `#F5F5F7` | Cards, secondary panels |
-| `--text` | `#0B0F18` | Body copy, headings |
+| `--text`    | `#0B0F18` | Body copy, headings     |
 
 ### Accent — violet, two tiers
 
-| Token | Value | Use |
-|---|---|---|
-| `--accent` | `#6438CC` | Filled primary buttons on dark, checkbox fill |
+| Token             | Value     | Use                                                                     |
+| ----------------- | --------- | ----------------------------------------------------------------------- |
+| `--accent`        | `#6438CC` | Filled primary buttons on dark, checkbox fill                           |
 | `--accent-bright` | `#9890F8` | The wordmark dot, links, eyebrow labels, arrows, active nav, VIN values |
 
 `--accent-bright` is the one that carries the brand. Use `--accent` only for solid fills.
 
 ### Semantic
 
-| Token | Use |
-|---|---|
+| Token | Use                                                                                |
+| ----- | ---------------------------------------------------------------------------------- |
 | green | Money amounts (`$200.00`) and `Completed` badges — green text on a dark-green pill |
-| red | Destructive icon buttons only (trash), red glyph in a red-tinted circle |
+| red   | Destructive icon buttons only (trash), red glyph in a red-tinted circle            |
 
 **Primary button colour flips by theme.** On light backgrounds it is near-black
 (`#0C1019`); on dark backgrounds it is violet (`--accent`). Do not use black-on-dark.
@@ -69,7 +69,7 @@ Keep that restraint: no gradients-as-decoration, no rounded-everything, no emoji
 
 ## 3. Typography
 
-Two families, sharply contrasted — this pairing *is* the design.
+Two families, sharply contrasted — this pairing _is_ the design.
 
 **Display / headings — high-contrast serif.** Used far more widely than a typical app:
 marketing headlines, page titles ("My Vehicles"), entity names ("1974 AMC Gremlin"),
@@ -117,6 +117,7 @@ them solid on the dark ground.
 ## 5. Components
 
 **Buttons**
+
 - Primary: filled pill. Violet on dark, near-black on light. Optional trailing `↗` (external
   or marketing CTA) or `→` (in-flow progression).
 - Leading `+` for create actions: `+ Add Vehicle`, `+ Add Note`, `+ Add Repair`.
@@ -124,11 +125,13 @@ them solid on the dark ground.
   well past the text ("OPEN THE GLOVEBOX ────→").
 
 **Cards**
+
 - `--surface` fill, 1px `--border`, ~16px radius.
 - List rows inside a single card, separated by hairline dividers — not as detached cards.
 - Nested cards (a note inside the Notes panel) sit on `--surface-raised` with their own border.
 
 **List row** (vehicles index)
+
 - 80×80 rounded thumbnail, entity title in serif, a violet metadata value (VIN), a document
   count chip with a folder icon, two right-aligned label/value stacks (`LAST UPDATED`, `ADDED`)
   with the date bold and time muted beneath, then edit and delete icon buttons.
@@ -137,6 +140,7 @@ them solid on the dark ground.
 red glyph on red-tinted border for delete (trash).
 
 **Inputs**
+
 - Dark fill, 1px border, ~10px radius, leading icon where meaningful (magnifier, mail, lock).
 - Password fields carry a trailing eye toggle.
 - Newsletter input pairs with a violet arrow submit button inside the same rounded container.
@@ -191,8 +195,8 @@ These block a faithful implementation and need Mark's call:
    `--color-accent`, `--font-heading`, `--font-body` from theme-forseen, and loads the
    Skeleton `cerberus` theme. The redesign either commits these tokens directly or ships as
    a theme-forseen preset. That choice affects every file below.
-3. **Auth surface — technically unblocked, one product question left.** *(Updated
-   2026-09-17.)* Previously resolved as passkeys + TOTP, which made the mock's Google /
+3. **Auth surface — technically unblocked, one product question left.** _(Updated
+   2026-09-17.)_ Previously resolved as passkeys + TOTP, which made the mock's Google /
    Apple / GitHub row impossible. PORT-PLAN Decision 2 now adopts **Better Auth**, where
    social providers are core config alongside passkeys on one user table — so the row is
    **available again**, and the question is no longer technical.

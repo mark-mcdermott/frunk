@@ -42,7 +42,7 @@ const promises = [
 const faqs = [
 	{
 		q: 'What is Frunk?',
-		a: "Frunk is a home for everything that belongs to your car — documents, receipts, service history, manuals and photos — kept in one place and organized by vehicle."
+		a: 'Frunk is a home for everything that belongs to your car — documents, receipts, service history, manuals and photos — kept in one place and organized by vehicle.'
 	},
 	{
 		q: 'Is my data secure?',
@@ -68,22 +68,22 @@ const faqs = [
 					<div>
 						<p class="eyebrow">Contact us</p>
 						<h1 class="display dot mt-6 text-[clamp(2.25rem,5vw,3.5rem)]">
-							We&rsquo;d love to hear<br />from you
+							We&rsquo;d love to hear
+							<br />
+							from you
 						</h1>
 						<p class="mt-8 max-w-md text-[0.9375rem] leading-relaxed text-text-muted">
 							Have a question, need help, or want to learn more about Frunk?
 						</p>
 
 						<div class="mt-12 grid gap-8 sm:grid-cols-3">
-							{
-								promises.map((promise) => (
-									<div class="flex flex-col gap-2">
-										<promise.icon className="size-5 text-accent-bright" aria-hidden="true" />
-										<h2 class="text-[0.9375rem] font-semibold text-text">{promise.title}</h2>
-										<p class="text-[0.8125rem] leading-relaxed text-text-muted">{promise.body}</p>
-									</div>
-								))
-							}
+							{promises.map((promise) => (
+								<div class="flex flex-col gap-2">
+									<promise.icon className="size-5 text-accent-bright" aria-hidden="true" />
+									<h2 class="text-[0.9375rem] font-semibold text-text">{promise.title}</h2>
+									<p class="text-[0.8125rem] leading-relaxed text-text-muted">{promise.body}</p>
+								</div>
+							))}
 						</div>
 					</div>
 
@@ -120,8 +120,8 @@ const faqs = [
 							</div>
 						</div>
 						<p class="mt-auto border-t border-border pt-6 text-[0.8125rem] leading-relaxed text-text-muted">
-							There is no support desk and no phone queue — the form and that address both reach
-							the same inbox.
+							There is no support desk and no phone queue — the form and that address both reach the
+							same inbox.
 						</p>
 					</div>
 				</div>
@@ -134,27 +134,27 @@ const faqs = [
 					<div>
 						<p class="eyebrow">Questions?</p>
 						<h2 class="display dot mt-6 text-[clamp(1.75rem,3.5vw,2.25rem)]">
-							Frequently<br />asked questions
+							Frequently
+							<br />
+							asked questions
 						</h2>
 					</div>
 
 					<div class="flex flex-col">
-						{
-							faqs.map((faq) => (
-								<details class="group border-b border-border first:border-t">
-									<summary class="flex cursor-pointer list-none items-center justify-between gap-6 py-5 text-[0.9375rem] text-text marker:content-none">
-										{faq.q}
-										<span
-											aria-hidden="true"
-											class="shrink-0 text-lg leading-none text-text-muted transition-transform group-open:rotate-45"
-										>
-											+
-										</span>
-									</summary>
-									<p class="pb-5 pr-10 text-[0.875rem] leading-relaxed text-text-muted">{faq.a}</p>
-								</details>
-							))
-						}
+						{faqs.map((faq) => (
+							<details class="group border-b border-border first:border-t">
+								<summary class="flex cursor-pointer list-none items-center justify-between gap-6 py-5 text-[0.9375rem] text-text marker:content-none">
+									{faq.q}
+									<span
+										aria-hidden="true"
+										class="shrink-0 text-lg leading-none text-text-muted transition-transform group-open:rotate-45"
+									>
+										+
+									</span>
+								</summary>
+								<p class="pb-5 pr-10 text-[0.875rem] leading-relaxed text-text-muted">{faq.a}</p>
+							</details>
+						))}
 					</div>
 				</div>
 			</div>

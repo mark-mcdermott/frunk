@@ -23,11 +23,13 @@ Read `.claude/commit-style.md` to determine the current commit style (gitmoji, g
 ### 2. Audit All Commits
 
 Get every commit in the repo:
+
 ```bash
 git log --format="%H|||%s|||%b" --reverse
 ```
 
 For each commit, determine whether its message conforms to the current style:
+
 - **gitmoji**: Must start with a `:gitmoji:` code followed by a brief description. Single line only.
 - **gitmoji-multiline**: Must start with a `:gitmoji:` code. May have a bullet-list body after a blank line.
 - **conventional**: Must start with `type(scope):` or `type:` followed by a description. May have a bullet-list body.
@@ -35,11 +37,13 @@ For each commit, determine whether its message conforms to the current style:
 ### 3. Build a Change Plan
 
 Create a list of commits that need fixing. For each one, show:
+
 - The commit hash (short)
 - The current message
 - The proposed new message
 
 **Keep the semantic content the same.** Only change the format/prefix to match the target style. For example:
+
 - `feat: add merch store` → `:sparkles: Add merch store` (if switching to gitmoji)
 - `:sparkles: Add merch store` → `feat: add merch store` (if switching to conventional)
 - `:recycle: Overhaul config — remove scaffolding, add skills` → `:recycle: Overhaul config` + bullet body (if switching to gitmoji-multiline and the message has multiple parts)
@@ -77,6 +81,7 @@ esac
 For multiline messages, use a temp file approach or a more sophisticated script. The `case` match should use the first line (subject) as the key, and the full replacement should include the body if applicable.
 
 After `filter-branch`, clean up:
+
 ```bash
 git update-ref -d refs/original/refs/heads/main
 ```

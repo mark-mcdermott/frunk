@@ -43,7 +43,11 @@ export default defineConfig({
 			BETTER_AUTH_SECRET: envField.string({ context: 'server', access: 'secret', optional: true }),
 			// Vercel Blob (store: frunk-uploads, private). Optional so a build without it
 			// succeeds — the upload and file endpoints answer 503 at call time instead.
-			BLOB_READ_WRITE_TOKEN: envField.string({ context: 'server', access: 'secret', optional: true })
+			BLOB_READ_WRITE_TOKEN: envField.string({
+				context: 'server',
+				access: 'secret',
+				optional: true
+			})
 		}
 	},
 	adapter: vercel(),

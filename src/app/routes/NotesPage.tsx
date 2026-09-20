@@ -47,9 +47,7 @@ function NoteRowItem({ note, onDelete }: { note: NoteRow; onDelete: () => void }
 					</Link>
 				</h2>
 
-				{note.body && (
-					<p className="mt-1 truncate text-[0.875rem] text-text-muted">{note.body}</p>
-				)}
+				{note.body && <p className="mt-1 truncate text-[0.875rem] text-text-muted">{note.body}</p>}
 
 				<div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-[0.8125rem] text-text-muted">
 					{note.vehicleId && (
@@ -95,7 +93,12 @@ export function NotesPage() {
 	const [search, setSearch] = useState('');
 	const [filter, setFilter] = useState<FilterKey>('all');
 
-	const { data: notes, isPending, isError, error } = useQuery({
+	const {
+		data: notes,
+		isPending,
+		isError,
+		error
+	} = useQuery({
 		queryKey: keys.notes,
 		queryFn: listNotes
 	});

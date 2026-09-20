@@ -4,23 +4,23 @@
 
 ## Directory Structure
 
-| Directory | Purpose | Index |
-|-----------|---------|-------|
-| `agents/` | Agents for delegation | `agents/README.md` |
-| `skills/` | Invokable skills (slash commands) | `skills/README.md` |
-| `rules/` | Workflow rules and patterns | See below |
-| `hooks/` | Hook scripts for tool interception | See below |
+| Directory | Purpose                            | Index              |
+| --------- | ---------------------------------- | ------------------ |
+| `agents/` | Agents for delegation              | `agents/README.md` |
+| `skills/` | Invokable skills (slash commands)  | `skills/README.md` |
+| `rules/`  | Workflow rules and patterns        | See below          |
+| `hooks/`  | Hook scripts for tool interception | See below          |
 
 ## Rules
 
-| File | Purpose |
-|------|---------|
+| File                       | Purpose                                                                       |
+| -------------------------- | ----------------------------------------------------------------------------- |
 | `rules/local-overrides.md` | Project-level settings that override system defaults (e.g. no AI attribution) |
 
 ## Agents
 
-| Agent | Delegate When |
-|-------|---------------|
+| Agent            | Delegate When                                    |
+| ---------------- | ------------------------------------------------ |
 | `git-manager.md` | Complex git (conflicts, rebase, branch strategy) |
 
 ## Skills
@@ -31,16 +31,16 @@ See `skills/README.md` for the full list, descriptions, and usage examples.
 
 ### PreToolUse Hooks (Block Before Execution)
 
-| Hook | Purpose | Exit 2 = Block |
-|------|---------|----------------|
-| `git-commit-guard.sh` | Prevents AI co-author attribution in commits | Yes |
-| `pre-commit-guard.sh` | Runs linting + affected tests before commit | Yes |
+| Hook                  | Purpose                                      | Exit 2 = Block |
+| --------------------- | -------------------------------------------- | -------------- |
+| `git-commit-guard.sh` | Prevents AI co-author attribution in commits | Yes            |
+| `pre-commit-guard.sh` | Runs linting + affected tests before commit  | Yes            |
 
 ### PostToolUse Hooks (After Execution)
 
-| Hook | Purpose | Blocking |
-|------|---------|----------|
-| `test-reminder.sh` | Suggests running related tests after edits | No |
+| Hook               | Purpose                                    | Blocking |
+| ------------------ | ------------------------------------------ | -------- |
+| `test-reminder.sh` | Suggests running related tests after edits | No       |
 
 ## Always-Enforced Rules
 
@@ -52,6 +52,7 @@ See `skills/README.md` for the full list, descriptions, and usage examples.
 ## Configuration
 
 See `settings.json` and `settings.local.json` for hook configuration including:
+
 - Matchers (which tools trigger which hooks)
 - Timeouts
 - Command paths

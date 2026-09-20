@@ -19,9 +19,9 @@ test('logs a repair on a vehicle, attaches a note, and cleans up', async ({ page
 	await expect(page.getByRole('heading', { name: 'Journey strut replacement' })).toBeVisible();
 	await expect(page.getByText('$89.99')).toBeVisible();
 	// Dollars typed, cents stored.
-	expect(await sql(`select cost from repairs where description = 'Journey strut replacement'`)).toBe(
-		'8999'
-	);
+	expect(
+		await sql(`select cost from repairs where description = 'Journey strut replacement'`)
+	).toBe('8999');
 	const repairUrl = page.url();
 
 	await page.getByRole('link', { name: 'Add Note' }).click();
@@ -29,7 +29,9 @@ test('logs a repair on a vehicle, attaches a note, and cleans up', async ({ page
 	await page.getByLabel('Title').fill('Journey receipt');
 	await page.getByLabel('Note (optional)').fill('OEM parts, lifetime warranty.');
 	if (uploadsAvailable) {
-		await page.getByLabel('Attachment', { exact: true }).setInputFiles('tests/e2e/fixtures/receipt.pdf');
+		await page
+			.getByLabel('Attachment', { exact: true })
+			.setInputFiles('tests/e2e/fixtures/receipt.pdf');
 		await expect(page.getByRole('link', { name: 'View attachment' })).toBeVisible();
 	}
 	await page.getByRole('button', { name: 'Add Note' }).click();
@@ -56,7 +58,7 @@ test('logs a repair on a vehicle, attaches a note, and cleans up', async ({ page
 	await page.getByRole('button', { name: 'Delete Repair' }).click();
 	await page.getByRole('button', { name: 'Delete permanently' }).click();
 	await expect(page).toHaveURL(/\/repairs$/);
-	expect(await sql(`select count(*) from repairs where description = 'Journey strut replacement'`)).toBe(
-		'0'
-	);
+	expect(
+		await sql(`select count(*) from repairs where description = 'Journey strut replacement'`)
+	).toBe('0');
 });
