@@ -6,8 +6,15 @@
 # schema to the live app's database. It did exactly that on 2026-09-03; see
 # docs/PORT-PLAN.md, "An accident worth recording".
 #
-# Nothing here touches a database. Migrations belong in `db-migrate.yml`, which is
-# manual, uses a separate secret, and refuses to run from `main`.
+# Nothing here touches a *deployed* database. The test job runs against a throwaway
+# Postgres service container, created and destroyed with the job — it holds no secret
+# and cannot reach Neon at all, which is the property that matters after the accident
+# above. Migrations still belong in `db-migrate.yml`: manual, separate secret, refuses
+# to run from `main`.
+#
+# Decision 11 suggested a Neon branch per run. A service container is used instead: it
+# needs no Neon credentials in CI, and `getDb()` already picks node-postgres over
+# Neon's HTTP driver from the URL host, so the same handlers are exercised either way.
 #
 # The Playwright suites live in `legacy/e2e/` and are written against SvelteKit
 # markup; Phase 4 re-establishes them against the React applet.
@@ -40,3 +47,48 @@ jobs:
 
       - name: Build
         run: pnpm build
+
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    env:
+      # `tests/run.sh` builds its own URL from these; nothing here is a secret.
+      PGHOST: localhost
+      PGUSER: postgres
+      PGPASSWORD: postgres
+      TEST_DB: frunk_test
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Install psql client
+        run: sudo apt-get update && sudo apt-get install -y postgresql-client
+
+      - name: API integration tests
+        run: pnpm test:unit
