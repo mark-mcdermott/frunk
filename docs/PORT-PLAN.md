@@ -1000,7 +1000,13 @@ Playwright, chromium only, eight specs in ~20 s, wired into CI as its own job.
   > AWS grants production access on request. No amount of DNS fixes that, and it has a lead
   > time. Resend has no equivalent gate.
 
-- Schedule the demo-account reaper. **Its predicate is settled (2026-09-20):** `roles`
+- ~~Schedule the demo-account reaper.~~ **Built 2026-09-20** (`feat/demo-reaper`):
+  `GET /api/cron/reap-demos`, daily at 04:00 UTC from `vercel.json`, guarded by
+  `CRON_SECRET` (timing-safe compare; 503 rather than open when unset). The window is
+  seven days (`DEMO_TTL_DAYS`). The delete is one statement with the predicate in its
+  `WHERE`, and the blobs under `u/<id>/` go with the row — `DELETE /api/users/:id` was
+  leaving those orphaned too, and now uses the same cleanup. Asserted in Postgres by
+  `tests/reaper.test.ts`. **Its predicate is settled (2026-09-20):** `roles`
   contains DEMO **and** the account has no passkey **and** it is older than the window.
   Conversion — an `after` hook on `/passkey/verify-registration` in `config.ts` — flips
   the role to USER and clears `isAnonymous`, so a converted account never matches; the
