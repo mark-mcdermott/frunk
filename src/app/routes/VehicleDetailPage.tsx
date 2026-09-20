@@ -24,10 +24,10 @@ import {
 	keys,
 	type Gallery,
 	type Note,
-	type Repair,
-	type Schedule
+	type Repair
 } from '../api';
 import { useCrumbs } from '../AppShell';
+import { ScheduleEditor } from '../components/ScheduleEditor';
 import { formatCost, formatMiles, formatNumericDate } from '../format';
 
 /**
@@ -40,8 +40,10 @@ import { formatCost, formatMiles, formatNumericDate } from '../format';
  * those screens exist. Each `+ Add` passes `?vehicle=<id>` so the form arrives already
  * attached and never asks which vehicle you meant.
  *
- * Maintenance Schedule and Galleries stay read-only — their screens are not built, and a
- * button that opens nothing is the dead-link problem the nav already avoids.
+ * Maintenance schedules are edited in place (see `ScheduleEditor`). **Galleries stay
+ * read-only**, and deliberately: creating one is trivial, but `POST /api/photos` records
+ * an `imageUrl` that must already exist, so without Vercel Blob a gallery is a box that
+ * cannot be filled. It ships with uploads, not before.
  */
 
 
@@ -222,20 +224,6 @@ function RepairCard({ repair, onDelete }: { repair: Repair; onDelete: () => void
 	);
 }
 
-function ScheduleRow({ schedule }: { schedule: Schedule }) {
-	const interval = [
-		schedule.intervalMiles != null && `${schedule.intervalMiles.toLocaleString()} mi`,
-		schedule.intervalMonths != null &&
-			`${schedule.intervalMonths} month${schedule.intervalMonths === 1 ? '' : 's'}`
-	].filter(Boolean);
-
-	return (
-		<div className="flex items-center justify-between gap-4 border-b border-border py-4 last:border-b-0">
-			<p className="text-[0.9375rem] text-text">{schedule.name}</p>
-			<p className="text-[0.8125rem] text-text-muted">Every {interval.join(' or ')}</p>
-		</div>
-	);
-}
 
 function GalleryBlock({ gallery }: { gallery: Gallery }) {
 	return (
@@ -427,19 +415,7 @@ export function VehicleDetailPage() {
 			</div>
 
 			<Panel icon={<Clock className="size-5" />} title="Maintenance Schedule">
-				{data.schedules.length === 0 ? (
-					<Empty
-						icon={<Calendar className="size-5" strokeWidth={1.5} />}
-						title="No maintenance scheduled"
-						line="Add reminders to stay on top of maintenance."
-					/>
-				) : (
-					<div>
-						{data.schedules.map((schedule) => (
-							<ScheduleRow key={schedule.id} schedule={schedule} />
-						))}
-					</div>
-				)}
+				<ScheduleEditor vehicleId={vehicle.id} schedules={data.schedules} />
 			</Panel>
 
 			<Panel icon={<Camera className="size-5" />} title="Galleries">

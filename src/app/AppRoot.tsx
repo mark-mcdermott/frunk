@@ -8,6 +8,7 @@ import { RepairsPage } from './routes/RepairsPage';
 import { VehicleDetailPage } from './routes/VehicleDetailPage';
 import { VehicleFormPage } from './routes/VehicleFormPage';
 import { VehiclesPage } from './routes/VehiclesPage';
+import { VendorFormPage } from './routes/VendorFormPage';
 import { VendorsPage } from './routes/VendorsPage';
 
 /**
@@ -57,6 +58,8 @@ export function AppRoot() {
 						<Route path="/notes/new" element={<NoteFormPage />} />
 						<Route path="/notes/:uuid/edit" element={<NoteFormPage />} />
 						<Route path="/vendors" element={<VendorsPage />} />
+						<Route path="/vendors/new" element={<VendorFormPage />} />
+						<Route path="/vendors/:id/edit" element={<VendorFormPage />} />
 						{/* Unknown app paths go to the garage rather than a blank island. */}
 						<Route path="*" element={<Navigate to="/vehicles" replace />} />
 					</Routes>
