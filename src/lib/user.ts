@@ -37,3 +37,13 @@ export function displayName(user: SessionUser): string {
 export function initial(user: SessionUser): string {
 	return displayName(user).charAt(0).toUpperCase();
 }
+
+/**
+ * A demo account's address is a placeholder the anonymous plugin minted
+ * (`…@anonymous.placeholder.invalid`). Conversion keeps it — there is no real address to
+ * put there — so a converted account has an email column but no email. Never show it,
+ * and never send to it.
+ */
+export function hasPlaceholderEmail(user: Pick<SessionUser, 'email'>): boolean {
+	return user.email.endsWith('.invalid');
+}

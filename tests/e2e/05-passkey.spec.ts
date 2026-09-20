@@ -20,6 +20,10 @@ test('a demo account converts by adding a passkey and signs back in with it', as
 	await page.getByRole('button', { name: 'Add a passkey' }).click();
 	await expect(page.getByText('Passkey added — this account is yours now')).toBeVisible();
 	expect(await sql(`select count(*) from passkey where user_id = '${user.id}'`)).toBe('1');
+	// The server-side hook promoted the account the moment the passkey registered.
+	expect(
+		await sql(`select roles::text || '|' || is_anonymous from "user" where id = '${user.id}'`)
+	).toBe('{2}|false');
 
 	await page.getByRole('button', { name: 'Sign out' }).click();
 	await expect(page).toHaveURL(/\/$/);
@@ -33,4 +37,9 @@ test('a demo account converts by adding a passkey and signs back in with it', as
 
 	const session = await (await page.request.get('/api/auth/get-session')).json();
 	expect(session?.user?.id, 'the passkey signs into the same account').toBe(user.id);
+
+	// Converted: no longer a demo, and the placeholder address is never shown as an email.
+	await page.goto('/profile');
+	await expect(page.getByText('This is a demo account')).toHaveCount(0);
+	await expect(page.getByText('No email on file')).toBeVisible();
 });

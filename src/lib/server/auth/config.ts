@@ -1,11 +1,13 @@
 import { betterAuth } from 'better-auth';
 import { drizzleAdapter } from 'better-auth/adapters/drizzle';
+import { APIError, createAuthMiddleware } from 'better-auth/api';
 import { anonymous, bearer, twoFactor } from 'better-auth/plugins';
 import { passkey } from '@better-auth/passkey';
 import { BETTER_AUTH_SECRET } from 'astro:env/server';
 import { getDb } from '../db';
 import * as schema from '../db/schema';
 import { sendEmail } from '../email';
+import { ROLE_IDS } from '../../roles';
 import { relyingParty, RP_NAME } from './relying-party';
 
 /**
@@ -75,6 +77,32 @@ function build(rp: { id: string; origin: string }) {
 			}
 		},
 
+		hooks: {
+			/*
+			 * Decision 5, the other half: a demo account becomes a real one the moment a
+			 * passkey is registered on it. The passkey plugin only adds the credential —
+			 * it knows nothing about roles — so the promotion happens here, after the
+			 * ceremony has verified, and only then. Two columns change: `roles` from DEMO
+			 * to USER, so the demo reaper (Phase 6) never sees a convertible account as
+			 * disposable; and `isAnonymous` to false, because the anonymous plugin treats
+			 * a still-flagged user who later signs up with an email as a *link* and, by
+			 * default, deletes the "anonymous" account afterwards — garage and all.
+			 */
+			after: createAuthMiddleware(async (ctx) => {
+				if (ctx.path !== '/passkey/verify-registration') return;
+				if (ctx.context.returned instanceof APIError) return;
+
+				const user = ctx.context.session?.user;
+				if (!user) return;
+				const roles = Array.isArray(user.roles) ? (user.roles as number[]) : [];
+				if (!roles.includes(ROLE_IDS.DEMO)) return;
+
+				await ctx.context.internalAdapter.updateUser(user.id, {
+					roles: [ROLE_IDS.USER],
+					isAnonymous: false
+				});
+			})
+		},
 		plugins: [
 			passkey({ rpID: rp.id, rpName: RP_NAME, origin: rp.origin }),
 			/**
