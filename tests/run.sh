@@ -45,6 +45,9 @@ psql "$DB" -q -f drizzle/bootstrap.sql >/dev/null
 # POST /api/demo clones the Creed template, so the demo isolation test needs it.
 DATABASE_URL="${TEST_DATABASE_URL:-postgresql://localhost/${DB}}" npx tsx scripts/seed-office.ts >/dev/null
 
+# Exported rather than passed, so the reaper test can present the same secret.
+export CRON_SECRET="test-only-cron-secret"
+
 DATABASE_URL="${TEST_DATABASE_URL:-postgresql://localhost/${DB}}" \
 BETTER_AUTH_SECRET="test-only-secret-at-least-32-characters-long" \
 NODE_ENV=development \

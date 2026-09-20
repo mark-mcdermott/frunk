@@ -76,7 +76,12 @@ export async function signUpAndSignIn(): Promise<TestUser> {
 	return { id: user.id, email, cookie: cookieJar(signedIn) };
 }
 
-let demo: { cookie: string } | undefined;
+export interface DemoUser {
+	id: string;
+	cookie: string;
+}
+
+let demo: DemoUser | undefined;
 
 /**
  * A demo visitor: real account, real session, cloned garage, `DEMO` role.
@@ -86,26 +91,40 @@ let demo: { cookie: string } | undefined;
  * limiter. Sharing is also more faithful: every assertion here only needs *a* demo
  * account, and they are identical.
  */
-export async function startDemo(): Promise<{ cookie: string }> {
+export async function startDemo(): Promise<DemoUser> {
 	if (demo) return demo;
-
-	const response = await api('/api/demo', { method: 'POST' });
-	if (!response.ok) throw new Error(`demo failed: ${response.status}`);
-
-	demo = { cookie: cookieJar(response) };
+	demo = await startFreshDemo();
 	return demo;
 }
 
-async function verifyEmail(email: string) {
+/**
+ * A demo account of your own, for a test that will destroy it. Counts against the
+ * same 3-per-hour limit as the shared one, so reach for `startDemo` unless the test
+ * needs the account gone afterwards.
+ */
+export async function startFreshDemo(): Promise<DemoUser> {
+	const response = await api('/api/demo', { method: 'POST' });
+	if (!response.ok) throw new Error(`demo failed: ${response.status}`);
+
+	const { user } = await json<{ user: { id: string } }>(response);
+	return { id: user.id, cookie: cookieJar(response) };
+}
+
+/**
+ * Runs one statement against the test database and returns its unaligned output.
+ * The database is the oracle here (see CLAUDE.md, "How verification is done"): a
+ * screen or a response can lie about what was written, a column cannot.
+ */
+export async function sql(statement: string): Promise<string> {
 	const { execFile } = await import('node:child_process');
 	const { promisify } = await import('node:util');
 	const run = promisify(execFile);
 	const db = process.env.TEST_DB ?? 'frunk_test';
 
-	await run('psql', [
-		db,
-		'-q',
-		'-c',
-		`update "user" set email_verified = true where email = '${email}'`
-	]);
+	const { stdout } = await run('psql', [db, '-qtA', '-c', statement]);
+	return stdout.trim();
+}
+
+async function verifyEmail(email: string) {
+	await sql(`update "user" set email_verified = true where email = '${email}'`);
 }
