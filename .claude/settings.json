@@ -1,6 +1,6 @@
 {
 	"automerge": "on",
-	"stack": "NASDAQ-VCRZ",
+	"stack": "DNC-BARBAWSQZ",
 	"hooks": {
 		"PreToolUse": [
 			{

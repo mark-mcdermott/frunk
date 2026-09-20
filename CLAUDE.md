@@ -167,7 +167,10 @@ The one path it never touches is `getDb()`'s Neon HTTP driver.
 `drizzle-kit push --force` on every push to every branch, against the secret that points at
 the _legacy_ database, and duly rewrote the live app's schema from this branch. See
 "An accident worth recording" in `docs/PORT-PLAN.md`. Migrations go through
-`db-migrate.yml`: manual only, its own `ASTRO_DATABASE_URL` secret, refuses to run on `main`.
+`db-migrate.yml`: manual only, its own `ASTRO_DATABASE_URL` secret, refuses to run from a
+ref without `astro.config.mjs`. Its `seed-office` action is how production gets its
+template garage — the production connection string is Sensitive on Vercel, so nothing
+local can reach it.
 
 ## Architecture (the port target)
 
