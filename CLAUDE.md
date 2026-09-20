@@ -23,7 +23,8 @@ outstanding.
 - **Tailwind CSS 4** + **shadcn/ui** (`components.json` is configured; no components added yet)
 - **Neon** serverless Postgres via **Drizzle ORM**
 - **Vercel** (`@astrojs/vercel`), **Vercel Blob** for file storage
-- **Passkeys + TOTP** for auth (Decision 2) — replaces the hand-rolled session/password path
+- **Better Auth** for auth (Decision 2) — email+password, passkeys, TOTP recovery and
+  anonymous (demo) accounts, replacing ~900 lines of hand-rolled ceremonies
 - **Resend** for transactional email — the contact form (Phase 5) and, once Decision 2's
   Better Auth rework lands, verification mail. Both behind one `src/lib/server/email.ts`.
   Supersedes AWS SES, which was never wired into this app
@@ -43,6 +44,7 @@ Dropped for now: the merch store (Stripe + Printful), Tauri desktop, Skeleton UI
 pnpm dev                 # astro dev — static pages, islands and /api/* in one process
 pnpm build               # astro build (must pass)
 pnpm check               # astro check — must report 0 errors
+pnpm test:unit           # API integration suite (starts its own server + database)
 pnpm preview             # astro preview
 
 pnpm db:generate         # regenerate drizzle/*.sql after a schema change
@@ -92,10 +94,17 @@ and run from that directory with its own `pnpm install`.
 
 A change is done when **`pnpm check` reports 0 errors** and **`pnpm build` passes**.
 
-Test coverage is intentionally at zero during the port: the 7 Playwright suites in
-`legacy/e2e/` are written against SvelteKit markup and do not survive the rewrite. They are
-re-established in Phase 4 (`docs/PORT-PLAN.md`). CI on this branch is `.github/workflows/ci.yml`
-— typecheck and build only.
+`pnpm test:unit` runs the API integration suite (Decision 11) — the four-case ownership
+matrix per entity, over HTTP against a throwaway `frunk_test` database. `tests/run.sh`
+owns the server and database; read its header before changing it, because Astro's dev
+server fails silently in two separate ways under Vitest.
+
+These tests touch no markup, which is the point: they survive the Phase 4 rewrite and are
+the safety net for it. The 7 Playwright suites in `legacy/e2e/` are SvelteKit-specific and
+do not survive; component and e2e layers are still to come.
+
+CI (`.github/workflows/ci.yml`) is still typecheck and build only — the suite is not wired
+into it yet, and Decision 11 calls for a Neon branch per run when it is.
 
 **No automatically-triggered workflow may touch a database.** The `e2e.yml` it replaced ran
 `drizzle-kit push --force` on every push to every branch, against the secret that points at
@@ -120,22 +129,39 @@ Two rules it encodes: ownership goes in the `WHERE` clause, never a post-fetch c
 (so another user's row is a 404, not a 403); and PATCH is genuinely partial, where an
 omitted key is left alone and an explicit `null` clears the column.
 
-**Auth is passkeys + TOTP** (Decision 2), and there is no password anywhere. The
-ceremonies live in `src/pages/api/auth/{register,login}/{options,verify}` and
-`api/auth/totp/*`; `src/lib/server/auth/` holds the pieces they share — relying-party
-identity, TOTP, secret sealing, rate limiting. `docs/API.md` has the contract.
+**Auth is Better Auth** (Decision 2). Everything mounts at one catch-all,
+`src/pages/api/auth/[...all].ts`; the config is `src/lib/server/auth/config.ts`. Email and
+password are enabled alongside passkeys, TOTP recovery and anonymous accounts.
+`docs/API.md` has the entity contract.
 
-Three things about it are easy to get wrong:
+**`user.id` (text) is the identity.** `user.uuid` is gone — it was a second identity
+beside `id serial`, and every entity's `user_id` targets `user.id` now.
 
-- **`RP_ID` / `RP_ORIGIN` unset is correct in dev and on previews** — they are derived
-  from the request there. Pin them in production. A wrong value does not fail loudly; it
+Five things about it are easy to get wrong:
+
+- **`getAuth()` builds one instance per request origin, and that is deliberate.** The
+  passkey plugin takes a *static* `rpID`/`origin`, but nothing static covers Vercel's
+  per-deploy preview hostnames, so `relyingParty()` still derives them from the request
+  when `RP_ID` / `RP_ORIGIN` are unset. A wrong relying party does not fail loudly; it
   mints passkeys that can never sign in.
-- **A demo account is a real account** (Decision 5). Registering a passkey while holding a
-  `DEMO` session upgrades that row in place rather than making a new one, so a trial
-  converts without losing anything. `POST /api/demo` needs `pnpm db:seed-office`.
-- **TOTP is recovery, not a second factor.** It is the only way back after a lost device,
-  which is why `totp/recover` is rate limited hardest and why `totp/setup` refuses to
-  overwrite a working secret.
+- **Verification mail is a background task.** A failed send is logged and the request
+  still answers 200 — the account exists, no verification row is written, and the user
+  sees success. That is why sign-up ends at "Check your email" with a **resend** button,
+  and why `sendEmail` throwing does not abort registration the way its own comment once
+  claimed.
+- **Better Auth is anti-enumeration on both endpoints.** Sign-in gives an identical error
+  for known and unknown addresses, and sign-up with an existing address returns 200 while
+  creating nothing. Stricter than the deliberate 404 this replaced — but it strands a
+  returning user on "Check your email" with no account and no mail.
+- **A demo account is a real account** (Decision 5). The `anonymous` plugin creates the
+  user and session; `cloneDemoAccount(userId)` only copies the template garage in. That
+  split is what makes conversion free — attaching a credential upgrades the same row.
+  `roles` stays authoritative for gating; `isAnonymous` is the plugin's bookkeeping.
+  `POST /api/demo` needs `pnpm db:seed-office`.
+- **Better Auth encrypts TOTP secrets and backup codes at rest**, so
+  `src/lib/server/auth/secrets.ts` and `ENCRYPTION_KEY` are now dead code. Verify before
+  deleting whether that encryption derives from `BETTER_AUTH_SECRET` — if it does,
+  rotating that secret orphans every recovery method rather than just logging people out.
 
 **Island classification rule:** does a live browser runtime need to exist for this to
 render? Yes → `client:only`. No → `client:load` / `client:visible`. Cross-island state is a
