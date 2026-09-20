@@ -49,7 +49,12 @@ export function UserFormPage() {
 	const [nameError, setNameError] = useState<string | null>(null);
 	const [confirmingDelete, setConfirmingDelete] = useState(false);
 
-	const { data: user, isPending, isError, error } = useQuery({
+	const {
+		data: user,
+		isPending,
+		isError,
+		error
+	} = useQuery({
 		queryKey: keys.user(id),
 		queryFn: () => getUser(id)
 	});
@@ -151,8 +156,13 @@ export function UserFormPage() {
 						<legend className="text-[0.8125rem] font-medium text-text">Roles</legend>
 						<div className="mt-3 flex flex-col gap-3 rounded-control border border-border bg-surface-raised p-4">
 							{ROLE_OPTIONS.map((role) => (
-								<label key={role.id} className="flex cursor-pointer items-start gap-3">
+								<label
+									key={role.id}
+									htmlFor={`role-${role.id}`}
+									className="flex cursor-pointer items-start gap-3"
+								>
 									<input
+										id={`role-${role.id}`}
 										type="checkbox"
 										checked={roles.includes(role.id)}
 										onChange={() => toggleRole(role.id)}

@@ -26,7 +26,7 @@ without a reload. The applet's sign-out, account deletion, TOTP recovery setup
 (`RecoverySetup`, finally reachable again) and the demo→real passkey conversion all
 live on `/profile`.
 
-**Query client rules** (`AppRoot.tsx`): `networkMode: 'always'` on queries *and*
+**Query client rules** (`AppRoot.tsx`): `networkMode: 'always'` on queries _and_
 mutations — TanStack's default pauses fetches whenever `navigator.onLine` is false,
 which renders as an infinite "Loading…"/"Saving…", and that signal is unreliable in
 exactly the webviews Capacitor will put this app in. And **no retry on 4xx** — a 403 is
@@ -88,13 +88,13 @@ Settled 2026-09-19, after a long hunt caused by this being undocumented. One Neo
 **`frunk`**, in the personal Neon console — the same shape as every other project here. Two
 branches, both carrying the full schema:
 
-| branch | endpoint | used by |
-|---|---|---|
-| `production` | `ep-wild-glitter-a4wusipf` | **Vercel** — `DATABASE_URL`, Production + Preview |
-| `development` | `ep-odd-credit-a42d9jqu` | **local `.env`** |
+| branch        | endpoint                   | used by                                           |
+| ------------- | -------------------------- | ------------------------------------------------- |
+| `production`  | `ep-wild-glitter-a4wusipf` | **Vercel** — `DATABASE_URL`, Production + Preview |
+| `development` | `ep-odd-credit-a42d9jqu`   | **local `.env`**                                  |
 
 `DATABASE_URL` in Vercel is **hand-set and Sensitive**, not integration-managed. The Vercel
-Marketplace Neon integration was deliberately removed: it had provisioned a *third*,
+Marketplace Neon integration was deliberately removed: it had provisioned a _third_,
 invisible database (`neon-byzantium-paddle`, Neon id `soft-wave-99827797`) that production
 actually used, that never appeared in the Neon console, and that no one had bootstrapped —
 which is why signup returned 500 for weeks while two perfectly good databases sat ready.
@@ -120,7 +120,15 @@ and run from that directory with its own `pnpm install`.
 
 ## Verify loop
 
-A change is done when **`pnpm check` reports 0 errors** and **`pnpm build` passes**.
+A change is done when **`pnpm check` reports 0 errors**, **`pnpm lint` reports 0 errors**,
+**`pnpm format:check` is clean** and **`pnpm build` passes**. ESLint (flat config,
+typescript-eslint, `react-hooks`, `jsx-a11y`, the Astro plugin) and Prettier (tabs, single
+quotes, no trailing commas, 100 columns, Tailwind class sorting — the legacy app's style,
+carried over) both run in CI's `check` job. `legacy/` is excluded from both.
+
+`react-hooks/set-state-in-effect` is a **warning** on purpose: every form page seeds its
+state from the loaded row inside an effect. The fix is a key-remounted form initialised
+from the row; it is scheduled, and the rule flips to `error` with it.
 
 `pnpm test:unit` runs the API integration suite (Decision 11) — the four-case ownership
 matrix per entity, over HTTP against a throwaway `frunk_test` database. `tests/run.sh`
@@ -151,7 +159,7 @@ The one path it never touches is `getDb()`'s Neon HTTP driver.
 
 **No automatically-triggered workflow may touch a database.** The `e2e.yml` it replaced ran
 `drizzle-kit push --force` on every push to every branch, against the secret that points at
-the *legacy* database, and duly rewrote the live app's schema from this branch. See
+the _legacy_ database, and duly rewrote the live app's schema from this branch. See
 "An accident worth recording" in `docs/PORT-PLAN.md`. Migrations go through
 `db-migrate.yml`: manual only, its own `ASTRO_DATABASE_URL` secret, refuses to run on `main`.
 
@@ -167,7 +175,7 @@ the *legacy* database, and duly rewrote the live app's schema from this branch. 
   is only known once the page has loaded it. **Mounted by one catch-all per section** — `src/pages/vehicles/[...slug].astro`,
   `src/pages/vendors/[...slug].astro` — not a root catch-all, which would answer 200 for
   every mistyped URL on the site and destroy real 404s. Adding a screen means adding its
-  route to `AppRoot` *and* a three-line `[...slug].astro` for its section.
+  route to `AppRoot` _and_ a three-line `[...slug].astro` for its section.
 - `src/components/` — Astro components and, from Phase 4, React. `src/components/ui/` is
   shadcn's target directory — **generated files, kept unedited so they survive being
   re-added.** Project sizing lives in `src/app/components/Field.tsx`, not in them.
@@ -181,6 +189,7 @@ inherits the measured palette on arrival and re-resolves inside `.surface-light`
 the brand violet, and `bg-accent` / `focus:border-accent` already carry that meaning in the
 nav, footer, auth fields and applet. After any `shadcn add`, grep the new file for
 `accent` and change it to `muted` — `select.tsx` needed exactly that.
+
 - `src/layouts/`, `src/styles/global.css` (the design token layer), `src/lib/`.
 - `src/pages/api/_lib/` — shared API pieces; the underscore keeps them out of routing.
   `session.ts` (cookie → user), `guard.ts` (`requireSession`, `ownedVehicle`, …),
@@ -203,7 +212,7 @@ beside `id serial`, and every entity's `user_id` targets `user.id` now.
 Five things about it are easy to get wrong:
 
 - **`getAuth()` builds one instance per request origin, and that is deliberate.** The
-  passkey plugin takes a *static* `rpID`/`origin`, but nothing static covers Vercel's
+  passkey plugin takes a _static_ `rpID`/`origin`, but nothing static covers Vercel's
   per-deploy preview hostnames, so `relyingParty()` still derives them from the request
   when `RP_ID` / `RP_ORIGIN` are unset. A wrong relying party does not fail loudly; it
   mints passkeys that can never sign in.
@@ -222,7 +231,7 @@ Five things about it are easy to get wrong:
   `roles` stays authoritative for gating; `isAnonymous` is the plugin's bookkeeping.
   `POST /api/demo` needs `pnpm db:seed-office`.
 - **`BETTER_AUTH_SECRET` is effectively unrotatable.** Better Auth encrypts TOTP secrets
-  and backup codes at rest *with a key derived from it* — verified 2026-09-19 by enabling
+  and backup codes at rest _with a key derived from it_ — verified 2026-09-19 by enabling
   TOTP under one secret, restarting under another, and watching `get-totp-uri` fail with a
   ChaCha decryption error. Sign-in still works (password hashes are independent), so the
   damage is silent: rotating does not merely log people out, it destroys every user's only
@@ -294,9 +303,11 @@ That coupling dies with `legacy/`.
   merging took 1 of 3 commits while reporting success. `gh pr view <n> --json headRefOid`
   against `git rev-parse origin/<branch>` catches it in one command.
 - Branch protection is unavailable on this repo (private, free plan), so there are no
-  required status checks and GitHub's own auto-merge would merge *immediately* rather than
+  required status checks and GitHub's own auto-merge would merge _immediately_ rather than
   waiting for CI. Wait for green, then merge.
-- Strict TypeScript — no `any`. Prefer extracting a shared helper over repeating a cast.
+- Strict TypeScript — no `any` (enforced by lint). Prefer extracting a shared helper over
+  repeating a cast.
+- `pnpm format` before committing; CI rejects unformatted files.
 
 ## Known rough edges
 
