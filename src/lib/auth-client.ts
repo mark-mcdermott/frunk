@@ -29,7 +29,7 @@ export const authClient = createAuthClient({
 /** Better Auth's session store is a nanostore, so islands can subscribe to it directly. */
 export const { useSession, signOut: endSession } = authClient;
 
-function toSessionUser(user: Record<string, unknown>): SessionUser {
+export function toSessionUser(user: Record<string, unknown>): SessionUser {
 	return {
 		id: String(user.id),
 		email: String(user.email ?? ''),

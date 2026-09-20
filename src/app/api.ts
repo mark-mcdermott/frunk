@@ -173,6 +173,26 @@ export interface Vendor {
 	website: string | null;
 }
 
+/** The admin list's row shape — `GET /api/users` (admin only). */
+export interface AdminUser {
+	id: string;
+	email: string;
+	name: string;
+	image: string | null;
+	roles: number[];
+}
+
+export interface UserListParams {
+	page: number;
+	pageSize: number;
+	search: string;
+}
+
+export interface UserList extends UserListParams {
+	users: AdminUser[];
+	total: number;
+}
+
 /** `GET /api/vehicles/:id` answers the whole detail screen in one request. */
 export interface VehicleDetail {
 	vehicle: Vehicle;
@@ -216,7 +236,9 @@ export const keys = {
 	repairs: ['repairs'] as const,
 	repair: (id: string) => ['repairs', id] as const,
 	notes: ['notes'] as const,
-	note: (uuid: string) => ['notes', uuid] as const
+	note: (uuid: string) => ['notes', uuid] as const,
+	users: (params: UserListParams) => ['users', params] as const,
+	user: (id: string) => ['users', 'one', id] as const
 };
 
 export const listVehicles = () =>
@@ -341,3 +363,24 @@ export const createPhoto = (body: { galleryId: string; imageUrl: string; caption
 
 export const deletePhoto = (id: string) =>
 	request<void>(`/api/photos/${id}`, { method: 'DELETE' });
+
+export const listUsers = (params: UserListParams) => {
+	const query = new URLSearchParams({
+		page: String(params.page),
+		pageSize: String(params.pageSize),
+		...(params.search ? { search: params.search } : {})
+	});
+	return request<UserList>(`/api/users?${query}`);
+};
+
+export const getUser = (id: string) =>
+	request<{ user: AdminUser & { age: number | null } }>(`/api/users/${id}`).then((r) => r.user);
+
+export const updateUser = (id: string, body: { name?: string; roles?: number[] }) =>
+	request<{ user: AdminUser }>(`/api/users/${id}`, {
+		method: 'PATCH',
+		body: JSON.stringify(body)
+	}).then((r) => r.user);
+
+export const deleteUser = (id: string) =>
+	request<void>(`/api/users/${id}`, { method: 'DELETE' });

@@ -771,9 +771,39 @@ non-interactively, correctly).
   (upload on pick, preview, PDF chip); galleries get `GalleryEditor` on the vehicle
   panel — create/delete gallery, add/remove photos. Captions, drag-to-reorder
   (`photoOrder`) and gallery rename ride a later polish pass.
-- Still to build: user admin, the repair and note *detail* screens (list → edit covers
-  the data today; the singles mostly add note nesting) — and the per-route code
-  splitting Phase 4 also owns.
+**Landed 2026-09-19 — user admin** (`feat/user-admin`): the users table (the first
+**server-paginated** list — page/pageSize/search live in the query key,
+`keepPreviousData` holds the old page while the next loads) and the edit screen with
+role checkboxes. The nav entry is admin-gated as presentation only; the auth boundary
+stays at `requireAdmin`, and a non-admin who types /users gets the API's 403 rendered.
+
+- **Two latent port bugs found under it**: `updateUserSchema` still carried `username`
+  and `avatar` — the *pre-rename* column names, so a PATCH with them targeted columns
+  that no longer exist (now `name`/`image`; email is deliberately not editable here —
+  address changes belong to Better Auth's verified flow). And self-delete ran
+  Better Auth's `signOut` *after* deleting the user row, despite its own comment saying
+  it must run before — it survived only because the cascade had already destroyed the
+  session and the stale cookie 401'd later anyway.
+- **One real applet bug found by the 403 path**: TanStack's default
+  `networkMode: 'online'` paused the query's retry when the embedded browser flickered
+  `navigator.onLine`, leaving "Loading…" forever. Now `networkMode: 'always'` on queries
+  and mutations (no offline mode exists to protect, and Capacitor webviews are where
+  `onLine` lies most), and **4xx responses are never retried** — only 5xx/network earn
+  the single retry.
+- **Departures from `users-index.webp` / `admin-users-edit.webp`**, each because the
+  mock draws data that does not exist: no Status column or select (no active/inactive
+  flag), no Permissions checklist (no permissions model — three roles), no `+ Add User`
+  (accounts are created by sign-up; a password-less admin-created account would bypass
+  the only registration path), roles as checkboxes not a single dropdown (it is an
+  array, and the mock's own index shows Admin+User on one row), and no avatar upload —
+  files serve from the *owner's* `u/<userId>/` prefix, so an admin-uploaded avatar
+  would 404 for the user it belongs to. Avatars come with the profile screen.
+- Deleting yourself is blocked on the admin screen (the API allows it — that is account
+  deletion — but it belongs to the profile flow); removing your own admin role warns
+  before you save.
+- Still to build: the profile/account screen (avatar, TOTP `RecoverySetup` finally gets
+  its home, self-deletion), the repair and note *detail* screens — and the per-route
+  code splitting Phase 4 also owns.
 - Rebuild the app screens in React against the mocks: vehicles index and detail, vendors,
   repairs, notes, galleries, maintenance schedules, user admin. Follow `docs/DESIGN.md`
   for every component.
