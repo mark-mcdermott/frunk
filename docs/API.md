@@ -90,6 +90,13 @@ A demo visitor is not in a mode — they hold a real account cloned from
 above needs a `demo` flag. Requires `pnpm db:seed-office`; without the template the
 endpoint answers 503 rather than failing opaquely.
 
+**Converting is a passkey, never an email.** `POST /api/auth/sign-up/email` answers
+**409** while the request carries a demo session: Better Auth's sign-up always mints a
+second account, so the garage could only be left behind. And no auth ceremony deletes a
+demo account — Better Auth's anonymous plugin would, by default, on the next sign-in from
+that browser (`disableDeleteAnonymousUser` is set). Retiring a demo is the reaper's job
+alone. `tests/demo-conversion.test.ts` asserts both in Postgres.
+
 ### Vehicles
 
 | Method   | Path                | Notes                                                                                                               |
