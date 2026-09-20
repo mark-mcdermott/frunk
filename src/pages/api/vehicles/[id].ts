@@ -2,6 +2,7 @@ import type { APIRoute } from 'astro';
 import { desc, eq, inArray } from 'drizzle-orm';
 import { getDb } from '../../../lib/server/db';
 import * as table from '../../../lib/server/db/schema';
+import { deleteManagedFiles } from '../../../lib/server/files';
 import { ownedVehicle, requireSession } from '../_lib/guard';
 import { handler, json, noContent, notFound, readJson } from '../_lib/http';
 import { updateVehicleSchema } from '../_lib/schemas';
@@ -93,7 +94,7 @@ export const PATCH: APIRoute = (context) =>
 		const id = context.params.id;
 		if (!id) return notFound('Vehicle not found');
 
-		await ownedVehicle(id, user.id);
+		const before = await ownedVehicle(id, user.id);
 		const body = await readJson(context.request, updateVehicleSchema);
 
 		const [vehicle] = await getDb()
@@ -101,6 +102,12 @@ export const PATCH: APIRoute = (context) =>
 			.set({ ...body, updatedAt: new Date() })
 			.where(eq(table.vehicles.id, id))
 			.returning();
+
+		// A replaced or cleared cover image leaves its old blob unreachable — the URL
+		// existed only in this column. PATCH semantics: an omitted `image` keeps it.
+		if ('image' in body && body.image !== before.image) {
+			await deleteManagedFiles([before.image]);
+		}
 
 		return json({ vehicle });
 	});
@@ -111,9 +118,32 @@ export const DELETE: APIRoute = (context) =>
 		const id = context.params.id;
 		if (!id) return notFound('Vehicle not found');
 
-		await ownedVehicle(id, user.id);
-		// Notes, repairs, galleries and schedules cascade from the FK.
-		await getDb().delete(table.vehicles).where(eq(table.vehicles.id, id));
+		const vehicle = await ownedVehicle(id, user.id);
+		const db = getDb();
+
+		/*
+		 * Notes, repairs, galleries and schedules cascade from the FK — which erases
+		 * every row naming a blob, so the pathnames are collected first: the cover
+		 * image, every gallery photo, every note attachment.
+		 */
+		const [photos, vehicleNotes] = await Promise.all([
+			db
+				.select({ imageUrl: table.vehiclePhotos.imageUrl })
+				.from(table.vehiclePhotos)
+				.innerJoin(table.galleries, eq(table.vehiclePhotos.galleryId, table.galleries.id))
+				.where(eq(table.galleries.vehicleId, id)),
+			db
+				.select({ imageUrl: table.notes.imageUrl })
+				.from(table.notes)
+				.where(eq(table.notes.vehicleId, id))
+		]);
+
+		await db.delete(table.vehicles).where(eq(table.vehicles.id, id));
+		await deleteManagedFiles([
+			vehicle.image,
+			...photos.map((p) => p.imageUrl),
+			...vehicleNotes.map((n) => n.imageUrl)
+		]);
 
 		return noContent();
 	});
