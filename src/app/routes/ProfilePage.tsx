@@ -283,6 +283,11 @@ export function ProfilePage() {
 									<KeyRound className="size-4 text-accent-bright" strokeWidth={1.75} aria-hidden />
 									{addPasskey.isPending ? 'Waiting for your device…' : 'Add a passkey'}
 								</button>
+								{securityError && (
+									<p role="alert" className="mt-3 text-[0.875rem] text-destructive">
+										{securityError}
+									</p>
+								)}
 							</div>
 						)
 					) : (
