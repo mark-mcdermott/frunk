@@ -2,8 +2,12 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 import Header from '../components/Header.astro';
 import { SignUpForm } from '../components/auth/SignUpForm';
+import AuthCardSkeleton from '../components/auth/AuthCardSkeleton.astro';
 
-/** Built to `docs/mocks/sign-up.webp`. See `signin.astro` for why it is a route. */
+/**
+ * Built to `docs/mocks/sign-up.webp`. See `signin.astro` for why it is a route and why
+ * the island is `client:only` behind a skeleton.
+ */
 ---
 
 <BaseLayout
@@ -19,7 +23,9 @@ import { SignUpForm } from '../components/auth/SignUpForm';
 				class="pointer-events-none absolute inset-0 bg-[radial-gradient(55%_45%_at_50%_40%,rgb(100_56_204_/_0.13)_0%,transparent_70%)]"
 			></div>
 			<div class="relative flex w-full justify-center">
-				<SignUpForm client:load />
+				<SignUpForm client:only="react">
+					<AuthCardSkeleton slot="fallback" fields={3} label="Loading the sign-up form" />
+				</SignUpForm>
 			</div>
 		</main>
 	</div>

@@ -248,7 +248,11 @@ Five things about it are easy to get wrong:
 
 **Island classification rule:** does a live browser runtime need to exist for this to
 render? Yes → `client:only`. No → `client:load` / `client:visible`. Cross-island state is a
-**nanostore, not React context** — each island is its own React root.
+**nanostore, not React context** — each island is its own React root. **A form whose
+submit only works with JS is a "yes"** — `client:load` puts a working-looking form in the
+HTML before React owns it, and anything typed before hydration is wiped when the controlled
+inputs sync. Give it a `slot="fallback"` skeleton (`.skeleton` in `global.css`,
+`AuthCardSkeleton.astro` as the model) so the page still paints instantly.
 
 **Auth boundary is drawn at the API, not the page.** Astro serves the same static HTML to
 everyone; the applet decides what to render; every API handler checks the session itself.
