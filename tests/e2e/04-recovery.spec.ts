@@ -4,9 +4,10 @@ import { BASE, sql } from './support';
 
 /**
  * The whole Phase 3 chain, driven from the browser: password sign-in landing in the
- * applet, then TOTP recovery enrolled from the profile — the flow that was unreachable
- * until the profile screen existed. The six-digit code is generated from the secret
- * the screen shows, exactly as an authenticator app would.
+ * applet, TOTP recovery enrolled from the profile — the flow that was unreachable until
+ * the profile screen existed — and then the way back in that recovery exists for. The
+ * six-digit code is generated from the secret the screen shows, exactly as an
+ * authenticator app would.
  *
  * Its own account: recovery needs a password, which a demo account does not have.
  * `email_verified` is set in the database, as the API suite does — no mail is
@@ -62,4 +63,31 @@ test('signs in with a password and enrols TOTP recovery from the profile', async
 	// The flag rides on the session, so it survives a reload without re-enrolling.
 	await page.reload();
 	await expect(page.getByText('Recovery is set up')).toBeVisible();
+
+	// A fresh browser with no passkey: the password now answers with a challenge, not a
+	// session, and the form has to carry on to the code rather than call that an error.
+	await page.context().clearCookies();
+	await page.goto('/signin');
+	await page.getByLabel('Email address').fill(email);
+	await page.getByLabel('Password').fill(password);
+	await page.getByRole('button', { name: 'Sign in' }).click();
+
+	await expect(page.getByRole('heading', { name: 'One more step' })).toBeVisible();
+	await page
+		.getByLabel('Six-digit code from your authenticator app')
+		.fill(generateSync({ secret }));
+	await page.getByRole('button', { name: 'Verify code' }).click();
+
+	await expect(page.getByRole('heading', { name: 'You are back in' })).toBeVisible();
+	await page.getByRole('link', { name: 'Continue without a passkey' }).click();
+	await expect(page).toHaveURL(/\/vehicles$/);
+
+	// The code trusts this browser, so signing out and back in asks for no code.
+	await page.goto('/profile');
+	await page.getByRole('button', { name: 'Sign out' }).click();
+	await page.goto('/signin');
+	await page.getByLabel('Email address').fill(email);
+	await page.getByLabel('Password').fill(password);
+	await page.getByRole('button', { name: 'Sign in' }).click();
+	await expect(page).toHaveURL(/\/vehicles$/);
 });
