@@ -13,7 +13,8 @@ app. The SvelteKit app lives in **`legacy/`** — it is the reference for the po
 excluded from the Astro build and typecheck. It still deploys to Cloudflare Pages from
 `main` and stays live until Phase 6.
 
-**Phases 0–3 are done.** Phase 4 (the React applet) is next. Read
+**Phases 0–3 are done. Phase 4 is underway** — the applet mounts and the garage and
+vendors screens are built; the remaining ~20 screens are not. Read
 `docs/PORT-PLAN.md` before doing anything here; it records what is settled and what is
 outstanding.
 
@@ -115,7 +116,13 @@ the *legacy* database, and duly rewrote the live app's schema from this branch. 
 ## Architecture (the port target)
 
 - `src/pages/` — Astro routes. Static `.astro` for marketing and legal; `/api/*` as Astro
-  endpoints; the app mounts as a single `client:only` React island under `[...slug].astro`.
+  endpoints; the app mounts as a single `client:only` React island.
+- `src/app/` — the applet: `AppRoot` (QueryClient + router), `AppShell` (the signed-in
+  chrome), `routes/` (one component per screen) and `api.ts` (the typed fetch layer and
+  the query keys). **Mounted by one catch-all per section** — `src/pages/vehicles/[...slug].astro`,
+  `src/pages/vendors/[...slug].astro` — not a root catch-all, which would answer 200 for
+  every mistyped URL on the site and destroy real 404s. Adding a screen means adding its
+  route to `AppRoot` *and* a three-line `[...slug].astro` for its section.
 - `src/components/` — Astro components and, from Phase 4, React. `src/components/ui/` is
   shadcn's target directory.
 - `src/layouts/`, `src/styles/global.css` (the design token layer), `src/lib/`.
