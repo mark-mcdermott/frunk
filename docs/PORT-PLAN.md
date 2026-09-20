@@ -610,6 +610,19 @@ on the device you just recovered onto.
   inlined at build time, so an optional one that is unset during the build freezes as
   undefined for the life of the deploy — silently, because it has a fallback.
 
+### A finding after the fact — 2026-09-20
+
+**Recovery was enrolled but unreachable.** Better Auth's `twoFactor` plugin answers a
+password sign-in on an enrolled account with `{ twoFactorRedirect: true }` and a
+challenge cookie, not a session; the client treated that as a user and threw, so an
+account with recovery set up could no longer sign in with its password at all — and the
+"Lost your device?" form posted a bare code, which the plugin refuses without the
+challenge (`INVALID_TWO_FACTOR_COOKIE`). Verified over HTTP, fixed in the client
+(`fix/totp-sign-in`): the password step carries on to the code, the code trusts the
+device for thirty days, and the recovery journey now signs out and back in that way. The
+design consequence is recorded in `docs/API.md`: TOTP is recovery in intent and a second
+factor in mechanism, so a password sign-in from an untrusted browser asks for it.
+
 ### Environment — set 2026-09-19
 
 These three belong to this phase, not to Phase 6. `ENCRYPTION_KEY` in particular was never
@@ -1058,7 +1071,9 @@ Playwright, chromium only, eight specs in ~20 s, wired into CI as its own job.
   (shown as "No email on file", never as an email) and it has no password, so TOTP
   recovery cannot be enrolled — Better Auth's `setPassword` for credential-less users is
   the eventual answer. The passkey journey asserts the whole conversion in Postgres.
-- Retire the Cloudflare Pages project. Update `CLAUDE.md` and `_PROJECTS.md`.
+- Retire the Cloudflare Pages project. ~~Update `CLAUDE.md` and `_PROJECTS.md`.~~ Both
+  current as of 2026-09-20 (the roster on its own PR). `db-backup.yml` still dumps the
+  legacy database nightly; re-point or retire it with the Cloudflare project.
 - **Checkpoint:** prod green on one origin; auth end-to-end; Capacitor build passes.
 
 ---
@@ -1088,14 +1103,17 @@ Playwright, chromium only, eight specs in ~20 s, wired into CI as its own job.
   state where frunk is both old-and-working and new-and-working. Mitigation: the old app
   stays live on Cloudflare until Phase 6.
 - ~~**Auth discontinuity.**~~ Resolved — frunk never launched, so no accounts exist.
-- **Untested upload path.** R2 writes are guarded by `!import.meta.env.DEV`, so they only
-  ever run in production and have no local coverage. Rebuild them with tests.
+- ~~**Untested upload path.**~~ R2 writes were guarded by `!import.meta.env.DEV`, so they
+  only ever ran in production. **Resolved:** the Blob path runs locally and in the journeys
+  — the avatar and gallery-photo specs upload real files and, after each delete, check the
+  store as well as the row (2026-09-20).
 - **App Store.** wolfpack's Capacitor loads the deployed origin via `CAP_SERVER_URL` rather
   than bundling. That is exposed under Apple Guideline 4.2 (minimum functionality), and
   `_PROJECTS.md` calls frunk the best store candidate. Decide the native strategy before
   relying on it.
-- **Test coverage regresses to zero** at the start — the 7 Playwright suites are written
-  against SvelteKit markup and will not survive the rewrite. Re-establish them in Phase 4.
+- ~~**Test coverage regresses to zero**~~ at the start — the 7 Playwright suites were
+  written against SvelteKit markup and did not survive the rewrite. **Re-established in
+  Phase 4:** the API suite and eight browser journeys, selecting by role and label only.
 
 ## Verification (per checkpoint)
 
@@ -1103,7 +1121,9 @@ Playwright, chromium only, eight specs in ~20 s, wired into CI as its own job.
 - **Static:** view-source on `/`, `/about`, `/pricing` shows real HTML, not an empty root.
 - **Islands:** the nav user island hydrates from `/api/auth/me`; the applet mounts only on
   app routes.
-- **Preview deploy:** function count ≈ 1; endpoints reachable; Stripe webhook receives.
+- **Preview deploy:** function count ≈ 1; endpoints reachable (`docs/API.md`, "Verifying
+  against a deploy"). Preview URLs sit behind Vercel's deployment protection, so probe
+  production after the merge instead.
 - **Design:** each screen checked against its mock in `frunk-proj/branding/mock/`.
 - **A11y:** WCAG AA contrast on both themes — the palette in `docs/DESIGN.md` is already
   verified; keep new components to that bar.
