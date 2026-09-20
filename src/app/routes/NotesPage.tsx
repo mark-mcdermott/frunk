@@ -42,7 +42,7 @@ function NoteRowItem({ note, onDelete }: { note: NoteRow; onDelete: () => void }
 
 			<div className="min-w-0 flex-1">
 				<h2 className="display-sm truncate text-lg">
-					<Link to={`/notes/${note.uuid}/edit`} className="transition-opacity hover:opacity-80">
+					<Link to={`/notes/${note.uuid}`} className="transition-opacity hover:opacity-80">
 						{note.title}
 					</Link>
 				</h2>

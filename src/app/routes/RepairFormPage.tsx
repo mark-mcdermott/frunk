@@ -65,7 +65,7 @@ const BLANK: FormState = {
 	status: 'completed'
 };
 
-function toForm(repair: RepairRow): FormState {
+function toForm(repair: Omit<RepairRow, 'vehicleMake' | 'vehicleModel' | 'vehicleYear'>): FormState {
 	return {
 		vehicleId: repair.vehicleId,
 		description: repair.description,
@@ -128,7 +128,7 @@ export function RepairFormPage() {
 		enabled: editing && !cached
 	});
 
-	const existing = cached ?? fetched.data;
+	const existing = cached ?? fetched.data?.repair;
 	useEffect(() => {
 		if (existing) setForm(toForm(existing));
 	}, [existing]);
@@ -156,10 +156,11 @@ export function RepairFormPage() {
 			const { vehicleId: _vehicle, ...rest } = payload;
 			return editing ? updateRepair(id as string, rest) : createRepair(payload);
 		},
-		onSuccess: () => {
+		onSuccess: (saved) => {
 			client.invalidateQueries({ queryKey: keys.repairs });
+			if (editing) client.invalidateQueries({ queryKey: keys.repair(id as string) });
 			if (vehicleId) client.invalidateQueries({ queryKey: keys.vehicle(vehicleId) });
-			navigate(vehicleId ? `/vehicles/${vehicleId}` : '/repairs');
+			navigate(`/repairs/${saved.id}`);
 		}
 	});
 

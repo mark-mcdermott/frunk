@@ -1,19 +1,8 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { ApiError } from './api';
+import { lazy, Suspense, type ComponentType } from 'react';
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router';
+import { ApiError } from './api';
 import { AppShell } from './AppShell';
-import { NoteFormPage } from './routes/NoteFormPage';
-import { NotesPage } from './routes/NotesPage';
-import { ProfilePage } from './routes/ProfilePage';
-import { RepairFormPage } from './routes/RepairFormPage';
-import { RepairsPage } from './routes/RepairsPage';
-import { UserFormPage } from './routes/UserFormPage';
-import { UsersPage } from './routes/UsersPage';
-import { VehicleDetailPage } from './routes/VehicleDetailPage';
-import { VehicleFormPage } from './routes/VehicleFormPage';
-import { VehiclesPage } from './routes/VehiclesPage';
-import { VendorFormPage } from './routes/VendorFormPage';
-import { VendorsPage } from './routes/VendorsPage';
 
 /**
  * The applet: one `client:only` island holding the whole signed-in app (Phase 4).
@@ -28,7 +17,29 @@ import { VendorsPage } from './routes/VendorsPage';
  * hand every render a fresh cache, which looks like "the data keeps refetching" and is
  * a genuinely confusing bug to chase. There is exactly one island, so a module-level
  * client is also the only cache in the page.
+ *
+ * **Every route is code-split** (Decision 9): the shell paints from the entry chunk
+ * and each screen loads on first visit. `page()` exists because `lazy()` wants a
+ * default export and the route modules use named ones.
  */
+const page = <T,>(loader: () => Promise<T>, name: { [K in keyof T]: T[K] extends ComponentType ? K : never }[keyof T]) =>
+	lazy(() => loader().then((module) => ({ default: module[name] as ComponentType })));
+
+const VehiclesPage = page(() => import('./routes/VehiclesPage'), 'VehiclesPage');
+const VehicleDetailPage = page(() => import('./routes/VehicleDetailPage'), 'VehicleDetailPage');
+const VehicleFormPage = page(() => import('./routes/VehicleFormPage'), 'VehicleFormPage');
+const RepairsPage = page(() => import('./routes/RepairsPage'), 'RepairsPage');
+const RepairDetailPage = page(() => import('./routes/RepairDetailPage'), 'RepairDetailPage');
+const RepairFormPage = page(() => import('./routes/RepairFormPage'), 'RepairFormPage');
+const NotesPage = page(() => import('./routes/NotesPage'), 'NotesPage');
+const NoteDetailPage = page(() => import('./routes/NoteDetailPage'), 'NoteDetailPage');
+const NoteFormPage = page(() => import('./routes/NoteFormPage'), 'NoteFormPage');
+const VendorsPage = page(() => import('./routes/VendorsPage'), 'VendorsPage');
+const VendorFormPage = page(() => import('./routes/VendorFormPage'), 'VendorFormPage');
+const ProfilePage = page(() => import('./routes/ProfilePage'), 'ProfilePage');
+const UsersPage = page(() => import('./routes/UsersPage'), 'UsersPage');
+const UserFormPage = page(() => import('./routes/UserFormPage'), 'UserFormPage');
+
 const queryClient = new QueryClient({
 	defaultOptions: {
 		queries: {
@@ -68,27 +79,33 @@ export function AppRoot() {
 		<QueryClientProvider client={queryClient}>
 			<BrowserRouter>
 				<AppShell>
-					<Routes>
-						<Route path="/vehicles" element={<VehiclesPage />} />
-						{/* Static before dynamic, so `new` is never read as an id. */}
-						<Route path="/vehicles/new" element={<VehicleFormPage />} />
-						<Route path="/vehicles/:id" element={<VehicleDetailPage />} />
-						<Route path="/vehicles/:id/edit" element={<VehicleFormPage />} />
-						<Route path="/repairs" element={<RepairsPage />} />
-						<Route path="/repairs/new" element={<RepairFormPage />} />
-						<Route path="/repairs/:id/edit" element={<RepairFormPage />} />
-						<Route path="/notes" element={<NotesPage />} />
-						<Route path="/notes/new" element={<NoteFormPage />} />
-						<Route path="/notes/:uuid/edit" element={<NoteFormPage />} />
-						<Route path="/vendors" element={<VendorsPage />} />
-						<Route path="/vendors/new" element={<VendorFormPage />} />
-						<Route path="/vendors/:id/edit" element={<VendorFormPage />} />
-						<Route path="/profile" element={<ProfilePage />} />
-						<Route path="/users" element={<UsersPage />} />
-						<Route path="/users/:id/edit" element={<UserFormPage />} />
-						{/* Unknown app paths go to the garage rather than a blank island. */}
-						<Route path="*" element={<Navigate to="/vehicles" replace />} />
-					</Routes>
+					<Suspense
+						fallback={<p className="py-10 text-[0.9375rem] text-text-muted">Loading…</p>}
+					>
+						<Routes>
+							<Route path="/vehicles" element={<VehiclesPage />} />
+							{/* Static before dynamic, so `new` is never read as an id. */}
+							<Route path="/vehicles/new" element={<VehicleFormPage />} />
+							<Route path="/vehicles/:id" element={<VehicleDetailPage />} />
+							<Route path="/vehicles/:id/edit" element={<VehicleFormPage />} />
+							<Route path="/repairs" element={<RepairsPage />} />
+							<Route path="/repairs/new" element={<RepairFormPage />} />
+							<Route path="/repairs/:id" element={<RepairDetailPage />} />
+							<Route path="/repairs/:id/edit" element={<RepairFormPage />} />
+							<Route path="/notes" element={<NotesPage />} />
+							<Route path="/notes/new" element={<NoteFormPage />} />
+							<Route path="/notes/:uuid" element={<NoteDetailPage />} />
+							<Route path="/notes/:uuid/edit" element={<NoteFormPage />} />
+							<Route path="/vendors" element={<VendorsPage />} />
+							<Route path="/vendors/new" element={<VendorFormPage />} />
+							<Route path="/vendors/:id/edit" element={<VendorFormPage />} />
+							<Route path="/profile" element={<ProfilePage />} />
+							<Route path="/users" element={<UsersPage />} />
+							<Route path="/users/:id/edit" element={<UserFormPage />} />
+							{/* Unknown app paths go to the garage rather than a blank island. */}
+							<Route path="*" element={<Navigate to="/vehicles" replace />} />
+						</Routes>
+					</Suspense>
 				</AppShell>
 			</BrowserRouter>
 		</QueryClientProvider>

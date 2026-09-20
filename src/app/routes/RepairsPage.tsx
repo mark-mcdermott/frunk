@@ -76,10 +76,7 @@ function RepairRowItem({ repair, onDelete }: { repair: RepairRow; onDelete: () =
 
 			<div className="min-w-0 flex-1">
 				<h2 className="display-sm truncate text-lg">
-					<Link
-						to={`/repairs/${repair.id}/edit`}
-						className="transition-opacity hover:opacity-80"
-					>
+					<Link to={`/repairs/${repair.id}`} className="transition-opacity hover:opacity-80">
 						{repair.description}
 					</Link>
 				</h2>
