@@ -1,5 +1,9 @@
 import { createAuthClient } from 'better-auth/react';
-import { anonymousClient, inferAdditionalFields, twoFactorClient } from 'better-auth/client/plugins';
+import {
+	anonymousClient,
+	inferAdditionalFields,
+	twoFactorClient
+} from 'better-auth/client/plugins';
 import { passkeyClient } from '@better-auth/passkey/client';
 import type { Auth } from './server/auth/config';
 import type { SessionUser } from './user';
@@ -18,12 +22,7 @@ import type { SessionUser } from './user';
  * `roles` — which every demo check reads — comes back as `unknown`.
  */
 export const authClient = createAuthClient({
-	plugins: [
-		passkeyClient(),
-		twoFactorClient(),
-		anonymousClient(),
-		inferAdditionalFields<Auth>()
-	]
+	plugins: [passkeyClient(), twoFactorClient(), anonymousClient(), inferAdditionalFields<Auth>()]
 });
 
 /** Better Auth's session store is a nanostore, so islands can subscribe to it directly. */
@@ -81,7 +80,8 @@ export async function registerPasskey(name?: string): Promise<void> {
 
 export async function signInWithPasskey(): Promise<void> {
 	const result = await authClient.signIn.passkey();
-	if (result?.error) throw new AuthError(result.error.message ?? 'Could not sign in with a passkey.');
+	if (result?.error)
+		throw new AuthError(result.error.message ?? 'Could not sign in with a passkey.');
 }
 
 /** TOTP is recovery, not a second factor — it stands in for a passkey that is gone. */

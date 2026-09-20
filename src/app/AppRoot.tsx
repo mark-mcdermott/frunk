@@ -22,8 +22,10 @@ import { AppShell } from './AppShell';
  * and each screen loads on first visit. `page()` exists because `lazy()` wants a
  * default export and the route modules use named ones.
  */
-const page = <T,>(loader: () => Promise<T>, name: { [K in keyof T]: T[K] extends ComponentType ? K : never }[keyof T]) =>
-	lazy(() => loader().then((module) => ({ default: module[name] as ComponentType })));
+const page = <T,>(
+	loader: () => Promise<T>,
+	name: { [K in keyof T]: T[K] extends ComponentType ? K : never }[keyof T]
+) => lazy(() => loader().then((module) => ({ default: module[name] as ComponentType })));
 
 const VehiclesPage = page(() => import('./routes/VehiclesPage'), 'VehiclesPage');
 const VehicleDetailPage = page(() => import('./routes/VehicleDetailPage'), 'VehicleDetailPage');
@@ -79,9 +81,7 @@ export function AppRoot() {
 		<QueryClientProvider client={queryClient}>
 			<BrowserRouter>
 				<AppShell>
-					<Suspense
-						fallback={<p className="py-10 text-[0.9375rem] text-text-muted">Loading…</p>}
-					>
+					<Suspense fallback={<p className="py-10 text-[0.9375rem] text-text-muted">Loading…</p>}>
 						<Routes>
 							<Route path="/vehicles" element={<VehiclesPage />} />
 							{/* Static before dynamic, so `new` is never read as an id. */}

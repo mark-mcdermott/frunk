@@ -52,7 +52,7 @@ function FieldShell({
 			<Label htmlFor={id} className="text-[0.8125rem] text-text">
 				{label}
 				{/* The gap is CSS, so the accessible name needs its own space. */}
-				{optional && <span className="font-normal text-text-muted">{' '}(optional)</span>}
+				{optional && <span className="font-normal text-text-muted"> (optional)</span>}
 			</Label>
 
 			{children}
@@ -102,7 +102,7 @@ export function TextField({
 				{prefix && (
 					<span
 						aria-hidden
-						className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-[0.9375rem] text-text-muted"
+						className="pointer-events-none absolute top-1/2 left-4 -translate-y-1/2 text-[0.9375rem] text-text-muted"
 					>
 						{prefix}
 					</span>
@@ -120,7 +120,7 @@ export function TextField({
 				{suffix && (
 					<span
 						aria-hidden
-						className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-[0.8125rem] text-text-muted"
+						className="pointer-events-none absolute top-1/2 right-4 -translate-y-1/2 text-[0.8125rem] text-text-muted"
 					>
 						{suffix}
 					</span>
@@ -174,7 +174,7 @@ export function TextAreaField({
 				value={value}
 				aria-invalid={error ? true : undefined}
 				onChange={(event) => onChange(event.target.value)}
-				className={`${CONTROL} resize-y border py-3 outline-none transition-colors focus:border-accent`}
+				className={`${CONTROL} resize-y border py-3 transition-colors outline-none focus:border-accent`}
 			/>
 		</FieldShell>
 	);

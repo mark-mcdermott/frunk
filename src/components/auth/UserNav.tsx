@@ -57,7 +57,12 @@ export function UserNav() {
 	 * is most visible.
 	 */
 	if (status === 'loading') {
-		return <div aria-hidden className="h-11 w-[9.5rem] animate-pulse rounded-full bg-[rgb(11_15_24_/_0.06)]" />;
+		return (
+			<div
+				aria-hidden
+				className="h-11 w-[9.5rem] animate-pulse rounded-full bg-[rgb(11_15_24_/_0.06)]"
+			/>
+		);
 	}
 
 	if (!user) {
@@ -103,7 +108,7 @@ export function UserNav() {
 					onClick={() => setOpen(!open)}
 					aria-expanded={open}
 					aria-haspopup="menu"
-					className="flex items-center gap-2 rounded-full py-1 pl-1 pr-2 transition-colors hover:bg-[rgb(11_15_24_/_0.05)]"
+					className="flex items-center gap-2 rounded-full py-1 pr-2 pl-1 transition-colors hover:bg-[rgb(11_15_24_/_0.05)]"
 				>
 					{user.image ? (
 						<img src={user.image} alt="" className="size-9 rounded-full object-cover" />
@@ -118,14 +123,18 @@ export function UserNav() {
 					<span className="hidden max-w-[8rem] truncate text-[0.9375rem] text-[#0b0f18] sm:block">
 						{displayName(user)}
 					</span>
-					<ChevronDown className="size-4 text-[rgb(11_15_24_/_0.5)]" strokeWidth={1.75} aria-hidden />
+					<ChevronDown
+						className="size-4 text-[rgb(11_15_24_/_0.5)]"
+						strokeWidth={1.75}
+						aria-hidden
+					/>
 					<span className="sr-only">Account menu</span>
 				</button>
 
 				{open && (
 					<div
 						role="menu"
-						className="absolute right-0 top-[calc(100%+0.5rem)] z-50 w-60 overflow-hidden rounded-[14px] border border-[rgb(11_15_24_/_0.08)] bg-white shadow-[0_16px_48px_-16px_rgb(11_15_24_/_0.28)]"
+						className="absolute top-[calc(100%+0.5rem)] right-0 z-50 w-60 overflow-hidden rounded-[14px] border border-[rgb(11_15_24_/_0.08)] bg-white shadow-[0_16px_48px_-16px_rgb(11_15_24_/_0.28)]"
 					>
 						<div className="border-b border-[rgb(11_15_24_/_0.08)] px-4 py-3">
 							<p className="truncate text-[0.875rem] font-semibold text-[#0b0f18]">
@@ -152,7 +161,11 @@ export function UserNav() {
 							onClick={endSession}
 							className="flex w-full items-center gap-2.5 px-4 py-3 text-left text-[0.875rem] text-[#0b0f18] transition-colors hover:bg-[rgb(11_15_24_/_0.04)]"
 						>
-							<LogOut className="size-4 text-[rgb(11_15_24_/_0.5)]" strokeWidth={1.75} aria-hidden />
+							<LogOut
+								className="size-4 text-[rgb(11_15_24_/_0.5)]"
+								strokeWidth={1.75}
+								aria-hidden
+							/>
 							Sign out
 						</button>
 					</div>

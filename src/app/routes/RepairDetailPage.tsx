@@ -35,14 +35,22 @@ import { formatCost, formatDate, formatMiles } from '../format';
  * (the vehicle's other repairs, which the vehicle screen already lists in full).
  */
 
-function SpecRow({ icon, label, children }: { icon: ReactNode; label: string; children: ReactNode }) {
+function SpecRow({
+	icon,
+	label,
+	children
+}: {
+	icon: ReactNode;
+	label: string;
+	children: ReactNode;
+}) {
 	return (
 		<div className="flex items-center gap-4 border-b border-border py-4 last:border-b-0">
 			<span aria-hidden className="text-text-faint">
 				{icon}
 			</span>
 			<div>
-				<p className="text-[0.75rem] uppercase tracking-[0.12em] text-text-faint">{label}</p>
+				<p className="text-[0.75rem] tracking-[0.12em] text-text-faint uppercase">{label}</p>
 				<p className="mt-1 text-[0.9375rem] text-text">{children}</p>
 			</div>
 		</div>
@@ -191,7 +199,10 @@ export function RepairDetailPage() {
 					)}
 					{vendor && (
 						<SpecRow icon={<Store className="size-4" />} label="Vendor">
-							<Link to={`/vendors/${vendor.id}/edit`} className="text-accent-bright hover:opacity-80">
+							<Link
+								to={`/vendors/${vendor.id}/edit`}
+								className="text-accent-bright hover:opacity-80"
+							>
 								{vendor.name}
 							</Link>
 						</SpecRow>

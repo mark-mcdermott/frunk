@@ -18,10 +18,12 @@ Quick commits that leverage conversation context. Just stage, commit, and push â
 ## Workflow
 
 ### 1. Pre-Commit Checks
+
 Run the project's typecheck, lint, and test commands (check package.json or project config for available scripts).
 Fix any issues before proceeding.
 
 ### 2. Check Status & Stage
+
 ```bash
 git status
 git diff --stat
@@ -29,14 +31,17 @@ git add [files]
 ```
 
 ### 3. Commit
+
 Read `.claude/commit-style.md` for the current commit style (gitmoji, gitmoji-multiline, or conventional). Write the commit message following that style exactly.
 
 **Commit rules (CRITICAL)**:
+
 - Follow the format and rules in `.claude/commit-style.md`.
 - No AI attribution. No co-author lines, no signatures, no references to Claude/AI.
 - Commit as the developer, never as Claude.
 
 ### 4. Push
+
 ```bash
 git push origin [current-branch]
 ```

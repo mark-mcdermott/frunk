@@ -216,7 +216,14 @@ export type VehicleInput = {
 	year: number;
 } & Partial<
 	Record<
-		'nickname' | 'vin' | 'bodyStyle' | 'color' | 'transmission' | 'engineType' | 'engineSize' | 'image',
+		| 'nickname'
+		| 'vin'
+		| 'bodyStyle'
+		| 'color'
+		| 'transmission'
+		| 'engineType'
+		| 'engineSize'
+		| 'image',
 		string | null
 	>
 > & { currentMileage?: number | null };
@@ -365,7 +372,11 @@ export const uploadFile = (file: File) =>
 		{ method: 'POST', body: file, headers: { 'content-type': file.type } }
 	);
 
-export const createGallery = (body: { vehicleId: string; name: string; description?: string | null }) =>
+export const createGallery = (body: {
+	vehicleId: string;
+	name: string;
+	description?: string | null;
+}) =>
 	request<{ gallery: Gallery }>('/api/galleries', {
 		method: 'POST',
 		body: JSON.stringify(body)
@@ -374,14 +385,17 @@ export const createGallery = (body: { vehicleId: string; name: string; descripti
 export const deleteGallery = (id: string) =>
 	request<void>(`/api/galleries/${id}`, { method: 'DELETE' });
 
-export const createPhoto = (body: { galleryId: string; imageUrl: string; caption?: string | null }) =>
+export const createPhoto = (body: {
+	galleryId: string;
+	imageUrl: string;
+	caption?: string | null;
+}) =>
 	request<{ photo: Photo }>('/api/photos', {
 		method: 'POST',
 		body: JSON.stringify(body)
 	}).then((r) => r.photo);
 
-export const deletePhoto = (id: string) =>
-	request<void>(`/api/photos/${id}`, { method: 'DELETE' });
+export const deletePhoto = (id: string) => request<void>(`/api/photos/${id}`, { method: 'DELETE' });
 
 export const listUsers = (params: UserListParams) => {
 	const query = new URLSearchParams({
@@ -401,8 +415,7 @@ export const updateUser = (id: string, body: { name?: string; roles?: number[] }
 		body: JSON.stringify(body)
 	}).then((r) => r.user);
 
-export const deleteUser = (id: string) =>
-	request<void>(`/api/users/${id}`, { method: 'DELETE' });
+export const deleteUser = (id: string) => request<void>(`/api/users/${id}`, { method: 'DELETE' });
 
 /** Removes one of the caller's own uploaded files — see `DELETE /api/uploads`. */
 export const deleteUpload = (url: string) =>

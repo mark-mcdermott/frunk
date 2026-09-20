@@ -1,11 +1,7 @@
 import { Check, Copy, KeyRound, ShieldCheck } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
 import { useEffect, useState, type SubmitEvent } from 'react';
-import {
-	authErrorMessage,
-	confirmRecoverySetup,
-	startRecoverySetup
-} from '../../lib/auth-client';
+import { authErrorMessage, confirmRecoverySetup, startRecoverySetup } from '../../lib/auth-client';
 import { FormError } from './FormError';
 import { SubmitButton } from './SubmitButton';
 
@@ -83,7 +79,11 @@ export function RecoverySetup({ onDone, onSkip, password }: Props) {
 	return (
 		<div className="mt-8">
 			<div className="flex items-start gap-3 rounded-control bg-surface px-4 py-3.5">
-				<ShieldCheck className="mt-0.5 size-[1.125rem] shrink-0 text-accent-text" strokeWidth={1.75} aria-hidden />
+				<ShieldCheck
+					className="mt-0.5 size-[1.125rem] shrink-0 text-accent-text"
+					strokeWidth={1.75}
+					aria-hidden
+				/>
 				<p className="text-[0.8125rem] leading-relaxed text-text-muted">
 					Scan this with an authenticator app. It is how you get back in if you lose the device
 					holding your passkey.
@@ -99,7 +99,7 @@ export function RecoverySetup({ onDone, onSkip, password }: Props) {
 					</div>
 
 					<div className="mt-5">
-						<p className="text-center text-[0.75rem] uppercase tracking-[0.12em] text-text-faint">
+						<p className="text-center text-[0.75rem] tracking-[0.12em] text-text-faint uppercase">
 							Or enter this code by hand
 						</p>
 						<button
@@ -126,7 +126,7 @@ export function RecoverySetup({ onDone, onSkip, password }: Props) {
 								<KeyRound
 									aria-hidden
 									strokeWidth={1.75}
-									className="pointer-events-none absolute left-4 top-1/2 size-[1.125rem] -translate-y-1/2 text-text-faint"
+									className="pointer-events-none absolute top-1/2 left-4 size-[1.125rem] -translate-y-1/2 text-text-faint"
 								/>
 								<input
 									id="totp-setup"
@@ -137,7 +137,7 @@ export function RecoverySetup({ onDone, onSkip, password }: Props) {
 									maxLength={6}
 									required
 									placeholder="123456"
-									className="h-[3.25rem] w-full rounded-control border border-border-strong bg-surface-raised pl-12 pr-4 font-mono text-[0.9375rem] tracking-[0.3em] text-text transition-colors placeholder:tracking-[0.3em] placeholder:text-text-faint focus:border-accent focus:outline-none"
+									className="h-[3.25rem] w-full rounded-control border border-border-strong bg-surface-raised pr-4 pl-12 font-mono text-[0.9375rem] tracking-[0.3em] text-text transition-colors placeholder:tracking-[0.3em] placeholder:text-text-faint focus:border-accent focus:outline-none"
 								/>
 							</div>
 						</div>

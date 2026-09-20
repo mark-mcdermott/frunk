@@ -22,7 +22,10 @@ test.describe('user admin', () => {
 
 		try {
 			await page.goto('/vehicles');
-			await page.getByRole('navigation', { name: 'Sections' }).getByRole('link', { name: 'Users' }).click();
+			await page
+				.getByRole('navigation', { name: 'Sections' })
+				.getByRole('link', { name: 'Users' })
+				.click();
 
 			await expect(page.getByRole('heading', { name: 'Users' })).toBeVisible();
 			await expect(page.getByText(/Showing 1 to \d+ of \d+ users/)).toBeVisible();
@@ -35,9 +38,9 @@ test.describe('user admin', () => {
 			await page.getByRole('button', { name: 'Save Changes' }).click();
 
 			await expect(page).toHaveURL(/\/users$/);
-			expect(await sql(`select name from "user" where email = 'dwight.schrute@dundermifflin.com'`)).toBe(
-				'Dwight K. Schrute'
-			);
+			expect(
+				await sql(`select name from "user" where email = 'dwight.schrute@dundermifflin.com'`)
+			).toBe('Dwight K. Schrute');
 
 			// Your own row: no delete here — that belongs to the profile screen.
 			await page.goto(`/users/${id}/edit`);

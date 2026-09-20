@@ -10,7 +10,7 @@ const columns = [
 		heading: 'Product',
 		links: [
 			{ label: 'Features', href: '/#features' },
-			{ label: 'Security', href: '/#security' },
+			{ label: 'Security', href: '/#security' }
 			// Unpublished with the page — see src/lib/nav.ts
 			// { label: 'Pricing', href: '/pricing' }
 		]
@@ -51,30 +51,30 @@ const year = new Date().getFullYear();
 			<div>
 				<p class="wordmark text-xl">FRUNK</p>
 				<p class="display mt-6 text-2xl leading-snug">
-					Everything that matters.<br />Within reach.
+					Everything that matters.
+					<br />
+					Within reach.
 				</p>
 				<div class="mt-6 h-px w-16 bg-accent-bright"></div>
 			</div>
 
-			{
-				columns.map((column) => (
-					<nav aria-label={column.heading}>
-						<h2 class="eyebrow text-text-faint">{column.heading}</h2>
-						<ul class="mt-6 space-y-4">
-							{column.links.map((link) => (
-								<li>
-									<a
-										href={link.href}
-										class="text-[0.9375rem] text-text-muted transition-colors hover:text-text"
-									>
-										{link.label}
-									</a>
-								</li>
-							))}
-						</ul>
-					</nav>
-				))
-			}
+			{columns.map((column) => (
+				<nav aria-label={column.heading}>
+					<h2 class="eyebrow text-text-faint">{column.heading}</h2>
+					<ul class="mt-6 space-y-4">
+						{column.links.map((link) => (
+							<li>
+								<a
+									href={link.href}
+									class="text-[0.9375rem] text-text-muted transition-colors hover:text-text"
+								>
+									{link.label}
+								</a>
+							</li>
+						))}
+					</ul>
+				</nav>
+			))}
 
 			<div>
 				<h2 class="eyebrow text-text-faint">Stay in the loop</h2>
@@ -83,10 +83,10 @@ const year = new Date().getFullYear();
 				</p>
 				{/* Endpoint is added in Phase 5 with the rest of the static surface. */}
 				<form method="post" action="/api/newsletter" class="mt-6">
-					<div
-						class="flex items-center gap-2 rounded-[var(--radius-control)] border border-border bg-surface-raised pr-2 focus-within:border-border-strong"
-					>
-						<label for="newsletter-email" class="sr-only">Email address</label>
+					<div class="flex items-center gap-2 rounded-[var(--radius-control)] border border-border bg-surface-raised pr-2 focus-within:border-border-strong">
+						<label for="newsletter-email" class="sr-only">
+							Email address
+						</label>
 						<input
 							id="newsletter-email"
 							name="email"
@@ -109,9 +109,7 @@ const year = new Date().getFullYear();
 			</div>
 		</div>
 
-		<div
-			class="mt-16 flex flex-col gap-6 border-t border-border pt-8 sm:flex-row sm:items-center sm:justify-between"
-		>
+		<div class="mt-16 flex flex-col gap-6 border-t border-border pt-8 sm:flex-row sm:items-center sm:justify-between">
 			<div class="flex flex-wrap items-center gap-x-6 gap-y-2">
 				<p class="text-sm text-text-muted">&copy; {year} Frunk. All rights reserved.</p>
 				<a href="/privacy" class="text-sm text-text-muted transition-colors hover:text-text">
@@ -122,28 +120,23 @@ const year = new Date().getFullYear();
 				</a>
 			</div>
 			<ul class="flex flex-wrap items-center gap-x-6 gap-y-2">
-				{
-					socials.map((social) => (
-						<li>
-							<a
-								href={social.href}
-								class="text-sm text-text-muted transition-colors hover:text-text"
-							>
-								{social.label}
-							</a>
-						</li>
-					))
-				}
+				{socials.map((social) => (
+					<li>
+						<a href={social.href} class="text-sm text-text-muted transition-colors hover:text-text">
+							{social.label}
+						</a>
+					</li>
+				))}
 			</ul>
 		</div>
 
 		<div class="mt-8 flex gap-6">
-			<a href="/legal/privacy" class="text-sm text-text-faint transition-colors hover:text-text"
-				>Privacy</a
-			>
-			<a href="/legal/terms" class="text-sm text-text-faint transition-colors hover:text-text"
-				>Terms</a
-			>
+			<a href="/legal/privacy" class="text-sm text-text-faint transition-colors hover:text-text">
+				Privacy
+			</a>
+			<a href="/legal/terms" class="text-sm text-text-faint transition-colors hover:text-text">
+				Terms
+			</a>
 		</div>
 	</div>
 </footer>

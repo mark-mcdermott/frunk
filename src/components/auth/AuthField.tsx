@@ -24,11 +24,11 @@ export function AuthField({ id, label, icon: Icon, className, ...input }: Props)
 				<Icon
 					aria-hidden
 					strokeWidth={1.75}
-					className="pointer-events-none absolute left-4 top-1/2 size-[1.125rem] -translate-y-1/2 text-text-faint"
+					className="pointer-events-none absolute top-1/2 left-4 size-[1.125rem] -translate-y-1/2 text-text-faint"
 				/>
 				<input
 					id={id}
-					className={`h-[3.25rem] w-full rounded-control border border-border-strong bg-surface-raised pl-12 pr-4 text-[0.9375rem] text-text transition-colors placeholder:text-text-faint hover:border-[rgb(11_15_24_/_0.28)] focus:border-accent focus:outline-none focus-visible:outline-none ${className ?? ''}`}
+					className={`h-[3.25rem] w-full rounded-control border border-border-strong bg-surface-raised pr-4 pl-12 text-[0.9375rem] text-text transition-colors placeholder:text-text-faint hover:border-[rgb(11_15_24_/_0.28)] focus:border-accent focus:outline-none focus-visible:outline-none ${className ?? ''}`}
 					{...input}
 				/>
 			</div>

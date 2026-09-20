@@ -66,12 +66,16 @@ describe.each(CHILDREN)('$path', ({ path, body }) => {
 		expect(response.status).toBe(404);
 	});
 
-	it("refuses a demo account the same way", async () => {
+	it('refuses a demo account the same way', async () => {
 		const alice = await signUpAndSignIn();
 		const demo = await startDemo();
 		const vehicleId = await vehicleFor(alice);
 
-		const response = await api(path, { method: 'POST', body: body(vehicleId), cookie: demo.cookie });
+		const response = await api(path, {
+			method: 'POST',
+			body: body(vehicleId),
+			cookie: demo.cookie
+		});
 
 		expect(response.status).toBe(404);
 	});
@@ -131,8 +135,12 @@ describe('/api/repairs listing', () => {
 			cookie: alice.cookie
 		});
 
-		const mine = await json<{ repairs: unknown[] }>(await api('/api/repairs', { cookie: alice.cookie }));
-		const theirs = await json<{ repairs: unknown[] }>(await api('/api/repairs', { cookie: bob.cookie }));
+		const mine = await json<{ repairs: unknown[] }>(
+			await api('/api/repairs', { cookie: alice.cookie })
+		);
+		const theirs = await json<{ repairs: unknown[] }>(
+			await api('/api/repairs', { cookie: bob.cookie })
+		);
 
 		expect(mine.repairs).toHaveLength(1);
 		expect(theirs.repairs).toHaveLength(0);

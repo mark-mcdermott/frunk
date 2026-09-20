@@ -65,7 +65,9 @@ const BLANK: FormState = {
 	status: 'completed'
 };
 
-function toForm(repair: Omit<RepairRow, 'vehicleMake' | 'vehicleModel' | 'vehicleYear'>): FormState {
+function toForm(
+	repair: Omit<RepairRow, 'vehicleMake' | 'vehicleModel' | 'vehicleYear'>
+): FormState {
 	return {
 		vehicleId: repair.vehicleId,
 		description: repair.description,
@@ -118,9 +120,7 @@ export function RepairFormPage() {
 	 * out of it saves a request; the `enabled` guard falls back to the endpoint when the
 	 * cache is cold, such as on a deep link.
 	 */
-	const cached = client
-		.getQueryData<RepairRow[]>(keys.repairs)
-		?.find((repair) => repair.id === id);
+	const cached = client.getQueryData<RepairRow[]>(keys.repairs)?.find((repair) => repair.id === id);
 
 	const fetched = useQuery({
 		queryKey: keys.repair(id ?? ''),
