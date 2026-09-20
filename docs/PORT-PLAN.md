@@ -870,11 +870,10 @@ Playwright, chromium only, eight specs in ~20 s, wired into CI as its own job.
   wiped when React syncs the controlled input — a real race for a fast typist on a
   slow connection. The journeys wait for hydration; the pages are unchanged, and
   whether they should be `client:only` is an open call.
-- **Two findings, not fixed here**: (1) adding a passkey to a demo account leaves
-  `roles = [DEMO]` — the anonymous plugin has no link hook that promotes it — so a
-  reaper keyed on the DEMO role (Phase 6) would delete converted accounts. Decide the
-  conversion's role change before scheduling the reaper. (2) `src/lib/server/auth/totp.ts`
-  has no importers since Better Auth took over TOTP; dead code.
+- **Two findings**: (1) ~~adding a passkey to a demo account leaves `roles = [DEMO]`~~
+  **fixed 2026-09-20** (`feat/demo-conversion`) — see the reaper bullet in Phase 6.
+  (2) `src/lib/server/auth/totp.ts` has no importers since Better Auth took over TOTP;
+  dead code, still to delete.
 - **Two ways the journeys lie if written carelessly**, both recorded in `support.ts`:
   a base32 regex on the secret button's `textContent` runs into the sr-only label
   ("Invalid code" that looks like a server bug); and database checks must be scoped
@@ -983,7 +982,15 @@ Playwright, chromium only, eight specs in ~20 s, wired into CI as its own job.
   > AWS grants production access on request. No amount of DNS fixes that, and it has a lead
   > time. Resend has no equivalent gate.
 
-- Schedule the demo-account reaper.
+- Schedule the demo-account reaper. **Its predicate is settled (2026-09-20):** `roles`
+  contains DEMO **and** the account has no passkey **and** it is older than the window.
+  Conversion — an `after` hook on `/passkey/verify-registration` in `config.ts` — flips
+  the role to USER and clears `isAnonymous`, so a converted account never matches; the
+  no-passkey clause is the belt to that brace. Two gaps a converted account carries,
+  deliberately left for a later account-settings pass: it keeps the placeholder address
+  (shown as "No email on file", never as an email) and it has no password, so TOTP
+  recovery cannot be enrolled — Better Auth's `setPassword` for credential-less users is
+  the eventual answer. The passkey journey asserts the whole conversion in Postgres.
 - Retire the Cloudflare Pages project. Update `CLAUDE.md` and `_PROJECTS.md`.
 - **Checkpoint:** prod green on one origin; auth end-to-end; Capacitor build passes.
 
