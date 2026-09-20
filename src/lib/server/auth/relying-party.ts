@@ -1,4 +1,4 @@
-import { ENCRYPTION_KEY, RP_ID, RP_ORIGIN } from 'astro:env/server';
+import { RP_ID, RP_ORIGIN } from 'astro:env/server';
 
 /**
  * WebAuthn relying-party identity — the "who is asking" half of every ceremony.
@@ -26,25 +26,4 @@ export interface RelyingParty {
 export function relyingParty(requestUrl: URL): RelyingParty {
 	const origin = RP_ORIGIN ?? requestUrl.origin;
 	return { id: RP_ID ?? new URL(origin).hostname, origin };
-}
-
-/**
- * Require user verification — the authenticator's own biometric or PIN — whenever the
- * ceremony is happening over https. Local development is http, where emulators and
- * some hardware keys skip it, and refusing those would make the flow untestable.
- */
-export function requiresUserVerification(rp: RelyingParty): boolean {
-	return rp.origin.startsWith('https://');
-}
-
-/**
- * Fail closed. An https deploy running on the dev encryption fallback would seal every
- * TOTP seed with a key that is in the repository, which is the same as not sealing it.
- * Better to refuse the ceremony than to quietly issue worthless protection.
- */
-export function assertProductionSecrets(rp: RelyingParty): void {
-	if (!rp.origin.startsWith('https://')) return;
-	if (!ENCRYPTION_KEY) {
-		throw new Error('ENCRYPTION_KEY must be set on an https deploy — refusing to seal secrets');
-	}
 }
