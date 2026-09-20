@@ -1,10 +1,13 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { ApiError } from './api';
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router';
 import { AppShell } from './AppShell';
 import { NoteFormPage } from './routes/NoteFormPage';
 import { NotesPage } from './routes/NotesPage';
 import { RepairFormPage } from './routes/RepairFormPage';
 import { RepairsPage } from './routes/RepairsPage';
+import { UserFormPage } from './routes/UserFormPage';
+import { UsersPage } from './routes/UsersPage';
 import { VehicleDetailPage } from './routes/VehicleDetailPage';
 import { VehicleFormPage } from './routes/VehicleFormPage';
 import { VehiclesPage } from './routes/VehiclesPage';
@@ -34,8 +37,27 @@ const queryClient = new QueryClient({
 			 * what was just shown — the thing Decision 9 exists to buy.
 			 */
 			staleTime: 60_000,
-			retry: 1,
-			refetchOnWindowFocus: false
+			refetchOnWindowFocus: false,
+			/*
+			 * A 4xx answers the same way every time — retrying a 403 is just a slower
+			 * 403. Only a 5xx or a network failure earns the one retry.
+			 */
+			retry: (failureCount, error) =>
+				failureCount < 1 && !(error instanceof ApiError && error.status < 500),
+			/*
+			 * TanStack's default `networkMode: 'online'` pauses fetches and retries
+			 * whenever `navigator.onLine` is false — and a paused query sits in
+			 * `pending` forever, which renders as an infinite "Loading…". That signal
+			 * is unreliable exactly where this app is headed (Capacitor webviews), and
+			 * there is no offline mode to protect: a fetch attempted offline should
+			 * fail visibly, not wait silently. Found when a 403's retry paused in the
+			 * embedded-browser test environment mid-verification.
+			 */
+			networkMode: 'always'
+		},
+		mutations: {
+			// Same reasoning — a paused mutation wedges a form on "Saving…".
+			networkMode: 'always'
 		}
 	}
 });
@@ -60,6 +82,8 @@ export function AppRoot() {
 						<Route path="/vendors" element={<VendorsPage />} />
 						<Route path="/vendors/new" element={<VendorFormPage />} />
 						<Route path="/vendors/:id/edit" element={<VendorFormPage />} />
+						<Route path="/users" element={<UsersPage />} />
+						<Route path="/users/:id/edit" element={<UserFormPage />} />
 						{/* Unknown app paths go to the garage rather than a blank island. */}
 						<Route path="*" element={<Navigate to="/vehicles" replace />} />
 					</Routes>
