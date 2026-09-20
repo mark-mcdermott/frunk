@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test';
 import { generateSync } from 'otplib';
-import { BASE, hydrated, sql } from './support';
+import { BASE, sql } from './support';
 
 /**
  * The whole Phase 3 chain, driven from the browser: password sign-in landing in the
@@ -27,7 +27,6 @@ test('signs in with a password and enrols TOTP recovery from the profile', async
 	await sql(`update "user" set email_verified = true where email = '${email}'`);
 
 	await page.goto('/signin');
-	await hydrated(page);
 	await page.getByLabel('Email address').fill(email);
 	await page.getByLabel('Password').fill(password);
 	await page.getByRole('button', { name: 'Sign in' }).click();

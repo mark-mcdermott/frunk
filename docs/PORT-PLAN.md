@@ -868,8 +868,15 @@ Playwright, chromium only, eight specs in ~20 s, wired into CI as its own job.
   whose own comment said "becomes /vehicles once the applet exists" — it did, four PRs
   ago); and the auth pages are `client:load`, so a value typed before hydration is
   wiped when React syncs the controlled input — a real race for a fast typist on a
-  slow connection. The journeys wait for hydration; the pages are unchanged, and
-  whether they should be `client:only` is an open call.
+  slow connection. ~~The journeys wait for hydration; the pages are unchanged, and
+  whether they should be `client:only` is an open call.~~ **Resolved 2026-09-20**
+  (`feat/auth-skeleton`): both forms are `client:only` behind an `AuthCardSkeleton`
+  in the `slot="fallback"` — the same container as the card, shimmer bars in the
+  form's shape, `role="status" aria-busy`. The page still paints instantly, which was
+  the whole reason `client:load` had been chosen, and nothing can be typed into a form
+  React does not own. The applet's Suspense fallback uses the same `.skeleton`
+  primitive (`PageSkeleton`), so "loading" is one visual language. The journeys'
+  hydration wait was deleted with the race.
 - **Two findings**: (1) ~~adding a passkey to a demo account leaves `roles = [DEMO]`~~
   **fixed 2026-09-20** (`feat/demo-conversion`) — see the reaper bullet in Phase 6.
   (2) `src/lib/server/auth/totp.ts` has no importers since Better Auth took over TOTP;
