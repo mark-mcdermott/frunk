@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { ArrowLeft, Trash2 } from 'lucide-react';
-import { useEffect, useState, type SubmitEvent } from 'react';
+import { useState, type SubmitEvent } from 'react';
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router';
 import {
 	createRepair,
@@ -97,22 +97,12 @@ function validate(form: FormState, editing: boolean): Errors {
 	return errors;
 }
 
+type ExistingRepair = Parameters<typeof toForm>[0];
+
 export function RepairFormPage() {
 	const { id } = useParams();
 	const editing = Boolean(id);
-	const [params] = useSearchParams();
-	const navigate = useNavigate();
 	const client = useQueryClient();
-
-	const [form, setForm] = useState<FormState>(() => ({
-		...BLANK,
-		vehicleId: params.get('vehicle')
-	}));
-	const [errors, setErrors] = useState<Errors>({});
-	const [confirmingDelete, setConfirmingDelete] = useState(false);
-
-	const vehicles = useQuery({ queryKey: keys.vehicles, queryFn: listVehicles });
-	const vendors = useQuery({ queryKey: keys.vendors, queryFn: listVendors });
 
 	/*
 	 * There is a `GET /api/repairs/:id`, but the list is almost always already cached —
@@ -129,9 +119,38 @@ export function RepairFormPage() {
 	});
 
 	const existing = cached ?? fetched.data?.repair;
-	useEffect(() => {
-		if (existing) setForm(toForm(existing));
-	}, [existing]);
+
+	if (editing && !existing && fetched.isPending) {
+		return <p className="py-10 text-[0.9375rem] text-text-muted">Loading…</p>;
+	}
+
+	if (editing && !existing && fetched.isError) {
+		return (
+			<p role="alert" className="py-10 text-[0.9375rem] text-destructive">
+				{fetched.error instanceof Error ? fetched.error.message : 'Repair not found'}
+			</p>
+		);
+	}
+
+	// Keyed on the row so the form is seeded from it at mount — see VendorFormPage.
+	return <RepairForm key={existing?.id ?? 'new'} existing={existing} />;
+}
+
+function RepairForm({ existing }: { existing: ExistingRepair | undefined }) {
+	const { id } = useParams();
+	const editing = Boolean(id);
+	const [params] = useSearchParams();
+	const navigate = useNavigate();
+	const client = useQueryClient();
+
+	const [form, setForm] = useState<FormState>(() =>
+		existing ? toForm(existing) : { ...BLANK, vehicleId: params.get('vehicle') }
+	);
+	const [errors, setErrors] = useState<Errors>({});
+	const [confirmingDelete, setConfirmingDelete] = useState(false);
+
+	const vehicles = useQuery({ queryKey: keys.vehicles, queryFn: listVehicles });
+	const vendors = useQuery({ queryKey: keys.vendors, queryFn: listVendors });
 
 	const vehicleId = form.vehicleId;
 	const vehicle = vehicles.data?.find((v) => v.id === vehicleId);
@@ -197,18 +216,6 @@ export function RepairFormPage() {
 			vendorId: form.vendorId,
 			status: form.status
 		});
-	}
-
-	if (editing && !existing && fetched.isPending) {
-		return <p className="py-10 text-[0.9375rem] text-text-muted">Loading…</p>;
-	}
-
-	if (editing && !existing && fetched.isError) {
-		return (
-			<p role="alert" className="py-10 text-[0.9375rem] text-destructive">
-				{fetched.error instanceof Error ? fetched.error.message : 'Repair not found'}
-			</p>
-		);
 	}
 
 	const busy = save.isPending || remove.isPending;
