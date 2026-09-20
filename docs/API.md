@@ -9,14 +9,14 @@ isn't one. There is no `hooks.server.ts` equivalent and no per-page guard.
 
 ## Conventions
 
-|              |                                                                                                    |
-| ------------ | -------------------------------------------------------------------------------------------------- |
-| Request body | JSON. `content-type: application/json` on every write.                                             |
-| Auth         | `auth-session` cookie — opaque token, SHA-256 of it keys the `session` row, 30-day sliding expiry. |
-| Errors       | `{ "error": string }`, plus `{ "fields": { path: string[] } }` on a 422.                           |
-| PATCH        | Genuinely partial. An omitted key is left alone; an explicit `null` clears a nullable column.      |
-| Dates        | ISO 8601 strings in and out.                                                                       |
-| Ownership    | Enforced by a `user_id` predicate inside the query, so someone else's row is a 404, never a 403.   |
+|              |                                                                                                                                              |
+| ------------ | -------------------------------------------------------------------------------------------------------------------------------------------- |
+| Request body | JSON. `content-type: application/json` on every write.                                                                                       |
+| Auth         | Better Auth's session cookie, or `Authorization: Bearer <token>` from the mobile shells (the `bearer` plugin). Seven days, refreshed on use. |
+| Errors       | `{ "error": string }`, plus `{ "fields": { path: string[] } }` on a 422.                                                                     |
+| PATCH        | Genuinely partial. An omitted key is left alone; an explicit `null` clears a nullable column.                                                |
+| Dates        | ISO 8601 strings in and out.                                                                                                                 |
+| Ownership    | Enforced by a `user_id` predicate inside the query, so someone else's row is a 404, never a 403.                                             |
 
 ### Status codes
 
@@ -40,44 +40,51 @@ requests in the first place.
 
 ### Auth
 
-Passkeys are the only factor (Decision 2). There is no password anywhere, and no
-password-reset email — TOTP is the recovery path instead.
+**Better Auth** (Decision 2), mounted whole at `/api/auth/*` from `src/pages/api/auth/[...all].ts`
+and configured in `src/lib/server/auth/config.ts`: email + password, passkeys, TOTP and
+anonymous accounts. The table lists what frunk actually calls; the rest of the plugins'
+surface (passkey listing and deletion, password and email change, account deletion,
+backup codes) is mounted but not in the UI yet.
 
-Each ceremony is two calls: `options` issues a challenge, `verify` checks the
-signature over it and opens a session. The challenge is stored server-side in
-`webauthn_challenges` and **consumed on read**, so a spent one cannot be replayed.
+| Method | Path                                              | Notes                                                                                                                                                                                                                                                    |
+| ------ | ------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `GET`  | `/api/auth/get-session`                           | `{ session, user }` or `null`. **200 either way** — the nav island subscribes to this, and signed-out is not an error.                                                                                                                                   |
+| `POST` | `/api/auth/sign-up/email`                         | `{ email, password, name }` → 200 `{ token: null, user }`. Sends the verification mail in the background; no session opens until the link is clicked. **409** from a demo session (see Demo). An address already taken answers 200 and creates nothing.  |
+| `POST` | `/api/auth/sign-in/email`                         | `{ email, password }` → 200 `{ token, user }` and the cookie. 401 for a wrong password and an unknown address alike; 403 while the address is unverified. With recovery enrolled: 200 `{ twoFactorRedirect: true }` plus a challenge cookie — see below. |
+| `POST` | `/api/auth/send-verification-email`               | `{ email, callbackURL }` → 200 regardless of whether the address exists.                                                                                                                                                                                 |
+| `GET`  | `/api/auth/verify-email?token=&callbackURL=`      | Marks the address verified and redirects.                                                                                                                                                                                                                |
+| `POST` | `/api/auth/sign-out`                              | 200 `{ success: true }`. Idempotent.                                                                                                                                                                                                                     |
+| `POST` | `/api/auth/update-user`                           | `{ name?, image? }`. The profile uses this rather than `PATCH /api/users/:id` because it refreshes the client's session store.                                                                                                                           |
+| `GET`  | `/api/auth/passkey/generate-register-options`     | Signed in. Creation options; the challenge is stored server-side and consumed on verify.                                                                                                                                                                 |
+| `POST` | `/api/auth/passkey/verify-registration`           | `{ response, name? }`. Adds the credential. **On a demo account this is the conversion**: an `after` hook flips `roles` DEMO→USER and clears `isAnonymous`.                                                                                              |
+| `GET`  | `/api/auth/passkey/generate-authenticate-options` | No email: the browser offers the discoverable credentials it holds for this origin.                                                                                                                                                                      |
+| `POST` | `/api/auth/passkey/verify-authentication`         | `{ response }` → session. A replayed body is refused (asserted by the passkey journey).                                                                                                                                                                  |
+| `POST` | `/api/auth/two-factor/enable`                     | Signed in, `{ password }` → `{ totpURI, backupCodes }`. Nothing is enforced until the first `verify-totp` confirms the secret.                                                                                                                           |
+| `POST` | `/api/auth/two-factor/verify-totp`                | `{ code, trustDevice? }`. With a session: confirms enrolment. With the challenge cookie from sign-in: opens the session. Ten consecutive failures lock the account for fifteen minutes.                                                                  |
+| `POST` | `/api/auth/two-factor/disable`                    | Signed in, `{ password }`.                                                                                                                                                                                                                               |
 
-| Method | Path                         | Notes                                                                                                               |
-| ------ | ---------------------------- | ------------------------------------------------------------------------------------------------------------------- |
-| `GET`  | `/api/auth/me`               | `{ user }` or `{ user: null }`. **200 either way** — the nav island reads this, and signed-out is not an error.     |
-| `POST` | `/api/auth/register/options` | `{ email }` → `PublicKeyCredentialCreationOptionsJSON`. 409 if the email is taken.                                  |
-| `POST` | `/api/auth/register/verify`  | `{ email, response }` → `{ user }`. **201** for a new account, **200** when a passkey was added to an existing one. |
-| `POST` | `/api/auth/login/options`    | `{ email }` → `PublicKeyCredentialRequestOptionsJSON`. 404 unknown email, 409 if the account has no passkey.        |
-| `POST` | `/api/auth/login/verify`     | `{ email, response }` → `{ user }`. Advances the credential's signature counter.                                    |
-| `POST` | `/api/auth/totp/setup`       | Signed in. → `{ uri, secret }`, the plaintext secret returned **once**. 409 if recovery is already on.              |
-| `POST` | `/api/auth/totp/enable`      | Signed in. `{ token }` → `{ totpEnabled: true }`.                                                                   |
-| `POST` | `/api/auth/totp/disable`     | Signed in. → `{ totpEnabled: false }`.                                                                              |
-| `POST` | `/api/auth/totp/recover`     | `{ email, token }` → `{ user }`. Unauthenticated by necessity.                                                      |
-| `POST` | `/api/auth/signout`          | 204. Idempotent.                                                                                                    |
+**The relying party is derived per request** unless `RP_ID` / `RP_ORIGIN` pin it (see
+Environment). A wrong one does not fail loudly — it mints passkeys that can never sign in.
 
-**`register/options` means three different things**, decided by who is asking:
+**TOTP is recovery in intent and a second factor in mechanism.** Better Auth's plugin
+does not know the difference: once a code is enrolled, every password sign-in answers
+`{ twoFactorRedirect: true }` with a signed challenge cookie, and the session opens only
+when `verify-totp` accepts a code against that cookie. `trustDevice: true` exempts the
+browser for thirty days. A passkey sign-in is never challenged — the passkey _is_ the
+strong factor, which is the whole reason the code exists. So the way back after losing a
+device is: email + password, then the code.
 
-- no session, email free → a new account, written in `verify` (never in `options`, so an
-  abandoned ceremony leaves no empty row holding an email hostage);
-- a `DEMO` session → **upgrade in place**: the same row becomes a real account and keeps
-  everything made during the trial (Decision 5);
-- a session whose email matches → an **extra passkey** on that account, which is also how
-  someone who came in through recovery gets back to a passkey.
+**Rate limits.** Better Auth's own limiter is on in production (in memory, per instance —
+which on serverless is only a partial guard), and the two-factor plugin keeps its attempt
+and lockout counters in Postgres. frunk's Postgres limiter (`auth_rate_limits`) covers
+the two endpoints outside Better Auth that a stranger can hit: `POST /api/demo` (3 an
+hour per address) and `POST /api/contact` (5 an hour). A 429 carries `Retry-After`.
 
-**Rate limits**, all fixed-window in `auth_rate_limits`, keyed by email:
-`register` and `login` 10 per 15 min, `recover` **5 per 15 min**, `demo` 3 per hour per
-address. A 429 carries `Retry-After` in seconds. Recovery is the tight one for the obvious
-reason: six digits, and what is behind it is a full session.
-
-**An unknown email answers 404 rather than something vaguer.** That is an
-account-existence oracle and a deliberate one — registration has to reject a taken email,
-so the same fact is already discoverable there. Hiding it in sign-in would buy nothing and
-cost the "no account, sign up instead" the UI can only show if it is told.
+**Anti-enumeration is Better Auth's default.** Sign-in cannot tell a caller whether an
+address exists, and neither can sign-up. Stricter than the deliberate 404 the hand-rolled
+API used to give — and the reason sign-up ends at "Check your email" with a resend button
+rather than a promise: a returning user who signs up again gets the same screen and no
+mail.
 
 ### Demo
 
@@ -151,9 +158,9 @@ Notes attach to a vehicle, repair, vendor or parent note, and nest one level.
 | `PATCH`  | `/api/photos/:id`    |                                                                                                     |
 | `DELETE` | `/api/photos/:id`    |                                                                                                     |
 
-**Uploads are Phase 4.** These endpoints record an `imageUrl` that already exists; they
-do not accept the base64 `fileData` the SvelteKit actions took. Phase 4 adds the Vercel
-Blob write in front of them, with `access: 'private'` for vehicle documents.
+A photo is two requests: the upload (below) answers with a serving URL, and `POST
+/api/photos` hangs that URL on the gallery. Deleting a photo, a gallery, a vehicle or an
+account removes the blobs with the rows.
 
 ### Maintenance schedules
 
@@ -163,6 +170,23 @@ Blob write in front of them, with `access: 'private'` for vehicle documents.
 | `PATCH`  | `/api/maintenance-schedules/:id` | Marking one done is this, with `lastCompletedDate` and `lastCompletedMileage`. |
 | `DELETE` | `/api/maintenance-schedules/:id` |                                                                                |
 
+### Files
+
+| Method   | Path                          | Notes                                                                                                                                                                |
+| -------- | ----------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `POST`   | `/api/uploads?filename=x.pdf` | The raw file as the body, `content-type` set. JPG, PNG, WebP, GIF, AVIF or PDF, up to 10 MB. **201** `{ url, pathname }`; 415 wrong type, 413 too big, 503 no store. |
+| `DELETE` | `/api/uploads?url=…`          | Removes one of the caller's own files. Exists for the avatar, whose column Better Auth writes; every other route cleans its own blobs.                               |
+| `GET`    | `/api/files/u/:userId/…`      | The file, `private, immutable` cache headers. Only to its owner: anyone else's file is a 404, not a 403.                                                             |
+
+`url` is what the database stores — the app-relative serving path, never a blob URL — so
+`<img src>` works unchanged and the store could be swapped without a data migration. The
+`u/<userId>/` prefix is the ownership boundary, and user ids survive demo→real conversion,
+so it is stable for the life of the account. The store is **private**; the legacy R2 bucket
+served every document from a public URL.
+
+An upload abandoned before its form is saved leaves an orphan blob. Accepted, and recorded
+in the plan.
+
 ### Users
 
 | Method   | Path               | Notes                                                                                     |
@@ -171,6 +195,12 @@ Blob write in front of them, with `access: 'private'` for vehicle documents.
 | `GET`    | `/api/users/:uuid` | Own profile, or anyone's for an admin.                                                    |
 | `PATCH`  | `/api/users/:uuid` | Own profile, or anyone's for an admin. **Only an admin may set `roles`.**                 |
 | `DELETE` | `/api/users/:uuid` | Own account (ends the session) or, for an admin, anyone's. Uploads go with it.            |
+
+### Contact
+
+| Method | Path           | Notes                                                                                                                            |
+| ------ | -------------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| `POST` | `/api/contact` | `name`, `email`, `message`. **202** `{ sent: true }` once Resend accepts it. Unauthenticated, so rate limited: 5 an hour per IP. |
 
 ### Cron
 
@@ -198,27 +228,22 @@ Signed-in calls need a session, and a passkey ceremony cannot be curled — it n
 real authenticator. The demo endpoint is the way to get one from a terminal:
 
 ```bash
-# 201, and the session cookie comes back in Set-Cookie
+# 200, and the session cookie comes back in Set-Cookie
 curl -s -c jar.txt -X POST -H "Origin: $BASE" $BASE/api/demo
 
 curl -s -b jar.txt -H "Origin: $BASE" $BASE/api/vehicles
 ```
 
-That needs `pnpm db:seed-office` to have run. Failing that, insert a session by hand:
-
-```sql
-INSERT INTO "user" (uuid, username, roles)
-VALUES ('<uuid>', 'you@example.com', ARRAY[2, 3]);
-
--- id is the lowercase hex SHA-256 of the cookie value, not the value itself
-INSERT INTO session (id, user_id, expires_at)
-VALUES ('<sha256(token)>', '<uuid>', now() + interval '30 days');
-```
+That needs `pnpm db:seed-office` to have run on that database. For a real account, sign in
+with a password instead — the cookie is the same kind:
 
 ```bash
-TOKEN=whatever-you-hashed
-curl -s -b "auth-session=$TOKEN" -H "Origin: $BASE" $BASE/api/vehicles
+curl -s -c jar.txt -X POST -H "Origin: $BASE" -H 'content-type: application/json' \
+  -d '{"email":"you@example.com","password":"…"}' $BASE/api/auth/sign-in/email
 ```
+
+Sessions cannot be inserted by hand any more: Better Auth owns the `session` table and
+signs its cookie with `BETTER_AUTH_SECRET`.
 
 ## Database setup
 
@@ -230,21 +255,17 @@ three role rows, with every statement guarded so a second run is a no-op. This w
 phone.
 
 **2. A button.** The `Database migrate` GitHub Action (`.github/workflows/db-migrate.yml`)
-runs `db:push` and `db:seed-roles`. Actions tab → Run workflow → `status` to look, `push` to
-apply. Works from a phone, and the connection string never leaves GitHub Secrets.
+has three actions: `status` prints the host, database, tables, roles and whether the demo
+template exists; `push` applies the schema and seeds the roles; `seed-office` also loads
+the sample garage. Actions tab → Run workflow. Works from a phone, and the connection
+string never leaves GitHub Secrets.
 
-Two things to know before relying on it:
-
-- **It needs a new secret, `ASTRO_DATABASE_URL`.** Not `DATABASE_URL` — that one already
-  exists and feeds `db-backup.yml`, which dumps the **legacy** database still serving
-  frunk.cloud from Cloudflare. Sharing the name would let a schema push land on the live
-  app. The workflow also refuses to run from `main`, where the SvelteKit config lives.
-- **`workflow_dispatch` only lists workflows that exist on the default branch.** Until this
-  file is on `main`, the Run workflow button will not appear. Use option 1 in the meantime.
-
-A `push` requires typing the database name (run `status` first — it prints it), so it cannot
-fire by accident, and it never runs on a git push: a migration should not be a side effect of
-a deploy.
+- It reads **`ASTRO_DATABASE_URL`** from the `database` environment — the production
+  branch's string, which is Sensitive on Vercel and so reachable from nowhere else. Not
+  `DATABASE_URL`: that secret feeds `db-backup.yml`, which dumps the **legacy** database.
+- A write requires typing the database name (`status` prints it), so it cannot fire by
+  accident, and it never runs on a git push: a migration should not be a side effect of a
+  deploy. It also refuses a ref without `astro.config.mjs`.
 
 **3. A terminal.**
 
