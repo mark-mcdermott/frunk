@@ -102,7 +102,7 @@ const assurances = [
 const faqs = [
 	{
 		q: 'What is Frunk?',
-		a: "Frunk is a home for everything that belongs to your car — documents, receipts, service history, manuals and photos — kept in one place and organized by vehicle."
+		a: 'Frunk is a home for everything that belongs to your car — documents, receipts, service history, manuals and photos — kept in one place and organized by vehicle.'
 	},
 	{
 		q: 'Is my data secure?',
@@ -132,7 +132,9 @@ const faqs = [
 					<div>
 						<p class="eyebrow">Pricing</p>
 						<h1 class="display dot mt-6 text-[clamp(2.25rem,5vw,3.5rem)]">
-							Simple pricing.<br />Everything included
+							Simple pricing.
+							<br />
+							Everything included
 						</h1>
 						<p class="mt-8 max-w-sm text-[0.9375rem] leading-relaxed text-text-muted">
 							One plan. All the essentials. No limits on the things that matter most.
@@ -148,57 +150,55 @@ const faqs = [
 			<div class="mx-auto max-w-[1400px] px-6 pb-16 sm:px-10 lg:px-16 lg:pb-20">
 				<h2 class="sr-only">Plans</h2>
 				<div class="grid items-start gap-6 lg:grid-cols-3">
-					{
-						plans.map((plan) => (
-							<article
+					{plans.map((plan) => (
+						<article
+							class:list={[
+								'card relative flex flex-col p-8',
+								plan.featured && 'border-accent-bright/40 lg:-mt-6 lg:pb-12 lg:pt-12'
+							]}
+						>
+							{plan.featured && (
+								<span class="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-accent px-3 py-1 text-[0.625rem] font-semibold uppercase tracking-[0.12em] text-white">
+									Most popular
+								</span>
+							)}
+
+							<h3 class="display-sm text-2xl">{plan.name}</h3>
+							<p class="mt-3 min-h-[3.5rem] text-[0.875rem] leading-relaxed text-text-muted">
+								{plan.blurb}
+							</p>
+
+							<p class="mt-6 flex items-baseline gap-2">
+								<span class="display text-[3rem] leading-none">{plan.price}</span>
+								<span class="text-[0.875rem] text-text-muted">/mo</span>
+							</p>
+							<p class="mt-2 text-[0.8125rem] text-text-faint">{plan.cadence}</p>
+
+							<a
+								href="/signup"
 								class:list={[
-									'card relative flex flex-col p-8',
-									plan.featured && 'border-accent-bright/40 lg:-mt-6 lg:pb-12 lg:pt-12'
+									'mt-6 inline-flex items-center justify-center rounded-full px-6 py-3 text-[0.9375rem] font-semibold transition-colors',
+									plan.featured
+										? 'btn-primary justify-center'
+										: 'border border-border-strong text-text hover:border-text-muted'
 								]}
 							>
-								{plan.featured && (
-									<span class="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-accent px-3 py-1 text-[0.625rem] font-semibold uppercase tracking-[0.12em] text-white">
-										Most popular
-									</span>
-								)}
+								{plan.cta}
+							</a>
 
-								<h3 class="display-sm text-2xl">{plan.name}</h3>
-								<p class="mt-3 min-h-[3.5rem] text-[0.875rem] leading-relaxed text-text-muted">
-									{plan.blurb}
-								</p>
-
-								<p class="mt-6 flex items-baseline gap-2">
-									<span class="display text-[3rem] leading-none">{plan.price}</span>
-									<span class="text-[0.875rem] text-text-muted">/mo</span>
-								</p>
-								<p class="mt-2 text-[0.8125rem] text-text-faint">{plan.cadence}</p>
-
-								<a
-									href="/signup"
-									class:list={[
-										'mt-6 inline-flex items-center justify-center rounded-full px-6 py-3 text-[0.9375rem] font-semibold transition-colors',
-										plan.featured
-											? 'btn-primary justify-center'
-											: 'border border-border-strong text-text hover:border-text-muted'
-									]}
-								>
-									{plan.cta}
-								</a>
-
-								<ul class="mt-8 flex flex-col gap-3 border-t border-border pt-6">
-									{plan.features.map((feature) => (
-										<li class="flex items-start gap-3 text-[0.875rem] text-text-muted">
-											<Check
-												className="mt-0.5 size-4 shrink-0 text-accent-bright"
-												aria-hidden="true"
-											/>
-											{feature}
-										</li>
-									))}
-								</ul>
-							</article>
-						))
-					}
+							<ul class="mt-8 flex flex-col gap-3 border-t border-border pt-6">
+								{plan.features.map((feature) => (
+									<li class="flex items-start gap-3 text-[0.875rem] text-text-muted">
+										<Check
+											className="mt-0.5 size-4 shrink-0 text-accent-bright"
+											aria-hidden="true"
+										/>
+										{feature}
+									</li>
+								))}
+							</ul>
+						</article>
+					))}
 				</div>
 
 				<p class="mt-10 flex items-center justify-center gap-2 text-[0.8125rem] text-text-muted">
@@ -211,20 +211,16 @@ const faqs = [
 		<section class="surface-light">
 			<div class="mx-auto max-w-[1400px] px-6 pb-20 sm:px-10 lg:px-16">
 				<h2 class="sr-only">What every plan includes</h2>
-				<div
-					class="grid gap-px overflow-hidden rounded-[var(--radius-card)] bg-[rgb(255_255_255/0.08)] md:grid-cols-2 lg:grid-cols-4"
-				>
-					{
-						assurances.map((item) => (
-							<article class="flex flex-col gap-3 bg-[#0c1019] p-8">
-								<item.icon className="size-5 text-accent-bright" aria-hidden="true" />
-								<h3 class="text-[0.9375rem] font-semibold text-white">{item.title}</h3>
-								<p class="text-[0.8125rem] leading-relaxed text-[rgb(255_255_255/0.64)]">
-									{item.body}
-								</p>
-							</article>
-						))
-					}
+				<div class="grid gap-px overflow-hidden rounded-[var(--radius-card)] bg-[rgb(255_255_255/0.08)] md:grid-cols-2 lg:grid-cols-4">
+					{assurances.map((item) => (
+						<article class="flex flex-col gap-3 bg-[#0c1019] p-8">
+							<item.icon className="size-5 text-accent-bright" aria-hidden="true" />
+							<h3 class="text-[0.9375rem] font-semibold text-white">{item.title}</h3>
+							<p class="text-[0.8125rem] leading-relaxed text-[rgb(255_255_255/0.64)]">
+								{item.body}
+							</p>
+						</article>
+					))}
 				</div>
 			</div>
 		</section>
@@ -235,7 +231,9 @@ const faqs = [
 					<div>
 						<p class="eyebrow">Questions?</p>
 						<h2 class="display dot mt-6 text-[clamp(1.75rem,3.5vw,2.25rem)]">
-							Frequently<br />asked questions
+							Frequently
+							<br />
+							asked questions
 						</h2>
 						<a href="/about" class="link-rule mt-8">
 							<span>Visit our Help Center</span>
@@ -245,22 +243,20 @@ const faqs = [
 					</div>
 
 					<div class="flex flex-col">
-						{
-							faqs.map((faq) => (
-								<details class="group border-b border-border first:border-t">
-									<summary class="flex cursor-pointer list-none items-center justify-between gap-6 py-5 text-[0.9375rem] text-text marker:content-none">
-										{faq.q}
-										<span
-											aria-hidden="true"
-											class="shrink-0 text-lg leading-none text-text-muted transition-transform group-open:rotate-45"
-										>
-											+
-										</span>
-									</summary>
-									<p class="pb-5 pr-10 text-[0.875rem] leading-relaxed text-text-muted">{faq.a}</p>
-								</details>
-							))
-						}
+						{faqs.map((faq) => (
+							<details class="group border-b border-border first:border-t">
+								<summary class="flex cursor-pointer list-none items-center justify-between gap-6 py-5 text-[0.9375rem] text-text marker:content-none">
+									{faq.q}
+									<span
+										aria-hidden="true"
+										class="shrink-0 text-lg leading-none text-text-muted transition-transform group-open:rotate-45"
+									>
+										+
+									</span>
+								</summary>
+								<p class="pb-5 pr-10 text-[0.875rem] leading-relaxed text-text-muted">{faq.a}</p>
+							</details>
+						))}
 					</div>
 				</div>
 			</div>

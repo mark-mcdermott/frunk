@@ -157,7 +157,7 @@ export function ProfilePage() {
 							disabled={busyAvatar}
 							onClick={() => avatarInput.current?.click()}
 							aria-label={user.image ? 'Change profile photo' : 'Add a profile photo'}
-							className="absolute -bottom-1 -right-1 flex size-8 items-center justify-center rounded-full border border-border bg-surface-elevated text-text transition-colors hover:text-accent-bright disabled:opacity-60"
+							className="absolute -right-1 -bottom-1 flex size-8 items-center justify-center rounded-full border border-border bg-surface-elevated text-text transition-colors hover:text-accent-bright disabled:opacity-60"
 						>
 							<Camera className="size-4" strokeWidth={1.75} aria-hidden />
 						</button>
@@ -294,8 +294,7 @@ export function ProfilePage() {
 							) : security === 'idle' ? (
 								<div>
 									<p className="max-w-md text-[0.875rem] text-text-muted">
-										A passkey lives on one device. Recovery is how you get back in after losing
-										it.
+										A passkey lives on one device. Recovery is how you get back in after losing it.
 									</p>
 									<button
 										type="button"

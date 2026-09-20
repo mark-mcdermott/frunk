@@ -58,21 +58,19 @@ const slug = (heading: string) =>
 				<nav aria-label={`${title} sections`} class="lg:sticky lg:top-28 lg:self-start">
 					<p class="eyebrow">{title}</p>
 					<ol class="mt-6 flex flex-col gap-2.5">
-						{
-							sections.map((section, index) => (
-								<li class="flex gap-3 text-[0.875rem] leading-snug">
-									<span class="w-4 shrink-0 text-right text-text-faint tabular-nums">
-										{index + 1}
-									</span>
-									<a
-										href={`#${slug(section.heading)}`}
-										class="text-text-muted transition-colors hover:text-accent-text"
-									>
-										{section.heading}
-									</a>
-								</li>
-							))
-						}
+						{sections.map((section, index) => (
+							<li class="flex gap-3 text-[0.875rem] leading-snug">
+								<span class="w-4 shrink-0 text-right text-text-faint tabular-nums">
+									{index + 1}
+								</span>
+								<a
+									href={`#${slug(section.heading)}`}
+									class="text-text-muted transition-colors hover:text-accent-text"
+								>
+									{section.heading}
+								</a>
+							</li>
+						))}
 					</ol>
 					<p class="mt-8 border-t border-border pt-6 text-[0.75rem] text-text-faint">
 						Last updated {lastUpdated}
@@ -85,44 +83,42 @@ const slug = (heading: string) =>
 					<p class="mt-8 max-w-2xl text-[0.9375rem] leading-relaxed text-text-muted">{intro}</p>
 
 					<div class="mt-14 flex flex-col gap-12">
-						{
-							sections.map((section, index) => (
-								<section id={slug(section.heading)} class="scroll-mt-28">
-									<h2 class="display-sm flex gap-3 text-xl">
-										<span class="text-text-faint tabular-nums">{index + 1}.</span>
-										{section.heading}
-									</h2>
-									<div class="mt-4 flex max-w-2xl flex-col gap-4">
-										{section.blocks.map((block) =>
-											Array.isArray(block) ? (
-												<ul class="flex flex-col gap-2.5">
-													{block.map((point) => (
-														<li class="flex gap-3 text-[0.9375rem] leading-relaxed text-text-muted">
-															<span
-																aria-hidden="true"
-																class="mt-2 size-1 shrink-0 rounded-full bg-accent-bright"
-															/>
-															<span>
-																{typeof point === 'string' ? (
-																	point
-																) : (
-																	<>
-																		<strong class="font-semibold text-text">{point.term}:</strong>{' '}
-																		{point.text}
-																	</>
-																)}
-															</span>
-														</li>
-													))}
-												</ul>
-											) : (
-												<p class="text-[0.9375rem] leading-relaxed text-text-muted">{block}</p>
-											)
-										)}
-									</div>
-								</section>
-							))
-						}
+						{sections.map((section, index) => (
+							<section id={slug(section.heading)} class="scroll-mt-28">
+								<h2 class="display-sm flex gap-3 text-xl">
+									<span class="text-text-faint tabular-nums">{index + 1}.</span>
+									{section.heading}
+								</h2>
+								<div class="mt-4 flex max-w-2xl flex-col gap-4">
+									{section.blocks.map((block) =>
+										Array.isArray(block) ? (
+											<ul class="flex flex-col gap-2.5">
+												{block.map((point) => (
+													<li class="flex gap-3 text-[0.9375rem] leading-relaxed text-text-muted">
+														<span
+															aria-hidden="true"
+															class="mt-2 size-1 shrink-0 rounded-full bg-accent-bright"
+														/>
+														<span>
+															{typeof point === 'string' ? (
+																point
+															) : (
+																<>
+																	<strong class="font-semibold text-text">{point.term}:</strong>{' '}
+																	{point.text}
+																</>
+															)}
+														</span>
+													</li>
+												))}
+											</ul>
+										) : (
+											<p class="text-[0.9375rem] leading-relaxed text-text-muted">{block}</p>
+										)
+									)}
+								</div>
+							</section>
+						))}
 					</div>
 				</article>
 			</div>

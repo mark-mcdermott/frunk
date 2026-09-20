@@ -60,6 +60,7 @@ Follow the same workflow as `/branch-and-feature` (steps 4-5: implement the feat
 ### 3. After Completion
 
 Report to the user:
+
 - What was built
 - The worktree path
 - Remind them: "Run `/kw <branch-name>` when done to clean up the worktree."

@@ -1,0 +1,19 @@
+# The SvelteKit app keeps its own config and is not part of the Astro build.
+legacy/
+# Native shells, generated output and scaffolding
+android/
+ios/
+src-tauri/
+.svelte-kit/
+.vercel/
+.astro/
+dist/
+node_modules/
+drizzle/
+test-results/
+playwright-report/
+tests/e2e/.state/
+pnpm-lock.yaml
+public/documents/
+# Untracked scratch
+.llm/

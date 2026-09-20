@@ -21,36 +21,32 @@ const { active } = Astro.props;
 ---
 
 <header class="pointer-events-none sticky top-0 z-50 px-4 pt-4 sm:px-6 sm:pt-6">
-	<div
-		class="pointer-events-auto mx-auto flex max-w-[1400px] items-center justify-between gap-6 rounded-[20px] bg-white px-6 py-4 shadow-[0_8px_40px_-12px_rgb(11_15_24_/_0.18)] sm:px-8 sm:py-5"
-	>
-		<a href="/" class="wordmark text-[#0b0f18] text-lg sm:text-xl" aria-label="Frunk, home"
-			>FRUNK</a
-		>
+	<div class="pointer-events-auto mx-auto flex max-w-[1400px] items-center justify-between gap-6 rounded-[20px] bg-white px-6 py-4 shadow-[0_8px_40px_-12px_rgb(11_15_24_/_0.18)] sm:px-8 sm:py-5">
+		<a href="/" class="wordmark text-[#0b0f18] text-lg sm:text-xl" aria-label="Frunk, home">
+			FRUNK
+		</a>
 
 		<nav aria-label="Main" class="hidden items-center gap-8 md:flex lg:gap-10">
-			{
-				primaryNav.map((item) => (
-					<a
-						href={item.href}
-						aria-current={active === item.label ? 'page' : undefined}
-						class:list={[
-							'relative py-1 text-[0.9375rem] transition-colors',
-							active === item.label
-								? 'text-[#0b0f18]'
-								: 'text-[rgb(11_15_24_/_0.72)] hover:text-[#0b0f18]'
-						]}
-					>
-						{item.label}
-						{active === item.label && (
-							<span
-								aria-hidden="true"
-								class="absolute -bottom-1.5 left-1/2 size-[5px] -translate-x-1/2 rounded-full bg-accent-bright"
-							/>
-						)}
-					</a>
-				))
-			}
+			{primaryNav.map((item) => (
+				<a
+					href={item.href}
+					aria-current={active === item.label ? 'page' : undefined}
+					class:list={[
+						'relative py-1 text-[0.9375rem] transition-colors',
+						active === item.label
+							? 'text-[#0b0f18]'
+							: 'text-[rgb(11_15_24_/_0.72)] hover:text-[#0b0f18]'
+					]}
+				>
+					{item.label}
+					{active === item.label && (
+						<span
+							aria-hidden="true"
+							class="absolute -bottom-1.5 left-1/2 size-[5px] -translate-x-1/2 rounded-full bg-accent-bright"
+						/>
+					)}
+				</a>
+			))}
 		</nav>
 
 		<UserNav client:load />

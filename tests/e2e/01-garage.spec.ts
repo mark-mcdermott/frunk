@@ -60,6 +60,8 @@ test.describe('garage', () => {
 
 		await expect(page).toHaveURL(/\/vehicles$/);
 		await expect(page.getByRole('heading', { name: '1987 Toyota MR2' })).toBeHidden();
-		expect(await sql(`select count(*) from vehicles where make = 'Toyota' and user_id = '${owner}'`)).toBe('0');
+		expect(
+			await sql(`select count(*) from vehicles where make = 'Toyota' and user_id = '${owner}'`)
+		).toBe('0');
 	});
 });

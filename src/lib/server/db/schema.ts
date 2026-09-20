@@ -4,15 +4,7 @@
  * Table and column names are unchanged so the port is a drop-in against the same
  * Postgres shape. Deviations are commented inline where they exist.
  */
-import {
-	pgTable,
-	boolean,
-	integer,
-	jsonb,
-	serial,
-	text,
-	timestamp
-} from 'drizzle-orm/pg-core';
+import { pgTable, boolean, integer, jsonb, serial, text, timestamp } from 'drizzle-orm/pg-core';
 
 // Roles table - defines available roles and their mutual exclusivity
 export const roles = pgTable('roles', {
@@ -189,7 +181,6 @@ export const authRateLimits = pgTable('auth_rate_limits', {
 		.defaultNow()
 });
 
-
 // Store orders
 export const orders = pgTable('orders', {
 	id: text('id').primaryKey(),
@@ -250,7 +241,10 @@ export const vehicles = pgTable('vehicles', {
 	isActive: integer('is_active').default(1), // 1 = active, 0 = sold/inactive
 
 	// Registration & Legal
-	registrationExpiration: timestamp('registration_expiration', { withTimezone: true, mode: 'date' }),
+	registrationExpiration: timestamp('registration_expiration', {
+		withTimezone: true,
+		mode: 'date'
+	}),
 	inspectionExpiration: timestamp('inspection_expiration', { withTimezone: true, mode: 'date' }),
 	emissionsExpiration: timestamp('emissions_expiration', { withTimezone: true, mode: 'date' }),
 

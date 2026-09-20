@@ -34,6 +34,7 @@ If removal fails because of uncommitted changes, inform the user and ask whether
 ### 3. Ask About Branch
 
 Ask the user if they also want to delete the branch:
+
 - If yes: `git branch -D <branch-name>`
 - If no: leave the branch
 

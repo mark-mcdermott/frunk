@@ -18,21 +18,21 @@ All commit messages must follow **gitmoji** style with single-line messages.
 
 ## Reference
 
-| Type | Code | When |
-|------|------|------|
-| New feature | `:sparkles:` | Adding new functionality |
-| Bug fix | `:bug:` | Fixing broken behavior |
-| Refactor | `:recycle:` | Restructuring without behavior change |
-| Style/UI | `:lipstick:` | Visual/styling changes |
-| Performance | `:zap:` | Performance improvements |
-| Tests | `:white_check_mark:` | Adding or updating tests |
-| Config/chore | `:wrench:` | Configuration changes |
-| Cleanup | `:fire:` | Removing code or files |
-| Docs | `:memo:` | Documentation updates |
-| Initial commit | `:tada:` | Project scaffolding |
-| Learning | `:seedling:` | New concept or skill demonstrated |
-| Checkpoint | `:triangular_flag_on_post:` | Major milestone completion |
-| Experiment | `:alembic:` | Exploratory work |
+| Type           | Code                        | When                                  |
+| -------------- | --------------------------- | ------------------------------------- |
+| New feature    | `:sparkles:`                | Adding new functionality              |
+| Bug fix        | `:bug:`                     | Fixing broken behavior                |
+| Refactor       | `:recycle:`                 | Restructuring without behavior change |
+| Style/UI       | `:lipstick:`                | Visual/styling changes                |
+| Performance    | `:zap:`                     | Performance improvements              |
+| Tests          | `:white_check_mark:`        | Adding or updating tests              |
+| Config/chore   | `:wrench:`                  | Configuration changes                 |
+| Cleanup        | `:fire:`                    | Removing code or files                |
+| Docs           | `:memo:`                    | Documentation updates                 |
+| Initial commit | `:tada:`                    | Project scaffolding                   |
+| Learning       | `:seedling:`                | New concept or skill demonstrated     |
+| Checkpoint     | `:triangular_flag_on_post:` | Major milestone completion            |
+| Experiment     | `:alembic:`                 | Exploratory work                      |
 
 ## Rules
 

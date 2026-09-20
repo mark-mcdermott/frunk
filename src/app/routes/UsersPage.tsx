@@ -146,7 +146,9 @@ export function UsersPage() {
 					<ListEmpty
 						icon={<Users className="size-5" strokeWidth={1.5} />}
 						title={search ? 'Nothing matches that' : 'No users yet'}
-						line={search ? 'Try a different email address.' : 'Accounts appear here as people sign up.'}
+						line={
+							search ? 'Try a different email address.' : 'Accounts appear here as people sign up.'
+						}
 					/>
 				) : (
 					data && (
@@ -157,7 +159,7 @@ export function UsersPage() {
 										<th
 											key={index}
 											scope="col"
-											className="px-6 py-4 text-[0.6875rem] font-medium uppercase tracking-[0.12em] text-text-faint"
+											className="px-6 py-4 text-[0.6875rem] font-medium tracking-[0.12em] text-text-faint uppercase"
 										>
 											{heading}
 										</th>
@@ -187,7 +189,7 @@ export function UsersPage() {
 								>
 									<ChevronLeft className="size-4" strokeWidth={1.75} aria-hidden />
 								</IconButton>
-								<span className="px-1 text-[0.8125rem] tabular-nums text-text-muted">
+								<span className="px-1 text-[0.8125rem] text-text-muted tabular-nums">
 									{page} / {lastPage}
 								</span>
 								<IconButton

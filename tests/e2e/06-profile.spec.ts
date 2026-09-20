@@ -16,7 +16,9 @@ test('edits the profile, swaps the avatar, and deletes the account', async ({ pa
 	await expect(page.getByRole('link', { name: 'Your profile (Journey Tester)' })).toBeVisible();
 
 	if (uploadsAvailable) {
-		await page.getByLabel('Profile photo', { exact: true }).setInputFiles('tests/e2e/fixtures/pixel.png');
+		await page
+			.getByLabel('Profile photo', { exact: true })
+			.setInputFiles('tests/e2e/fixtures/pixel.png');
 		await expect(page.locator('header img')).toHaveAttribute('src', /^\/api\/files\/u\//);
 		await page.getByRole('button', { name: 'Remove photo' }).click();
 		await expect(page.locator('header img')).toHaveCount(0);

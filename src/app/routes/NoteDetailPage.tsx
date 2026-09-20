@@ -28,14 +28,22 @@ import { formatDate } from '../format';
  * schema nests one level, but nothing in this app creates nested notes yet.
  */
 
-function Meta({ icon, label, children }: { icon: React.ReactNode; label: string; children: React.ReactNode }) {
+function Meta({
+	icon,
+	label,
+	children
+}: {
+	icon: React.ReactNode;
+	label: string;
+	children: React.ReactNode;
+}) {
 	return (
 		<div className="flex items-center gap-3">
 			<span aria-hidden className="text-text-faint">
 				{icon}
 			</span>
 			<div>
-				<p className="text-[0.6875rem] uppercase tracking-[0.12em] text-text-faint">{label}</p>
+				<p className="text-[0.6875rem] tracking-[0.12em] text-text-faint uppercase">{label}</p>
 				<p className="mt-0.5 text-[0.875rem] text-text">{children}</p>
 			</div>
 		</div>
@@ -106,7 +114,7 @@ export function NoteDetailPage() {
 						>
 							<FileText className="size-5 text-accent-bright" strokeWidth={1.5} />
 						</span>
-						<h1 className="display min-w-0 break-words text-[clamp(1.5rem,3vw,2.25rem)]">
+						<h1 className="display min-w-0 text-[clamp(1.5rem,3vw,2.25rem)] break-words">
 							{note.title}
 						</h1>
 					</div>
@@ -163,7 +171,10 @@ export function NoteDetailPage() {
 					)}
 					{note.repairId && (
 						<Meta icon={<Wrench className="size-4" />} label="Repair">
-							<Link to={`/repairs/${note.repairId}`} className="text-accent-bright hover:opacity-80">
+							<Link
+								to={`/repairs/${note.repairId}`}
+								className="text-accent-bright hover:opacity-80"
+							>
 								View repair
 							</Link>
 						</Meta>
@@ -175,8 +186,8 @@ export function NoteDetailPage() {
 
 				{note.body && (
 					<div className="mt-6">
-						<p className="text-[0.75rem] uppercase tracking-[0.12em] text-text-faint">Note</p>
-						<p className="mt-2 whitespace-pre-wrap text-[0.9375rem] leading-relaxed text-text">
+						<p className="text-[0.75rem] tracking-[0.12em] text-text-faint uppercase">Note</p>
+						<p className="mt-2 text-[0.9375rem] leading-relaxed whitespace-pre-wrap text-text">
 							{note.body}
 						</p>
 					</div>
@@ -184,7 +195,7 @@ export function NoteDetailPage() {
 
 				{note.imageUrl && (
 					<div className="mt-6">
-						<p className="text-[0.75rem] uppercase tracking-[0.12em] text-text-faint">Attachment</p>
+						<p className="text-[0.75rem] tracking-[0.12em] text-text-faint uppercase">Attachment</p>
 						{isPdf ? (
 							<a
 								href={note.imageUrl}
@@ -209,7 +220,7 @@ export function NoteDetailPage() {
 
 				{data.children.length > 0 && (
 					<div className="mt-8 border-t border-border pt-6">
-						<p className="text-[0.75rem] uppercase tracking-[0.12em] text-text-faint">
+						<p className="text-[0.75rem] tracking-[0.12em] text-text-faint uppercase">
 							Nested notes
 						</p>
 						<div className="mt-3 flex flex-col gap-3">

@@ -50,21 +50,21 @@ All commit messages must follow **gitmoji** style with single-line messages.
 
 ## Reference
 
-| Type | Code | When |
-|------|------|------|
-| New feature | `:sparkles:` | Adding new functionality |
-| Bug fix | `:bug:` | Fixing broken behavior |
-| Refactor | `:recycle:` | Restructuring without behavior change |
-| Style/UI | `:lipstick:` | Visual/styling changes |
-| Performance | `:zap:` | Performance improvements |
-| Tests | `:white_check_mark:` | Adding or updating tests |
-| Config/chore | `:wrench:` | Configuration changes |
-| Cleanup | `:fire:` | Removing code or files |
-| Docs | `:memo:` | Documentation updates |
-| Initial commit | `:tada:` | Project scaffolding |
-| Learning | `:seedling:` | New concept or skill demonstrated |
-| Checkpoint | `:triangular_flag_on_post:` | Major milestone completion |
-| Experiment | `:alembic:` | Exploratory work |
+| Type           | Code                        | When                                  |
+| -------------- | --------------------------- | ------------------------------------- |
+| New feature    | `:sparkles:`                | Adding new functionality              |
+| Bug fix        | `:bug:`                     | Fixing broken behavior                |
+| Refactor       | `:recycle:`                 | Restructuring without behavior change |
+| Style/UI       | `:lipstick:`                | Visual/styling changes                |
+| Performance    | `:zap:`                     | Performance improvements              |
+| Tests          | `:white_check_mark:`        | Adding or updating tests              |
+| Config/chore   | `:wrench:`                  | Configuration changes                 |
+| Cleanup        | `:fire:`                    | Removing code or files                |
+| Docs           | `:memo:`                    | Documentation updates                 |
+| Initial commit | `:tada:`                    | Project scaffolding                   |
+| Learning       | `:seedling:`                | New concept or skill demonstrated     |
+| Checkpoint     | `:triangular_flag_on_post:` | Major milestone completion            |
+| Experiment     | `:alembic:`                 | Exploratory work                      |
 
 ## Rules
 
@@ -90,7 +90,7 @@ All commit messages must follow **gitmoji** style. A summary line is required; a
 
 - Detail about change 1
 - Detail about change 2
-\`\`\`
+  \`\`\`
 
 Single-line is fine for small commits. Use bullets when the commit touches multiple things.
 
@@ -108,25 +108,25 @@ Multiple changes:
 - Create product grid with responsive layout
 - Add cart sidebar with quantity controls
 - Wire up Stripe checkout integration
-\`\`\`
+  \`\`\`
 
 ## Reference
 
-| Type | Code | When |
-|------|------|------|
-| New feature | `:sparkles:` | Adding new functionality |
-| Bug fix | `:bug:` | Fixing broken behavior |
-| Refactor | `:recycle:` | Restructuring without behavior change |
-| Style/UI | `:lipstick:` | Visual/styling changes |
-| Performance | `:zap:` | Performance improvements |
-| Tests | `:white_check_mark:` | Adding or updating tests |
-| Config/chore | `:wrench:` | Configuration changes |
-| Cleanup | `:fire:` | Removing code or files |
-| Docs | `:memo:` | Documentation updates |
-| Initial commit | `:tada:` | Project scaffolding |
-| Learning | `:seedling:` | New concept or skill demonstrated |
-| Checkpoint | `:triangular_flag_on_post:` | Major milestone completion |
-| Experiment | `:alembic:` | Exploratory work |
+| Type           | Code                        | When                                  |
+| -------------- | --------------------------- | ------------------------------------- |
+| New feature    | `:sparkles:`                | Adding new functionality              |
+| Bug fix        | `:bug:`                     | Fixing broken behavior                |
+| Refactor       | `:recycle:`                 | Restructuring without behavior change |
+| Style/UI       | `:lipstick:`                | Visual/styling changes                |
+| Performance    | `:zap:`                     | Performance improvements              |
+| Tests          | `:white_check_mark:`        | Adding or updating tests              |
+| Config/chore   | `:wrench:`                  | Configuration changes                 |
+| Cleanup        | `:fire:`                    | Removing code or files                |
+| Docs           | `:memo:`                    | Documentation updates                 |
+| Initial commit | `:tada:`                    | Project scaffolding                   |
+| Learning       | `:seedling:`                | New concept or skill demonstrated     |
+| Checkpoint     | `:triangular_flag_on_post:` | Major milestone completion            |
+| Experiment     | `:alembic:`                 | Exploratory work                      |
 
 ## Rules
 
@@ -153,7 +153,7 @@ type(scope): brief description
 
 - Detail about change 1
 - Detail about change 2
-\`\`\`
+  \`\`\`
 
 Scope is optional. Body is optional — use bullets when the commit touches multiple things.
 
@@ -176,22 +176,22 @@ feat(store): add merch store page
 - Create product grid with responsive layout
 - Add cart sidebar with quantity controls
 - Wire up Stripe checkout integration
-\`\`\`
+  \`\`\`
 
 ## Types
 
-| Type | When |
-|------|------|
-| feat | Adding new functionality |
-| fix | Fixing broken behavior |
+| Type     | When                                  |
+| -------- | ------------------------------------- |
+| feat     | Adding new functionality              |
+| fix      | Fixing broken behavior                |
 | refactor | Restructuring without behavior change |
-| style | Visual/styling/formatting changes |
-| perf | Performance improvements |
-| test | Adding or updating tests |
-| chore | Configuration, tooling, dependencies |
-| docs | Documentation updates |
-| ci | CI/CD pipeline changes |
-| build | Build system changes |
+| style    | Visual/styling/formatting changes     |
+| perf     | Performance improvements              |
+| test     | Adding or updating tests              |
+| chore    | Configuration, tooling, dependencies  |
+| docs     | Documentation updates                 |
+| ci       | CI/CD pipeline changes                |
+| build    | Build system changes                  |
 
 ## Rules
 

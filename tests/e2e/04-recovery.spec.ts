@@ -52,7 +52,9 @@ test('signs in with a password and enrols TOTP recovery from the profile', async
 	const secret = (await secretButton.locator('span').first().textContent())?.trim() ?? '';
 	expect(secret, 'the setup code is shown as base32').toMatch(/^[A-Z2-7]{16,}$/);
 
-	await page.getByLabel('Six-digit code from your authenticator app').fill(generateSync({ secret }));
+	await page
+		.getByLabel('Six-digit code from your authenticator app')
+		.fill(generateSync({ secret }));
 	await page.getByRole('button', { name: 'Turn on recovery' }).click();
 
 	await expect(page.getByText('Recovery is set up')).toBeVisible();

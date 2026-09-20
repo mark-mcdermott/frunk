@@ -9,14 +9,14 @@ isn't one. There is no `hooks.server.ts` equivalent and no per-page guard.
 
 ## Conventions
 
-| | |
-|---|---|
-| Request body | JSON. `content-type: application/json` on every write. |
-| Auth | `auth-session` cookie — opaque token, SHA-256 of it keys the `session` row, 30-day sliding expiry. |
-| Errors | `{ "error": string }`, plus `{ "fields": { path: string[] } }` on a 422. |
-| PATCH | Genuinely partial. An omitted key is left alone; an explicit `null` clears a nullable column. |
-| Dates | ISO 8601 strings in and out. |
-| Ownership | Enforced by a `user_id` predicate inside the query, so someone else's row is a 404, never a 403. |
+|              |                                                                                                    |
+| ------------ | -------------------------------------------------------------------------------------------------- |
+| Request body | JSON. `content-type: application/json` on every write.                                             |
+| Auth         | `auth-session` cookie — opaque token, SHA-256 of it keys the `session` row, 30-day sliding expiry. |
+| Errors       | `{ "error": string }`, plus `{ "fields": { path: string[] } }` on a 422.                           |
+| PATCH        | Genuinely partial. An omitted key is left alone; an explicit `null` clears a nullable column.      |
+| Dates        | ISO 8601 strings in and out.                                                                       |
+| Ownership    | Enforced by a `user_id` predicate inside the query, so someone else's row is a 404, never a 403.   |
 
 ### Status codes
 
@@ -47,18 +47,18 @@ Each ceremony is two calls: `options` issues a challenge, `verify` checks the
 signature over it and opens a session. The challenge is stored server-side in
 `webauthn_challenges` and **consumed on read**, so a spent one cannot be replayed.
 
-| Method | Path | Notes |
-|---|---|---|
-| `GET` | `/api/auth/me` | `{ user }` or `{ user: null }`. **200 either way** — the nav island reads this, and signed-out is not an error. |
-| `POST` | `/api/auth/register/options` | `{ email }` → `PublicKeyCredentialCreationOptionsJSON`. 409 if the email is taken. |
-| `POST` | `/api/auth/register/verify` | `{ email, response }` → `{ user }`. **201** for a new account, **200** when a passkey was added to an existing one. |
-| `POST` | `/api/auth/login/options` | `{ email }` → `PublicKeyCredentialRequestOptionsJSON`. 404 unknown email, 409 if the account has no passkey. |
-| `POST` | `/api/auth/login/verify` | `{ email, response }` → `{ user }`. Advances the credential's signature counter. |
-| `POST` | `/api/auth/totp/setup` | Signed in. → `{ uri, secret }`, the plaintext secret returned **once**. 409 if recovery is already on. |
-| `POST` | `/api/auth/totp/enable` | Signed in. `{ token }` → `{ totpEnabled: true }`. |
-| `POST` | `/api/auth/totp/disable` | Signed in. → `{ totpEnabled: false }`. |
-| `POST` | `/api/auth/totp/recover` | `{ email, token }` → `{ user }`. Unauthenticated by necessity. |
-| `POST` | `/api/auth/signout` | 204. Idempotent. |
+| Method | Path                         | Notes                                                                                                               |
+| ------ | ---------------------------- | ------------------------------------------------------------------------------------------------------------------- |
+| `GET`  | `/api/auth/me`               | `{ user }` or `{ user: null }`. **200 either way** — the nav island reads this, and signed-out is not an error.     |
+| `POST` | `/api/auth/register/options` | `{ email }` → `PublicKeyCredentialCreationOptionsJSON`. 409 if the email is taken.                                  |
+| `POST` | `/api/auth/register/verify`  | `{ email, response }` → `{ user }`. **201** for a new account, **200** when a passkey was added to an existing one. |
+| `POST` | `/api/auth/login/options`    | `{ email }` → `PublicKeyCredentialRequestOptionsJSON`. 404 unknown email, 409 if the account has no passkey.        |
+| `POST` | `/api/auth/login/verify`     | `{ email, response }` → `{ user }`. Advances the credential's signature counter.                                    |
+| `POST` | `/api/auth/totp/setup`       | Signed in. → `{ uri, secret }`, the plaintext secret returned **once**. 409 if recovery is already on.              |
+| `POST` | `/api/auth/totp/enable`      | Signed in. `{ token }` → `{ totpEnabled: true }`.                                                                   |
+| `POST` | `/api/auth/totp/disable`     | Signed in. → `{ totpEnabled: false }`.                                                                              |
+| `POST` | `/api/auth/totp/recover`     | `{ email, token }` → `{ user }`. Unauthenticated by necessity.                                                      |
+| `POST` | `/api/auth/signout`          | 204. Idempotent.                                                                                                    |
 
 **`register/options` means three different things**, decided by who is asking:
 
@@ -81,9 +81,9 @@ cost the "no account, sign up instead" the UI can only show if it is told.
 
 ### Demo
 
-| Method | Path | Notes |
-|---|---|---|
-| `POST` | `/api/demo` | 201 with a new `DEMO` account and a session. 200 with the *same* account if one is already in progress; 409 if signed in for real. |
+| Method | Path        | Notes                                                                                                                              |
+| ------ | ----------- | ---------------------------------------------------------------------------------------------------------------------------------- |
+| `POST` | `/api/demo` | 201 with a new `DEMO` account and a session. 200 with the _same_ account if one is already in progress; 409 if signed in for real. |
 
 A demo visitor is not in a mode — they hold a real account cloned from
 `creed.bratton@dundermifflin.com`, isolated by `user_id` like anyone else, so no endpoint
@@ -92,57 +92,57 @@ endpoint answers 503 rather than failing opaquely.
 
 ### Vehicles
 
-| Method | Path | Notes |
-|---|---|---|
-| `GET` | `/api/vehicles` | The caller's vehicles, newest first. |
-| `POST` | `/api/vehicles` | `make`, `model`, `year` required; all 46 optional columns accepted. |
-| `GET` | `/api/vehicles/:id` | The whole detail screen: `{ vehicle, notes, repairs, vendors, galleries, schedules }`, galleries with their photos. |
-| `PATCH` | `/api/vehicles/:id` | |
-| `DELETE` | `/api/vehicles/:id` | Notes, repairs, galleries and schedules cascade. |
+| Method   | Path                | Notes                                                                                                               |
+| -------- | ------------------- | ------------------------------------------------------------------------------------------------------------------- |
+| `GET`    | `/api/vehicles`     | The caller's vehicles, newest first.                                                                                |
+| `POST`   | `/api/vehicles`     | `make`, `model`, `year` required; all 46 optional columns accepted.                                                 |
+| `GET`    | `/api/vehicles/:id` | The whole detail screen: `{ vehicle, notes, repairs, vendors, galleries, schedules }`, galleries with their photos. |
+| `PATCH`  | `/api/vehicles/:id` |                                                                                                                     |
+| `DELETE` | `/api/vehicles/:id` | Notes, repairs, galleries and schedules cascade.                                                                    |
 
 ### Vendors
 
-| Method | Path | Notes |
-|---|---|---|
-| `GET` | `/api/vendors` | |
-| `POST` | `/api/vendors` | `name` required. |
-| `GET` | `/api/vendors/:id` | `{ vendor, notes, repairs }`. |
-| `PATCH` | `/api/vendors/:id` | |
+| Method   | Path               | Notes                                         |
+| -------- | ------------------ | --------------------------------------------- |
+| `GET`    | `/api/vendors`     |                                               |
+| `POST`   | `/api/vendors`     | `name` required.                              |
+| `GET`    | `/api/vendors/:id` | `{ vendor, notes, repairs }`.                 |
+| `PATCH`  | `/api/vendors/:id` |                                               |
 | `DELETE` | `/api/vendors/:id` | Repairs survive; their `vendor_id` goes null. |
 
 ### Repairs
 
-| Method | Path | Notes |
-|---|---|---|
-| `GET` | `/api/repairs` | Across every vehicle the caller owns, with vendor and vehicle names joined in. |
-| `POST` | `/api/repairs` | `vehicleId`, `description`, `date`. A `vendorId` must also be the caller's. |
-| `GET` | `/api/repairs/:id` | `{ repair, notes }`. |
-| `PATCH` | `/api/repairs/:id` | |
-| `DELETE` | `/api/repairs/:id` | |
+| Method   | Path               | Notes                                                                          |
+| -------- | ------------------ | ------------------------------------------------------------------------------ |
+| `GET`    | `/api/repairs`     | Across every vehicle the caller owns, with vendor and vehicle names joined in. |
+| `POST`   | `/api/repairs`     | `vehicleId`, `description`, `date`. A `vendorId` must also be the caller's.    |
+| `GET`    | `/api/repairs/:id` | `{ repair, notes }`.                                                           |
+| `PATCH`  | `/api/repairs/:id` |                                                                                |
+| `DELETE` | `/api/repairs/:id` |                                                                                |
 
 ### Notes
 
 Notes attach to a vehicle, repair, vendor or parent note, and nest one level.
 
-| Method | Path | Notes |
-|---|---|---|
-| `GET` | `/api/notes` | Every note on the caller's vehicles. |
-| `POST` | `/api/notes` | `title` plus at least one parent id. |
-| `GET` | `/api/notes/:uuid` | `{ note, children }`. |
-| `PATCH` | `/api/notes/:uuid` | |
+| Method   | Path               | Notes                                                                              |
+| -------- | ------------------ | ---------------------------------------------------------------------------------- |
+| `GET`    | `/api/notes`       | Every note on the caller's vehicles.                                               |
+| `POST`   | `/api/notes`       | `title` plus at least one parent id.                                               |
+| `GET`    | `/api/notes/:uuid` | `{ note, children }`.                                                              |
+| `PATCH`  | `/api/notes/:uuid` |                                                                                    |
 | `DELETE` | `/api/notes/:uuid` | Deletes children too — `parent_note_id` has no FK, so the database will not do it. |
 
 ### Galleries and photos
 
-| Method | Path | Notes |
-|---|---|---|
-| `POST` | `/api/galleries` | `vehicleId`, `name`. |
-| `GET` | `/api/galleries/:id` | Gallery with its photos in display order. |
-| `PATCH` | `/api/galleries/:id` | `photoOrder: string[]` rewrites `order` from the array index. Ids outside this gallery are ignored. |
-| `DELETE` | `/api/galleries/:id` | Photo rows cascade. |
-| `POST` | `/api/photos` | `galleryId`, `imageUrl`. |
-| `PATCH` | `/api/photos/:id` | |
-| `DELETE` | `/api/photos/:id` | |
+| Method   | Path                 | Notes                                                                                               |
+| -------- | -------------------- | --------------------------------------------------------------------------------------------------- |
+| `POST`   | `/api/galleries`     | `vehicleId`, `name`.                                                                                |
+| `GET`    | `/api/galleries/:id` | Gallery with its photos in display order.                                                           |
+| `PATCH`  | `/api/galleries/:id` | `photoOrder: string[]` rewrites `order` from the array index. Ids outside this gallery are ignored. |
+| `DELETE` | `/api/galleries/:id` | Photo rows cascade.                                                                                 |
+| `POST`   | `/api/photos`        | `galleryId`, `imageUrl`.                                                                            |
+| `PATCH`  | `/api/photos/:id`    |                                                                                                     |
+| `DELETE` | `/api/photos/:id`    |                                                                                                     |
 
 **Uploads are Phase 4.** These endpoints record an `imageUrl` that already exists; they
 do not accept the base64 `fileData` the SvelteKit actions took. Phase 4 adds the Vercel
@@ -150,20 +150,20 @@ Blob write in front of them, with `access: 'private'` for vehicle documents.
 
 ### Maintenance schedules
 
-| Method | Path | Notes |
-|---|---|---|
-| `POST` | `/api/maintenance-schedules` | `vehicleId`, `name`, and at least one of `intervalMiles` / `intervalMonths`. |
-| `PATCH` | `/api/maintenance-schedules/:id` | Marking one done is this, with `lastCompletedDate` and `lastCompletedMileage`. |
-| `DELETE` | `/api/maintenance-schedules/:id` | |
+| Method   | Path                             | Notes                                                                          |
+| -------- | -------------------------------- | ------------------------------------------------------------------------------ |
+| `POST`   | `/api/maintenance-schedules`     | `vehicleId`, `name`, and at least one of `intervalMiles` / `intervalMonths`.   |
+| `PATCH`  | `/api/maintenance-schedules/:id` | Marking one done is this, with `lastCompletedDate` and `lastCompletedMileage`. |
+| `DELETE` | `/api/maintenance-schedules/:id` |                                                                                |
 
 ### Users
 
-| Method | Path | Notes |
-|---|---|---|
-| `GET` | `/api/users` | **Admin only.** `?page=&pageSize=&sortBy=id\|username\|roles&sortOrder=asc\|desc&search=` |
-| `GET` | `/api/users/:uuid` | Own profile, or anyone's for an admin. |
-| `PATCH` | `/api/users/:uuid` | Own profile, or anyone's for an admin. **Only an admin may set `roles`.** |
-| `DELETE` | `/api/users/:uuid` | Own account (ends the session) or, for an admin, anyone's. |
+| Method   | Path               | Notes                                                                                     |
+| -------- | ------------------ | ----------------------------------------------------------------------------------------- |
+| `GET`    | `/api/users`       | **Admin only.** `?page=&pageSize=&sortBy=id\|username\|roles&sortOrder=asc\|desc&search=` |
+| `GET`    | `/api/users/:uuid` | Own profile, or anyone's for an admin.                                                    |
+| `PATCH`  | `/api/users/:uuid` | Own profile, or anyone's for an admin. **Only an admin may set `roles`.**                 |
+| `DELETE` | `/api/users/:uuid` | Own account (ends the session) or, for an admin, anyone's.                                |
 
 ## Verifying against a deploy
 
@@ -245,12 +245,12 @@ Both seed scripts print the database they are about to write to before they touc
 
 All of it goes in a gitignored `.env` at the repo root. Only `DATABASE_URL` is required.
 
-| | |
-|---|---|
-| `DATABASE_URL` | Required. Points at the **new, blank** Neon database, not the legacy one. |
-| `RP_ID` | The WebAuthn relying-party id — `frunk.cloud` in production. |
-| `RP_ORIGIN` | `https://frunk.cloud`. |
-| `ENCRYPTION_KEY` | Seals the TOTP secret at rest. Required on any https deploy. |
+|                  |                                                                           |
+| ---------------- | ------------------------------------------------------------------------- |
+| `DATABASE_URL`   | Required. Points at the **new, blank** Neon database, not the legacy one. |
+| `RP_ID`          | The WebAuthn relying-party id — `frunk.cloud` in production.              |
+| `RP_ORIGIN`      | `https://frunk.cloud`.                                                    |
+| `ENCRYPTION_KEY` | Seals the TOTP secret at rest. Required on any https deploy.              |
 
 **`RP_ID` and `RP_ORIGIN` are optional, and unset is the right answer in development
 and on preview deploys.** Left blank they are derived from the request, which is the only

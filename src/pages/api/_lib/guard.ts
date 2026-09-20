@@ -87,9 +87,7 @@ export async function ownedSchedule(scheduleId: string, userId: string) {
 		.select({ schedule: table.maintenanceSchedules })
 		.from(table.maintenanceSchedules)
 		.innerJoin(table.vehicles, eq(table.maintenanceSchedules.vehicleId, table.vehicles.id))
-		.where(
-			and(eq(table.maintenanceSchedules.id, scheduleId), eq(table.vehicles.userId, userId))
-		);
+		.where(and(eq(table.maintenanceSchedules.id, scheduleId), eq(table.vehicles.userId, userId)));
 
 	if (!row) throw new HttpError(notFound('Maintenance schedule not found'));
 	return row.schedule;
