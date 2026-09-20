@@ -68,15 +68,22 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      # Checked for every action: an unset secret makes `pg` dial localhost and the failure
+      # reads as a network error rather than the configuration gap it is.
+      - name: Refuse to run without the connection string
+        env:
+          DATABASE_URL: ${{ secrets.ASTRO_DATABASE_URL }}
+        run: |
+          if [ -z "$DATABASE_URL" ]; then
+            echo "::error::ASTRO_DATABASE_URL is not set on the 'database' environment. See the header of this file."
+            exit 1
+          fi
+
       - name: Guard a write behind a typed confirmation
         if: inputs.action != 'status'
         env:
           DATABASE_URL: ${{ secrets.ASTRO_DATABASE_URL }}
         run: |
-          if [ -z "$DATABASE_URL" ]; then
-            echo "::error::ASTRO_DATABASE_URL is not set. See the header of this file."
-            exit 1
-          fi
           name="$(node -e 'process.stdout.write(new URL(process.env.DATABASE_URL).pathname.split("?")[0].slice(1))')"
           if [ "${{ inputs.confirm }}" != "$name" ]; then
             echo "::error::Type the database name in the confirm box to run a write."
