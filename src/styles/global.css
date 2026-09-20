@@ -93,6 +93,47 @@
 	/* Radii — DESIGN.md §4: ~16px containers, ~10px inputs and small controls */
 	--radius-card: 16px;
 	--radius-control: 10px;
+
+	/*
+	 * shadcn's token vocabulary, bridged onto ours.
+	 *
+	 * Its components are written against `background` / `foreground` / `primary` /
+	 * `muted` / `ring`, which this design layer does not use — it names surfaces by
+	 * elevation instead (DESIGN.md §2). Mapping once here means a newly added
+	 * component inherits the measured palette on arrival, and it re-resolves inside
+	 * `.surface-light` for free, because every right-hand side is a live var.
+	 *
+	 * The alternative — re-skinning each component after `shadcn add` — decays the
+	 * moment one is re-added or upgraded.
+	 *
+	 * **`accent` is deliberately not bridged.** To shadcn it means "subtle hover
+	 * surface"; here it is the brand violet, and `bg-accent` / `text-accent` /
+	 * `focus:border-accent` already carry that meaning in the nav, the footer, the
+	 * auth fields and both applet screens. Bridging it would repaint all of them.
+	 * A newly added component that reaches for `bg-accent` therefore needs its one
+	 * line changed to `bg-muted` — grep for it after `shadcn add`.
+	 */
+	--color-background: var(--bg);
+	--color-foreground: var(--text);
+	--color-card: var(--surface);
+	--color-card-foreground: var(--text);
+	--color-popover: var(--surface-raised);
+	--color-popover-foreground: var(--text);
+	--color-primary: var(--btn-primary-bg);
+	--color-primary-foreground: var(--btn-primary-text);
+	--color-secondary: var(--surface-raised);
+	--color-secondary-foreground: var(--text);
+	--color-muted: var(--surface-raised);
+	--color-muted-foreground: var(--text-muted);
+	--color-destructive-foreground: #fff;
+	--color-input: var(--border);
+	--color-ring: var(--color-accent-bright);
+
+	/* shadcn sizes its own radii off these; ours are the source of truth. */
+	--radius-sm: 8px;
+	--radius-md: var(--radius-control);
+	--radius-lg: var(--radius-control);
+	--radius-xl: var(--radius-card);
 }
 
 @layer base {
