@@ -1,0 +1,377 @@
+import { useQuery } from '@tanstack/react-query';
+import {
+	Calendar,
+	Camera,
+	Car,
+	Check,
+	Clock,
+	Copy,
+	Cog,
+	FileText,
+	Gauge,
+	Palette,
+	Pencil,
+	Wrench
+} from 'lucide-react';
+import { useState, type ReactNode } from 'react';
+import { Link, useParams } from 'react-router';
+import { getVehicle, keys, type Gallery, type Note, type Repair, type Schedule } from '../api';
+import { useCrumbs } from '../AppShell';
+
+/**
+ * The vehicle detail screen, built to `docs/mocks/vehicle-single.webp`.
+ *
+ * `GET /api/vehicles/:id` answers the whole screen in one request, so this is one
+ * query — notes, repairs, galleries and schedules come back with the vehicle.
+ *
+ * The mock puts a `+ Add` button on each panel. Those screens do not exist yet, so the
+ * panels are read-only here: a button that opens nothing is the dead-link problem the
+ * nav already avoids. The same applies to each row's edit and delete icons.
+ */
+
+function formatDate(iso: string) {
+	return new Date(iso).toLocaleDateString(undefined, {
+		month: 'numeric',
+		day: 'numeric',
+		year: 'numeric'
+	});
+}
+
+/** Costs are stored in cents — `repairs.cost` is an integer column. */
+function formatCost(cents: number) {
+	return (cents / 100).toLocaleString(undefined, {
+		style: 'currency',
+		currency: 'USD',
+		minimumFractionDigits: 2
+	});
+}
+
+function Panel({
+	icon,
+	title,
+	children
+}: {
+	icon: ReactNode;
+	title: string;
+	children: ReactNode;
+}) {
+	return (
+		<section className="card p-6">
+			<h2 className="display-sm flex items-center gap-3 text-xl">
+				<span aria-hidden className="text-text-muted">
+					{icon}
+				</span>
+				{title}
+			</h2>
+			<div className="mt-6">{children}</div>
+		</section>
+	);
+}
+
+/** Centred icon in a soft violet glow, serif title, one muted line (DESIGN.md §5). */
+function Empty({ icon, title, line }: { icon: ReactNode; title: string; line: string }) {
+	return (
+		<div className="flex flex-col items-center gap-3 py-10 text-center">
+			<span
+				aria-hidden
+				className="flex size-12 items-center justify-center rounded-full bg-accent/10 text-accent-bright"
+			>
+				{icon}
+			</span>
+			<h3 className="display-sm text-lg">{title}</h3>
+			<p className="max-w-xs text-[0.875rem] text-text-muted">{line}</p>
+		</div>
+	);
+}
+
+/** Icon + muted label left, value right, one per line, no dividers (DESIGN.md §5). */
+function SpecRow({ icon, label, value }: { icon: ReactNode; label: string; value: string }) {
+	return (
+		<div className="flex items-center justify-between gap-4 py-2">
+			<span className="flex items-center gap-3 text-[0.875rem] text-text-muted">
+				<span aria-hidden className="text-text-faint">
+					{icon}
+				</span>
+				{label}
+			</span>
+			<span className="text-right text-[0.875rem] font-medium text-text">{value}</span>
+		</div>
+	);
+}
+
+function CopyVin({ vin }: { vin: string }) {
+	const [copied, setCopied] = useState(false);
+
+	return (
+		<button
+			type="button"
+			onClick={() => {
+				navigator.clipboard.writeText(vin).then(() => {
+					setCopied(true);
+					setTimeout(() => setCopied(false), 1500);
+				});
+			}}
+			className="inline-flex items-center gap-2 rounded-control border border-border bg-surface-raised px-3 py-2 text-[0.8125rem] text-text-muted transition-colors hover:border-border-strong hover:text-text"
+		>
+			VIN: <span className="text-text">{vin}</span>
+			{copied ? (
+				<Check className="size-3.5 text-positive" strokeWidth={2} aria-hidden />
+			) : (
+				<Copy className="size-3.5" strokeWidth={1.75} aria-hidden />
+			)}
+			<span className="sr-only">{copied ? 'VIN copied' : 'Copy VIN'}</span>
+		</button>
+	);
+}
+
+function NoteCard({ note }: { note: Note }) {
+	return (
+		<article className="rounded-control border border-border bg-surface-raised p-4">
+			<h3 className="text-[0.9375rem] font-semibold text-text">{note.title}</h3>
+			{note.body && <p className="mt-2 text-[0.875rem] text-text-muted">{note.body}</p>}
+			{note.imageUrl && (
+				<p className="mt-3 flex items-center gap-2 text-[0.8125rem] text-text-faint">
+					<FileText className="size-3.5" strokeWidth={1.75} aria-hidden />
+					Has attachment
+				</p>
+			)}
+		</article>
+	);
+}
+
+function RepairCard({ repair }: { repair: Repair }) {
+	return (
+		<article className="rounded-control border border-border bg-surface-raised p-4">
+			<div className="flex items-start justify-between gap-3">
+				<h3 className="text-[0.9375rem] font-semibold text-text">{repair.description}</h3>
+				{repair.status === 'completed' && (
+					<span className="shrink-0 rounded-full bg-positive-bg px-2.5 py-1 text-[0.6875rem] font-medium text-positive">
+						Completed
+					</span>
+				)}
+			</div>
+
+			<p className="mt-2 text-[0.8125rem] text-text-muted">
+				{formatDate(repair.date)}
+				{repair.mileage != null && ` • ${repair.mileage.toLocaleString()} mi`}
+			</p>
+
+			{repair.cost != null && (
+				<p className="mt-2 text-[0.875rem] font-semibold text-positive">
+					{formatCost(repair.cost)}
+				</p>
+			)}
+
+			{repair.vendorName && (
+				<p className="mt-2 text-[0.8125rem] text-text-muted">{repair.vendorName}</p>
+			)}
+		</article>
+	);
+}
+
+function ScheduleRow({ schedule }: { schedule: Schedule }) {
+	const interval = [
+		schedule.intervalMiles != null && `${schedule.intervalMiles.toLocaleString()} mi`,
+		schedule.intervalMonths != null &&
+			`${schedule.intervalMonths} month${schedule.intervalMonths === 1 ? '' : 's'}`
+	].filter(Boolean);
+
+	return (
+		<div className="flex items-center justify-between gap-4 border-b border-border py-4 last:border-b-0">
+			<p className="text-[0.9375rem] text-text">{schedule.name}</p>
+			<p className="text-[0.8125rem] text-text-muted">Every {interval.join(' or ')}</p>
+		</div>
+	);
+}
+
+function GalleryBlock({ gallery }: { gallery: Gallery }) {
+	return (
+		<div>
+			<h3 className="text-[0.9375rem] font-semibold text-text">{gallery.name}</h3>
+			{gallery.description && (
+				<p className="mt-1 text-[0.8125rem] text-text-muted">{gallery.description}</p>
+			)}
+
+			<div className="mt-4 flex flex-wrap gap-4">
+				{gallery.photos.map((photo) => (
+					<figure key={photo.id} className="relative w-44 overflow-hidden rounded-control">
+						<img src={photo.imageUrl} alt={photo.caption ?? ''} className="h-28 w-full object-cover" />
+						{photo.caption && (
+							<figcaption className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 to-transparent px-3 py-2 text-[0.75rem] text-white">
+								{photo.caption}
+							</figcaption>
+						)}
+					</figure>
+				))}
+			</div>
+		</div>
+	);
+}
+
+export function VehicleDetailPage() {
+	const { id = '' } = useParams();
+	const { data, isPending, isError, error } = useQuery({
+		queryKey: keys.vehicle(id),
+		queryFn: () => getVehicle(id)
+	});
+
+	const vehicle = data?.vehicle;
+	const title = vehicle ? `${vehicle.year} ${vehicle.make} ${vehicle.model}` : '';
+	useCrumbs(vehicle ? [{ label: vehicle.nickname || title }] : []);
+
+	if (isPending) {
+		return <p className="py-10 text-[0.9375rem] text-text-muted">Loading…</p>;
+	}
+
+	if (isError || !vehicle) {
+		return (
+			<div className="py-10">
+				<p role="alert" className="text-[0.9375rem] text-destructive">
+					{error instanceof Error ? error.message : 'Vehicle not found'}
+				</p>
+				<Link to="/vehicles" className="mt-4 inline-block text-[0.9375rem] text-accent-bright">
+					Back to your garage
+				</Link>
+			</div>
+		);
+	}
+
+	const engine = [vehicle.engineSize, vehicle.engineType].filter(Boolean).join(' ');
+
+	return (
+		<div className="flex flex-col gap-6">
+			<div className="grid gap-6 lg:grid-cols-3">
+				<section className="card p-6">
+					{vehicle.image ? (
+						<img
+							src={vehicle.image}
+							alt=""
+							className="h-48 w-full rounded-control border border-border object-cover"
+						/>
+					) : (
+						<div
+							aria-hidden
+							className="flex h-48 w-full items-center justify-center rounded-control border border-border bg-surface-raised"
+						>
+							<Car className="size-10 text-text-faint" strokeWidth={1.25} />
+						</div>
+					)}
+
+					<h1 className="display mt-6 text-[1.75rem]">{vehicle.nickname || title}</h1>
+
+					{vehicle.vin && (
+						<div className="mt-4">
+							<CopyVin vin={vehicle.vin} />
+						</div>
+					)}
+
+					<div className="mt-6">
+						<SpecRow icon={<Calendar className="size-4" />} label="Year" value={String(vehicle.year)} />
+						<SpecRow
+							icon={<Car className="size-4" />}
+							label="Make & Model"
+							value={`${vehicle.make} ${vehicle.model}`}
+						/>
+						{vehicle.bodyStyle && (
+							<SpecRow
+								icon={<Car className="size-4" />}
+								label="Body Style"
+								value={vehicle.bodyStyle}
+							/>
+						)}
+						{vehicle.color && (
+							<SpecRow icon={<Palette className="size-4" />} label="Color" value={vehicle.color} />
+						)}
+						{engine && <SpecRow icon={<Cog className="size-4" />} label="Engine" value={engine} />}
+						{vehicle.transmission && (
+							<SpecRow
+								icon={<Cog className="size-4" />}
+								label="Transmission"
+								value={vehicle.transmission}
+							/>
+						)}
+						{vehicle.currentMileage != null && (
+							<SpecRow
+								icon={<Gauge className="size-4" />}
+								label="Mileage"
+								value={`${vehicle.currentMileage.toLocaleString()} mi`}
+							/>
+						)}
+					</div>
+
+					<Link
+						to={`/vehicles/${vehicle.id}/edit`}
+						className="mt-6 flex w-full items-center justify-center gap-2 rounded-control border border-accent/50 py-3 text-[0.9375rem] text-text transition-colors hover:bg-accent/10"
+					>
+						<Pencil className="size-4 text-accent-bright" strokeWidth={1.75} aria-hidden />
+						Edit Vehicle
+					</Link>
+				</section>
+
+				<Panel icon={<FileText className="size-5" />} title="Notes">
+					{data.notes.length === 0 ? (
+						<Empty
+							icon={<FileText className="size-5" strokeWidth={1.5} />}
+							title="No notes yet"
+							line="Receipts, known issues and anything else worth remembering."
+						/>
+					) : (
+						<div className="flex flex-col gap-4">
+							{data.notes.map((note) => (
+								<NoteCard key={note.uuid} note={note} />
+							))}
+						</div>
+					)}
+				</Panel>
+
+				<Panel icon={<Wrench className="size-5" />} title="Repairs">
+					{data.repairs.length === 0 ? (
+						<Empty
+							icon={<Wrench className="size-5" strokeWidth={1.5} />}
+							title="No repairs logged"
+							line="Every service you record builds this car's history."
+						/>
+					) : (
+						<div className="flex flex-col gap-4">
+							{data.repairs.map((repair) => (
+								<RepairCard key={repair.id} repair={repair} />
+							))}
+						</div>
+					)}
+				</Panel>
+			</div>
+
+			<Panel icon={<Clock className="size-5" />} title="Maintenance Schedule">
+				{data.schedules.length === 0 ? (
+					<Empty
+						icon={<Calendar className="size-5" strokeWidth={1.5} />}
+						title="No maintenance scheduled"
+						line="Add reminders to stay on top of maintenance."
+					/>
+				) : (
+					<div>
+						{data.schedules.map((schedule) => (
+							<ScheduleRow key={schedule.id} schedule={schedule} />
+						))}
+					</div>
+				)}
+			</Panel>
+
+			<Panel icon={<Camera className="size-5" />} title="Galleries">
+				{data.galleries.length === 0 ? (
+					<Empty
+						icon={<Camera className="size-5" strokeWidth={1.5} />}
+						title="No galleries yet"
+						line="Group photos by exterior, interior or details."
+					/>
+				) : (
+					<div className="grid gap-8 md:grid-cols-2">
+						{data.galleries.map((gallery) => (
+							<GalleryBlock key={gallery.id} gallery={gallery} />
+						))}
+					</div>
+				)}
+			</Panel>
+		</div>
+	);
+}

@@ -13,15 +13,19 @@ app. The SvelteKit app lives in **`legacy/`** — it is the reference for the po
 excluded from the Astro build and typecheck. It still deploys to Cloudflare Pages from
 `main` and stays live until Phase 6.
 
-**Phases 0–3 are done. Phase 4 is underway** — the applet mounts and the garage and
-vendors screens are built; the remaining ~20 screens are not. Read
+**Phases 0–3 are done. Phase 4 is underway** — vehicles are full CRUD (garage, detail,
+add/edit/delete) and vendors are read-only; repairs, notes, galleries, schedules and user
+admin are not built. Read
 `docs/PORT-PLAN.md` before doing anything here; it records what is settled and what is
 outstanding.
 
 ## Stack (the port target, at the repo root)
 
 - **Astro 7** with **React 19** islands, TypeScript
-- **Tailwind CSS 4** + **shadcn/ui** (`components.json` is configured; no components added yet)
+- **Tailwind CSS 4** + **shadcn/ui** — the `base-nova` style, which is built on **Base UI**
+  (not Radix) and imports its class helper from the **`cn` package**, shadcn's own
+  clsx+tailwind-merge replacement. `src/lib/utils.ts` was deleted so there is one
+  implementation; `clsx` and `tailwind-merge` went with it
 - **Neon** serverless Postgres via **Drizzle ORM**
 - **Vercel** (`@astrojs/vercel`), **Vercel Blob** for file storage
 - **Better Auth** for auth (Decision 2) — email+password, passkeys, TOTP recovery and
@@ -118,13 +122,26 @@ the *legacy* database, and duly rewrote the live app's schema from this branch. 
 - `src/pages/` — Astro routes. Static `.astro` for marketing and legal; `/api/*` as Astro
   endpoints; the app mounts as a single `client:only` React island.
 - `src/app/` — the applet: `AppRoot` (QueryClient + router), `AppShell` (the signed-in
-  chrome), `routes/` (one component per screen) and `api.ts` (the typed fetch layer and
-  the query keys). **Mounted by one catch-all per section** — `src/pages/vehicles/[...slug].astro`,
+  chrome), `routes/` (one component per screen), `components/` (shared applet pieces) and
+  `api.ts` (the typed fetch layer and the query keys). A screen declares its breadcrumb
+  trail with `useCrumbs()` — the header sits outside the router outlet, so an entity name
+  is only known once the page has loaded it. **Mounted by one catch-all per section** — `src/pages/vehicles/[...slug].astro`,
   `src/pages/vendors/[...slug].astro` — not a root catch-all, which would answer 200 for
   every mistyped URL on the site and destroy real 404s. Adding a screen means adding its
   route to `AppRoot` *and* a three-line `[...slug].astro` for its section.
 - `src/components/` — Astro components and, from Phase 4, React. `src/components/ui/` is
-  shadcn's target directory.
+  shadcn's target directory — **generated files, kept unedited so they survive being
+  re-added.** Project sizing lives in `src/app/components/Field.tsx`, not in them.
+
+**shadcn's token vocabulary is bridged in `src/styles/global.css`**, not pasted onto each
+component: `background` / `foreground` / `primary` / `muted` / `ring` map onto the
+elevation-named tokens this design layer actually uses, so a newly added component
+inherits the measured palette on arrival and re-resolves inside `.surface-light` for free.
+
+**One token cannot be bridged: `accent`.** shadcn means "subtle hover surface"; here it is
+the brand violet, and `bg-accent` / `focus:border-accent` already carry that meaning in the
+nav, footer, auth fields and applet. After any `shadcn add`, grep the new file for
+`accent` and change it to `muted` — `select.tsx` needed exactly that.
 - `src/layouts/`, `src/styles/global.css` (the design token layer), `src/lib/`.
 - `src/pages/api/_lib/` — shared API pieces; the underscore keeps them out of routing.
   `session.ts` (cookie → user), `guard.ts` (`requireSession`, `ownedVehicle`, …),

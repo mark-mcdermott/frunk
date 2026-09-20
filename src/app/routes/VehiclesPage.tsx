@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Car, Folder, Pencil, Plus, Trash2 } from 'lucide-react';
 import { useState } from 'react';
+import { Link } from 'react-router';
 import { deleteVehicle, keys, listVehicles, type Vehicle } from '../api';
 
 /**
@@ -60,9 +61,9 @@ function VehicleRow({ vehicle, onDelete }: { vehicle: Vehicle; onDelete: (id: st
 
 			<div className="min-w-0 flex-1">
 				<h2 className="display-sm truncate text-xl">
-					<a href={`/vehicles/${vehicle.id}`} className="transition-opacity hover:opacity-80">
+					<Link to={`/vehicles/${vehicle.id}`} className="transition-opacity hover:opacity-80">
 						{vehicle.nickname || title}
-					</a>
+					</Link>
 				</h2>
 
 				{vehicle.vin && (
@@ -83,13 +84,13 @@ function VehicleRow({ vehicle, onDelete }: { vehicle: Vehicle; onDelete: (id: st
 			<Stamp label="Added" iso={vehicle.createdAt} />
 
 			<div className="flex shrink-0 items-center gap-2">
-				<a
-					href={`/vehicles/${vehicle.id}/edit`}
+				<Link
+					to={`/vehicles/${vehicle.id}/edit`}
 					aria-label={`Edit ${title}`}
 					className="flex size-9 items-center justify-center rounded-full border border-border text-text-muted transition-colors hover:border-text-muted hover:text-text"
 				>
 					<Pencil className="size-4" strokeWidth={1.75} aria-hidden />
-				</a>
+				</Link>
 				<button
 					type="button"
 					onClick={() => onDelete(vehicle.id)}
@@ -135,10 +136,10 @@ export function VehiclesPage() {
 					</p>
 				</div>
 
-				<a href="/vehicles/new" className="btn-primary">
+				<Link to="/vehicles/new" className="btn-primary">
 					<Plus className="size-4" strokeWidth={2} aria-hidden />
 					Add Vehicle
-				</a>
+				</Link>
 			</div>
 
 			<div className="mt-10">
