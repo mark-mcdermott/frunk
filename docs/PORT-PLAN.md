@@ -201,10 +201,15 @@ talks to the app island."
    (`O55FK5JZ…`); `backup_codes` is likewise not plaintext. So **`src/lib/server/auth/secrets.ts`
    is redundant** and `ENCRYPTION_KEY` loses its only caller.
 
-   > ⚠️ **This changes what rotating `BETTER_AUTH_SECRET` costs.** If Better Auth derives
-   > that encryption from it, rotating does not merely log everyone out — it orphans every
-   > stored TOTP secret and backup code, exactly the failure `ENCRYPTION_KEY` was documented
-   > as having. Confirm the key derivation before treating rotation as routine.
+   > ⚠️ **Confirmed 2026-09-19: `BETTER_AUTH_SECRET` is unrotatable.** The encryption key
+   > *is* derived from it. Tested by enabling TOTP under one secret, restarting the server
+   > under another against the same database, and calling `get-totp-uri`: it fails inside
+   > `rawDecrypt` (`better-auth/dist/crypto`) with a ChaCha error. Sign-in still succeeds,
+   > because password hashes do not depend on it — so the loss is silent and total.
+   >
+   > Rotating therefore destroys every user's recovery method, which is precisely the
+   > property `ENCRYPTION_KEY` was documented as having. Treat it as permanent and keep a
+   > copy outside Vercel.
 
    **Two UX consequences that need building**, both from the anti-enumeration default:
 
