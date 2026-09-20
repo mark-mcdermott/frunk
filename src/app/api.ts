@@ -108,6 +108,42 @@ export interface Schedule {
 	lastCompletedMileage: number | null;
 }
 
+/** `GET /api/repairs` joins the vehicle and vendor names in. */
+export interface RepairRow extends Repair {
+	vehicleId: string;
+	vehicleMake: string;
+	vehicleModel: string;
+	vehicleYear: number;
+}
+
+/** `GET /api/notes` joins the owning vehicle in. */
+export interface NoteRow extends Note {
+	vehicleId: string | null;
+	createdAt: string;
+	vehicle: { vehicleMake: string; vehicleModel: string; vehicleYear: number };
+}
+
+export type RepairStatus = 'completed' | 'scheduled' | 'in_progress';
+
+export interface RepairInput {
+	vehicleId?: string;
+	description: string;
+	/** ISO 8601 with an offset — `schemas.ts` parses it back to a `Date`. */
+	date: string;
+	mileage: number | null;
+	/** Cents, matching the integer column. */
+	cost: number | null;
+	vendorId: string | null;
+	status: RepairStatus;
+}
+
+export interface NoteInput {
+	title: string;
+	body: string | null;
+	vehicleId?: string;
+	repairId?: string;
+}
+
 export interface Vendor {
 	id: string;
 	name: string;
@@ -155,7 +191,11 @@ export const keys = {
 	vehicles: ['vehicles'] as const,
 	vehicle: (id: string) => ['vehicles', id] as const,
 	vendors: ['vendors'] as const,
-	vendor: (id: string) => ['vendors', id] as const
+	vendor: (id: string) => ['vendors', id] as const,
+	repairs: ['repairs'] as const,
+	repair: (id: string) => ['repairs', id] as const,
+	notes: ['notes'] as const,
+	note: (uuid: string) => ['notes', uuid] as const
 };
 
 export const listVehicles = () =>
@@ -180,3 +220,44 @@ export const updateVehicle = (id: string, body: Partial<VehicleInput>) =>
 
 export const deleteVehicle = (id: string) =>
 	request<void>(`/api/vehicles/${id}`, { method: 'DELETE' });
+
+export const listRepairs = () =>
+	request<{ repairs: RepairRow[] }>('/api/repairs').then((r) => r.repairs);
+
+export const getRepair = (id: string) =>
+	request<{ repair: RepairRow }>(`/api/repairs/${id}`).then((r) => r.repair);
+
+export const createRepair = (body: RepairInput) =>
+	request<{ repair: Repair }>('/api/repairs', {
+		method: 'POST',
+		body: JSON.stringify(body)
+	}).then((r) => r.repair);
+
+export const updateRepair = (id: string, body: Omit<RepairInput, 'vehicleId'>) =>
+	request<{ repair: Repair }>(`/api/repairs/${id}`, {
+		method: 'PATCH',
+		body: JSON.stringify(body)
+	}).then((r) => r.repair);
+
+export const deleteRepair = (id: string) =>
+	request<void>(`/api/repairs/${id}`, { method: 'DELETE' });
+
+export const listNotes = () => request<{ notes: NoteRow[] }>('/api/notes').then((r) => r.notes);
+
+export const getNote = (uuid: string) =>
+	request<{ note: NoteRow }>(`/api/notes/${uuid}`).then((r) => r.note);
+
+export const createNote = (body: NoteInput) =>
+	request<{ note: Note }>('/api/notes', {
+		method: 'POST',
+		body: JSON.stringify(body)
+	}).then((r) => r.note);
+
+export const updateNote = (uuid: string, body: Pick<NoteInput, 'title' | 'body'>) =>
+	request<{ note: Note }>(`/api/notes/${uuid}`, {
+		method: 'PATCH',
+		body: JSON.stringify(body)
+	}).then((r) => r.note);
+
+export const deleteNote = (uuid: string) =>
+	request<void>(`/api/notes/${uuid}`, { method: 'DELETE' });

@@ -695,8 +695,37 @@ and delete, verified in a browser and then at the database level (optionals stor
   them there was no way to set either.
 - The detail screen's panels are **read-only**: the mock's `+ Add Note` / `+ Add Repair`
   and the per-row edit/delete icons wait for those screens, on the same dead-link rule.
-- Still to build: repairs, notes, galleries, maintenance schedules, user admin, vendor
-  detail/edit — and the uploads and per-route code splitting Phase 4 also owns.
+**Landed 2026-09-19 — repairs and notes are full CRUD** (`feat/repairs-and-notes`): both
+index screens with counted filter chips and search, both forms, delete on each, the nav
+entries they were waiting for, and the `+ Add Note` / `+ Add Repair` buttons the vehicle
+detail screen has been missing. `?vehicle=<id>` preselects, so those buttons never ask
+which vehicle you meant.
+
+- **`src/app/format.ts` now owns every conversion.** Costs are cents, timestamps are ISO,
+  and `<input type="date">` speaks `YYYY-MM-DD`; doing that arithmetic per screen is how
+  it goes subtly wrong. Two traps it records: `toISOString().slice(0, 10)` reads the date
+  in **UTC**, so an evening timestamp west of Greenwich shows the next day — verified
+  against a 21:45 row, which the local-getter version reads correctly as the 15th.
+- **A date-only input must not rewrite a stored timestamp.** Sending the input back on
+  every save collapsed `21:45:30` to local midnight when only the *cost* had changed. The
+  form now sends the original value whenever the calendar day is untouched.
+- **Three departures from `repair-edit.webp`:** Cost and Vendor are optional (the mock
+  marks both required; the schema does not, and they genuinely are not); there is no Notes
+  textarea (it implies a `notes` column on the repair — notes are their own rows attached
+  by `repairId`, so a box there would drop its text or quietly create a note the Notes
+  screen shows separately); and no attachments block, on the same unprovisioned-Blob
+  grounds as the vehicle's cover image.
+- **The vehicle cannot be changed after creation** on either form. `updateRepairSchema`
+  omits `vehicleId` and `updateNoteSchema` accepts only `title`/`body`/`imageUrl`/`order`,
+  so reparenting is not in the API — the forms state where the row lives instead of
+  offering a select that would silently fail.
+- **Neither index paginates**, though both mocks do. The endpoints have no cursor and
+  return everything, so paging would be decoration over a full result set. It goes in with
+  the endpoint's `LIMIT`.
+- Still to build: galleries, maintenance schedules, user admin, vendor detail/edit, the
+  repair and note *detail* screens (list → edit covers the data today; the singles mostly
+  add attachments and note nesting) — and the uploads and per-route code splitting Phase 4
+  also owns.
 - Rebuild the app screens in React against the mocks: vehicles index and detail, vendors,
   repairs, notes, galleries, maintenance schedules, user admin. Follow `docs/DESIGN.md`
   for every component.
