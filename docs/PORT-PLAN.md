@@ -985,7 +985,11 @@ Playwright, chromium only, eight specs in ~20 s, wired into CI as its own job.
   | ~~SES: `SES_FROM_EMAIL`, `AWS_*`~~     | 🗑 **still on Vercel as of 2026-09-20** — delete; nothing ever read them |
   | `BLOB_READ_WRITE_TOKEN`                | ✅ set by connecting the `frunk-uploads` store (2026-09-19)             |
 
-- No production data to migrate (frunk never launched). Re-seed with `seed-office.ts`.
+- ~~No production data to migrate (frunk never launched). Re-seed with `seed-office.ts`.~~
+  **Seeded 2026-09-20** through `db-migrate.yml`'s `seed-office` action (run #6), after a
+  `status` run confirmed the secret reached `ep-wild-glitter` and found no template. The
+  live demo button had been answering 503 since the cutover — `DemoTemplateMissing` in the
+  runtime logs — because nothing had ever seeded the production branch.
 - ~~Re-point Capacitor at the new origin and verify a passkey ceremony inside the webview.~~
   **Done 2026-09-20** (`feat/capacitor`), with a finding that changes the native plan:
 

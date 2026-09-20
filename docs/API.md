@@ -81,9 +81,9 @@ cost the "no account, sign up instead" the UI can only show if it is told.
 
 ### Demo
 
-| Method | Path        | Notes                                                                                                                              |
-| ------ | ----------- | ---------------------------------------------------------------------------------------------------------------------------------- |
-| `POST` | `/api/demo` | 201 with a new `DEMO` account and a session. 200 with the _same_ account if one is already in progress; 409 if signed in for real. |
+| Method | Path        | Notes                                                                                                                                                                                                                                                          |
+| ------ | ----------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `POST` | `/api/demo` | 200 with a new account and a session (Better Auth's own sign-in response, so `roles` in that body is still `[]` — the DEMO role and the garage are applied right after). 200 with the _same_ account if one is already in progress; 409 if signed in for real. |
 
 A demo visitor is not in a mode — they hold a real account cloned from
 `creed.bratton@dundermifflin.com`, isolated by `user_id` like anyone else, so no endpoint
