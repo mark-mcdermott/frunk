@@ -850,6 +850,35 @@ splitting** (`feat/detail-screens`). Phase 4's build-out is complete; its checkp
   (the vehicle's other repairs, already listed in full on the vehicle screen); the note
   mock's "Created by" (single-user data). Child notes render read-only when legacy
   data has them; nothing creates nested notes yet.
+
+**Landed 2026-09-20 — the browser journeys** (`feat/e2e-journeys`): Phase 4's checkpoint.
+Playwright, chromium only, eight specs in ~20 s, wired into CI as its own job.
+
+- **Why Playwright and not a component layer**: every applet bug found during the
+  build-out — the paused-retry infinite loading, the repair timestamp collapsing, the
+  seeded attachments 404ing, the select sentinel leaking — lived at the integration or
+  database level. jsdom mocks exactly those seams. The API suite is the light layer;
+  the journeys cover what only a browser reaches.
+- **The passkey ceremony is tested** via a CDP virtual authenticator — register on a
+  demo account, sign out, sign in with the passkey, same user id. Nothing lighter than
+  a real browser can exercise WebAuthn at all.
+- **Two real fixes found by writing them**: sign-in still landed on `/` (`AFTER_AUTH`,
+  whose own comment said "becomes /vehicles once the applet exists" — it did, four PRs
+  ago); and the auth pages are `client:load`, so a value typed before hydration is
+  wiped when React syncs the controlled input — a real race for a fast typist on a
+  slow connection. The journeys wait for hydration; the pages are unchanged, and
+  whether they should be `client:only` is an open call.
+- **Two findings, not fixed here**: (1) adding a passkey to a demo account leaves
+  `roles = [DEMO]` — the anonymous plugin has no link hook that promotes it — so a
+  reaper keyed on the DEMO role (Phase 6) would delete converted accounts. Decide the
+  conversion's role change before scheduling the reaper. (2) `src/lib/server/auth/totp.ts`
+  has no importers since Better Auth took over TOTP; dead code.
+- **Two ways the journeys lie if written carelessly**, both recorded in `support.ts`:
+  a base32 regex on the secret button's `textContent` runs into the sr-only label
+  ("Invalid code" that looks like a server bug); and database checks must be scoped
+  to the demo account's `user_id` — the seed has other owners' Toyotas.
+- Uploads: the specs need the private store's token and skip visibly without it. CI
+  has none on purpose; locally `tests/run.sh` exports it from `.env.local`.
 - Rebuild the app screens in React against the mocks: vehicles index and detail, vendors,
   repairs, notes, galleries, maintenance schedules, user admin. Follow `docs/DESIGN.md`
   for every component.
