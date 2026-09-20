@@ -2,15 +2,19 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 import Header from '../components/Header.astro';
 import { SignInForm } from '../components/auth/SignInForm';
+import AuthCardSkeleton from '../components/auth/AuthCardSkeleton.astro';
 
 /**
  * Built to `docs/mocks/sign-in.webp`, which draws the card as a modal over a dimmed
  * home page. It is a route here: a passkey prompt hands control to the platform and
  * comes back, and a URL survives that where a modal on the home page would not.
  *
- * `client:load` rather than `client:only` — the card is real HTML before hydration
- * (PORT-PLAN.md's island rule), so this page is not a blank rectangle on a slow
- * connection.
+ * `client:only` with a skeleton fallback. It was `client:load` so the card would be
+ * real HTML before hydration — but a real-looking form React does not own yet is a
+ * trap: whatever is typed before hydration is wiped when the controlled inputs sync
+ * (found by the browser journeys, 2026-09-20). The skeleton keeps the instant paint
+ * and is honest about not being interactive yet. This is also what the island rule
+ * says: a form whose submit only works with JS needs the browser runtime to render.
  */
 ---
 
@@ -27,7 +31,9 @@ import { SignInForm } from '../components/auth/SignInForm';
 				class="pointer-events-none absolute inset-0 bg-[radial-gradient(55%_45%_at_50%_40%,rgb(100_56_204_/_0.13)_0%,transparent_70%)]"
 			></div>
 			<div class="relative flex w-full justify-center">
-				<SignInForm client:load />
+				<SignInForm client:only="react">
+					<AuthCardSkeleton slot="fallback" fields={2} secondary label="Loading the sign-in form" />
+				</SignInForm>
 			</div>
 		</main>
 	</div>

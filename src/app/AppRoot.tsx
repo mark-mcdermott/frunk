@@ -3,6 +3,7 @@ import { lazy, Suspense, type ComponentType } from 'react';
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router';
 import { ApiError } from './api';
 import { AppShell } from './AppShell';
+import { PageSkeleton } from './components/PageSkeleton';
 
 /**
  * The applet: one `client:only` island holding the whole signed-in app (Phase 4).
@@ -81,7 +82,7 @@ export function AppRoot() {
 		<QueryClientProvider client={queryClient}>
 			<BrowserRouter>
 				<AppShell>
-					<Suspense fallback={<p className="py-10 text-[0.9375rem] text-text-muted">Loading…</p>}>
+					<Suspense fallback={<PageSkeleton />}>
 						<Routes>
 							<Route path="/vehicles" element={<VehiclesPage />} />
 							{/* Static before dynamic, so `new` is never read as an id. */}

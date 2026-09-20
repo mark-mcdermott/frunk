@@ -1,0 +1,43 @@
+---
+/**
+ * The auth card's shape while React is on its way — the `slot="fallback"` content for
+ * a `client:only` form.
+ *
+ * Why a skeleton and not the real form: the forms used to be `client:load`, which
+ * puts a working-looking form in the HTML before React owns it. Anything typed in that
+ * window is wiped when React hydrates the controlled inputs — a real race for a fast
+ * typist on a slow connection, found by the browser journeys. A skeleton makes the
+ * honest state visible ("not interactive yet") and still paints instantly, which was
+ * the whole reason `client:load` had been chosen.
+ *
+ * Same container as `AuthCard.tsx` — width, radius, padding, shadow — so the swap to
+ * the real card moves nothing.
+ */
+interface Props {
+	/** How many input bars to draw: 2 for sign-in, 3 for sign-up. */
+	fields: number;
+	/** Whether to draw the secondary (passkey) button below the primary one. */
+	secondary?: boolean;
+	label: string;
+}
+
+const { fields, secondary = false, label } = Astro.props;
+---
+
+<div
+	role="status"
+	aria-busy="true"
+	aria-label={label}
+	class="relative w-full max-w-[27.5rem] rounded-[20px] bg-surface-raised p-8 shadow-[0_24px_80px_-24px_rgb(11_15_24_/_0.28)] sm:p-10"
+>
+	<div class="skeleton mx-auto h-8 w-2/3"></div>
+	<div class="skeleton mx-auto mt-4 h-4 w-5/6"></div>
+
+	<div class="mt-8 flex flex-col gap-4">
+		{Array.from({ length: fields }).map(() => (
+			<div class="skeleton h-[3.25rem] w-full rounded-control" />
+		))}
+		<div class="skeleton mt-2 h-[3.25rem] w-full rounded-full"></div>
+		{secondary && <div class="skeleton h-[3.25rem] w-full rounded-full" />}
+	</div>
+</div>

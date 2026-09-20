@@ -1,7 +1,7 @@
 import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
 import { readFile } from 'node:fs/promises';
-import { expect, type APIRequestContext, type Page } from '@playwright/test';
+import type { APIRequestContext, Page } from '@playwright/test';
 
 /**
  * Shared plumbing for the browser journeys.
@@ -43,19 +43,6 @@ export async function startDemo(request: APIRequestContext) {
  * journeys run and in CI they skip — visibly, as skipped, not as passed.
  */
 export const uploadsAvailable = Boolean(process.env.BLOB_READ_WRITE_TOKEN);
-
-/**
- * The marketing and auth pages server-render their islands (`client:load`), so their
- * forms exist in the HTML before React does. A fill that lands before hydration is
- * wiped when React syncs the controlled input back to its (empty) state — the classic
- * SSR race, and a real one for a fast typist on a slow connection. Astro strips the
- * `ssr` attribute from an island once it hydrates, so that is what this waits for.
- * The applet never needs it: it is `client:only`, with no markup until React runs.
- */
-export async function hydrated(page: Page) {
-	await page.locator('astro-island').first().waitFor();
-	await expect(page.locator('astro-island[ssr]')).toHaveCount(0);
-}
 
 /**
  * A CDP virtual authenticator: a synthetic passkey that Chromium treats as a platform
