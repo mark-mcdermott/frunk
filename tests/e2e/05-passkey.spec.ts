@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { attachVirtualAuthenticator, sql, startDemo } from './support';
+import { attachVirtualAuthenticator, BASE, sql, startDemo } from './support';
 
 /**
  * Decision 5, end to end: a demo account gains a passkey and becomes signable-into
@@ -40,6 +40,12 @@ test('a demo account converts by adding a passkey and signs back in with it', as
 	await expect(page).toHaveURL(/\/$/);
 
 	await page.goto('/signin');
+	// Hold on to the exact assertion the browser is about to send; it is replayed below.
+	const assertion = page.waitForRequest(
+		(request) =>
+			request.method() === 'POST' &&
+			request.url().endsWith('/api/auth/passkey/verify-authentication')
+	);
 	await page.getByRole('button', { name: 'Use a passkey' }).click();
 
 	await expect(page).toHaveURL(/\/vehicles$/);
@@ -47,6 +53,15 @@ test('a demo account converts by adding a passkey and signs back in with it', as
 
 	const session = await (await page.request.get('/api/auth/get-session')).json();
 	expect(session?.user?.id, 'the passkey signs into the same account').toBe(user.id);
+
+	// Decision 2's last open row: a challenge is consumed on read. The assertion that just
+	// signed in, sent again verbatim, must be refused — otherwise anything that captured
+	// it once holds a permanent credential.
+	const replay = await page.request.post('/api/auth/passkey/verify-authentication', {
+		headers: { Origin: BASE, 'content-type': 'application/json' },
+		data: (await assertion).postDataJSON() as Record<string, unknown>
+	});
+	expect(replay.ok(), 'a replayed passkey assertion is refused').toBe(false);
 
 	// Converted: no longer a demo, and the placeholder address is never shown as an email.
 	await page.goto('/profile');
