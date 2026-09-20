@@ -76,11 +76,24 @@ export async function signUpAndSignIn(): Promise<TestUser> {
 	return { id: user.id, email, cookie: cookieJar(signedIn) };
 }
 
-/** A demo visitor: real account, real session, cloned garage, `DEMO` role. */
+let demo: { cookie: string } | undefined;
+
+/**
+ * A demo visitor: real account, real session, cloned garage, `DEMO` role.
+ *
+ * Minted once and shared. `POST /api/demo` is rate limited to 3 per hour per address —
+ * each call clones a whole garage — and a suite that asks for one per test trips its own
+ * limiter. Sharing is also more faithful: every assertion here only needs *a* demo
+ * account, and they are identical.
+ */
 export async function startDemo(): Promise<{ cookie: string }> {
+	if (demo) return demo;
+
 	const response = await api('/api/demo', { method: 'POST' });
 	if (!response.ok) throw new Error(`demo failed: ${response.status}`);
-	return { cookie: cookieJar(response) };
+
+	demo = { cookie: cookieJar(response) };
+	return demo;
 }
 
 async function verifyEmail(email: string) {
