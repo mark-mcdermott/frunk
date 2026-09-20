@@ -1,6 +1,7 @@
 import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
 import { readFile } from 'node:fs/promises';
+import { BlobNotFoundError, head } from '@vercel/blob';
 import type { APIRequestContext, Page } from '@playwright/test';
 
 /**
@@ -43,6 +44,20 @@ export async function startDemo(request: APIRequestContext) {
  * journeys run and in CI they skip — visibly, as skipped, not as passed.
  */
 export const uploadsAvailable = Boolean(process.env.BLOB_READ_WRITE_TOKEN);
+
+/**
+ * Whether the file behind a stored serving URL still exists in the store. The database
+ * says a photo is gone the moment its row is; only the store can say the bytes went too.
+ */
+export async function blobExists(url: string): Promise<boolean> {
+	try {
+		await head(url.slice('/api/files/'.length));
+		return true;
+	} catch (cause) {
+		if (cause instanceof BlobNotFoundError) return false;
+		throw cause;
+	}
+}
 
 /**
  * A CDP virtual authenticator: a synthetic passkey that Chromium treats as a platform
