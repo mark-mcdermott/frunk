@@ -13,9 +13,9 @@ app. The SvelteKit app lives in **`legacy/`** — it is the reference for the po
 excluded from the Astro build and typecheck. It still deploys to Cloudflare Pages from
 `main` and stays live until Phase 6.
 
-**Phases 0–3 are done. Phase 4 is underway** — vehicles are full CRUD (garage, detail,
-add/edit/delete) and vendors are read-only; repairs, notes, galleries, schedules and user
-admin are not built. Read
+**Phases 0–3 are done. Phase 4 is underway** — vehicles, repairs and notes are full CRUD
+and vendors are read-only; galleries, maintenance schedules and user admin are not built,
+and neither are uploads. Read
 `docs/PORT-PLAN.md` before doing anything here; it records what is settled and what is
 outstanding.
 
@@ -122,8 +122,9 @@ the *legacy* database, and duly rewrote the live app's schema from this branch. 
 - `src/pages/` — Astro routes. Static `.astro` for marketing and legal; `/api/*` as Astro
   endpoints; the app mounts as a single `client:only` React island.
 - `src/app/` — the applet: `AppRoot` (QueryClient + router), `AppShell` (the signed-in
-  chrome), `routes/` (one component per screen), `components/` (shared applet pieces) and
-  `api.ts` (the typed fetch layer and the query keys). A screen declares its breadcrumb
+  chrome), `routes/` (one component per screen), `components/` (shared applet pieces),
+  `format.ts` (**every cents↔dollars and ISO↔date-input conversion**, so no screen does
+  that arithmetic inline) and `api.ts` (the typed fetch layer and the query keys). A screen declares its breadcrumb
   trail with `useCrumbs()` — the header sits outside the router outlet, so an entity name
   is only known once the page has loaded it. **Mounted by one catch-all per section** — `src/pages/vehicles/[...slug].astro`,
   `src/pages/vendors/[...slug].astro` — not a root catch-all, which would answer 200 for

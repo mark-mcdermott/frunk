@@ -11,9 +11,8 @@ import { initial } from '../lib/user';
  * Active nav is accent text with a small violet dot centred beneath it — the same dot
  * that terminates the wordmark, which is the brand signature.
  *
- * Only sections with a route are listed. The mock also draws Repairs and Notes; adding
- * them before their screens exist would put dead links inside the app, which is the
- * thing the marketing nav was just cleaned up to avoid.
+ * Only sections with a route are listed — a link to a screen that does not exist is the
+ * dead-link problem the marketing nav was cleaned up to avoid.
  *
  * Two icons from the mock's cluster are absent: the cart went with the store
  * (Decision 6), and lucide no longer ships brand marks, so there is no GitHub glyph —
@@ -23,6 +22,8 @@ import { initial } from '../lib/user';
 
 const SECTIONS = [
 	{ label: 'Vehicles', to: '/vehicles' },
+	{ label: 'Repairs', to: '/repairs' },
+	{ label: 'Notes', to: '/notes' },
 	{ label: 'Vendors', to: '/vendors' }
 ];
 

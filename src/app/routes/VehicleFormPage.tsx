@@ -12,7 +12,7 @@ import {
 	type VehicleInput
 } from '../api';
 import { useCrumbs } from '../AppShell';
-import { SelectField, TextField } from '../components/Field';
+import { plainOptions, SelectField, TextField } from '../components/Field';
 
 /**
  * Add and edit a vehicle, built to `docs/mocks/vehicle-edit.webp`.
@@ -37,7 +37,7 @@ import { SelectField, TextField } from '../components/Field';
  * renders both, and without them here there is no way to set either.
  */
 
-const BODY_STYLES = [
+const BODY_STYLES = plainOptions([
 	'Sedan',
 	'Coupe',
 	'Hatchback',
@@ -47,7 +47,7 @@ const BODY_STYLES = [
 	'Truck',
 	'Van',
 	'Minivan'
-] as const;
+]);
 
 interface FormState {
 	year: string;

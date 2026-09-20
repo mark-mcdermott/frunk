@@ -1,4 +1,4 @@
-import { useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
 	Calendar,
 	Camera,
@@ -11,12 +11,24 @@ import {
 	Gauge,
 	Palette,
 	Pencil,
+	Plus,
+	Trash2,
 	Wrench
 } from 'lucide-react';
 import { useState, type ReactNode } from 'react';
 import { Link, useParams } from 'react-router';
-import { getVehicle, keys, type Gallery, type Note, type Repair, type Schedule } from '../api';
+import {
+	deleteNote,
+	deleteRepair,
+	getVehicle,
+	keys,
+	type Gallery,
+	type Note,
+	type Repair,
+	type Schedule
+} from '../api';
 import { useCrumbs } from '../AppShell';
+import { formatCost, formatMiles, formatNumericDate } from '../format';
 
 /**
  * The vehicle detail screen, built to `docs/mocks/vehicle-single.webp`.
@@ -24,47 +36,73 @@ import { useCrumbs } from '../AppShell';
  * `GET /api/vehicles/:id` answers the whole screen in one request, so this is one
  * query — notes, repairs, galleries and schedules come back with the vehicle.
  *
- * The mock puts a `+ Add` button on each panel. Those screens do not exist yet, so the
- * panels are read-only here: a button that opens nothing is the dead-link problem the
- * nav already avoids. The same applies to each row's edit and delete icons.
+ * Notes and Repairs carry their `+ Add` button and per-row edit and delete, now that
+ * those screens exist. Each `+ Add` passes `?vehicle=<id>` so the form arrives already
+ * attached and never asks which vehicle you meant.
+ *
+ * Maintenance Schedule and Galleries stay read-only — their screens are not built, and a
+ * button that opens nothing is the dead-link problem the nav already avoids.
  */
 
-function formatDate(iso: string) {
-	return new Date(iso).toLocaleDateString(undefined, {
-		month: 'numeric',
-		day: 'numeric',
-		year: 'numeric'
-	});
-}
-
-/** Costs are stored in cents — `repairs.cost` is an integer column. */
-function formatCost(cents: number) {
-	return (cents / 100).toLocaleString(undefined, {
-		style: 'currency',
-		currency: 'USD',
-		minimumFractionDigits: 2
-	});
-}
 
 function Panel({
 	icon,
 	title,
+	addTo,
+	addLabel,
 	children
 }: {
 	icon: ReactNode;
 	title: string;
+	addTo?: string;
+	addLabel?: string;
 	children: ReactNode;
 }) {
 	return (
 		<section className="card p-6">
-			<h2 className="display-sm flex items-center gap-3 text-xl">
-				<span aria-hidden className="text-text-muted">
-					{icon}
-				</span>
-				{title}
-			</h2>
+			<div className="flex items-center justify-between gap-3">
+				<h2 className="display-sm flex items-center gap-3 text-xl">
+					<span aria-hidden className="text-text-muted">
+						{icon}
+					</span>
+					{title}
+				</h2>
+
+				{addTo && (
+					<Link
+						to={addTo}
+						className="flex shrink-0 items-center gap-1.5 rounded-full border border-accent/50 px-3 py-1.5 text-[0.8125rem] text-text transition-colors hover:bg-accent/10"
+					>
+						<Plus className="size-3.5 text-accent-bright" strokeWidth={2} aria-hidden />
+						{addLabel}
+					</Link>
+				)}
+			</div>
 			<div className="mt-6">{children}</div>
 		</section>
+	);
+}
+
+/** Edit and delete, revealed on hover on a nested card. */
+function RowActions({ editTo, onDelete, label }: { editTo: string; onDelete: () => void; label: string }) {
+	return (
+		<div className="flex shrink-0 items-center gap-2">
+			<Link
+				to={editTo}
+				aria-label={`Edit ${label}`}
+				className="flex size-8 items-center justify-center rounded-full border border-border text-text-muted transition-colors hover:border-text-muted hover:text-text"
+			>
+				<Pencil className="size-3.5" strokeWidth={1.75} aria-hidden />
+			</Link>
+			<button
+				type="button"
+				aria-label={`Delete ${label}`}
+				onClick={onDelete}
+				className="flex size-8 items-center justify-center rounded-full border border-destructive/40 text-destructive transition-colors hover:bg-destructive-bg"
+			>
+				<Trash2 className="size-3.5" strokeWidth={1.75} aria-hidden />
+			</button>
+		</div>
 	);
 }
 
@@ -124,10 +162,17 @@ function CopyVin({ vin }: { vin: string }) {
 	);
 }
 
-function NoteCard({ note }: { note: Note }) {
+function NoteCard({ note, onDelete }: { note: Note; onDelete: () => void }) {
 	return (
 		<article className="rounded-control border border-border bg-surface-raised p-4">
-			<h3 className="text-[0.9375rem] font-semibold text-text">{note.title}</h3>
+			<div className="flex items-start justify-between gap-3">
+				<h3 className="text-[0.9375rem] font-semibold text-text">{note.title}</h3>
+				<RowActions
+					label={note.title}
+					editTo={`/notes/${note.uuid}/edit`}
+					onDelete={onDelete}
+				/>
+			</div>
 			{note.body && <p className="mt-2 text-[0.875rem] text-text-muted">{note.body}</p>}
 			{note.imageUrl && (
 				<p className="mt-3 flex items-center gap-2 text-[0.8125rem] text-text-faint">
@@ -139,7 +184,7 @@ function NoteCard({ note }: { note: Note }) {
 	);
 }
 
-function RepairCard({ repair }: { repair: Repair }) {
+function RepairCard({ repair, onDelete }: { repair: Repair; onDelete: () => void }) {
 	return (
 		<article className="rounded-control border border-border bg-surface-raised p-4">
 			<div className="flex items-start justify-between gap-3">
@@ -151,9 +196,17 @@ function RepairCard({ repair }: { repair: Repair }) {
 				)}
 			</div>
 
+			<div className="mt-3 flex justify-end">
+				<RowActions
+					label={repair.description}
+					editTo={`/repairs/${repair.id}/edit`}
+					onDelete={onDelete}
+				/>
+			</div>
+
 			<p className="mt-2 text-[0.8125rem] text-text-muted">
-				{formatDate(repair.date)}
-				{repair.mileage != null && ` • ${repair.mileage.toLocaleString()} mi`}
+				{formatNumericDate(repair.date)}
+				{repair.mileage != null && ` • ${formatMiles(repair.mileage)}`}
 			</p>
 
 			{repair.cost != null && (
@@ -210,9 +263,23 @@ function GalleryBlock({ gallery }: { gallery: Gallery }) {
 
 export function VehicleDetailPage() {
 	const { id = '' } = useParams();
+	const client = useQueryClient();
+
 	const { data, isPending, isError, error } = useQuery({
 		queryKey: keys.vehicle(id),
 		queryFn: () => getVehicle(id)
+	});
+
+	/* Both lists also show these rows, so both keys are invalidated alongside this one. */
+	const invalidate = (key: readonly string[]) => () => {
+		client.invalidateQueries({ queryKey: keys.vehicle(id) });
+		client.invalidateQueries({ queryKey: key });
+	};
+
+	const removeNote = useMutation({ mutationFn: deleteNote, onSuccess: invalidate(keys.notes) });
+	const removeRepair = useMutation({
+		mutationFn: deleteRepair,
+		onSuccess: invalidate(keys.repairs)
 	});
 
 	const vehicle = data?.vehicle;
@@ -294,7 +361,7 @@ export function VehicleDetailPage() {
 							<SpecRow
 								icon={<Gauge className="size-4" />}
 								label="Mileage"
-								value={`${vehicle.currentMileage.toLocaleString()} mi`}
+								value={formatMiles(vehicle.currentMileage)}
 							/>
 						)}
 					</div>
@@ -308,7 +375,12 @@ export function VehicleDetailPage() {
 					</Link>
 				</section>
 
-				<Panel icon={<FileText className="size-5" />} title="Notes">
+				<Panel
+					icon={<FileText className="size-5" />}
+					title="Notes"
+					addTo={`/notes/new?vehicle=${vehicle.id}`}
+					addLabel="Add Note"
+				>
 					{data.notes.length === 0 ? (
 						<Empty
 							icon={<FileText className="size-5" strokeWidth={1.5} />}
@@ -318,13 +390,22 @@ export function VehicleDetailPage() {
 					) : (
 						<div className="flex flex-col gap-4">
 							{data.notes.map((note) => (
-								<NoteCard key={note.uuid} note={note} />
+								<NoteCard
+									key={note.uuid}
+									note={note}
+									onDelete={() => removeNote.mutate(note.uuid)}
+								/>
 							))}
 						</div>
 					)}
 				</Panel>
 
-				<Panel icon={<Wrench className="size-5" />} title="Repairs">
+				<Panel
+					icon={<Wrench className="size-5" />}
+					title="Repairs"
+					addTo={`/repairs/new?vehicle=${vehicle.id}`}
+					addLabel="Add Repair"
+				>
 					{data.repairs.length === 0 ? (
 						<Empty
 							icon={<Wrench className="size-5" strokeWidth={1.5} />}
@@ -334,7 +415,11 @@ export function VehicleDetailPage() {
 					) : (
 						<div className="flex flex-col gap-4">
 							{data.repairs.map((repair) => (
-								<RepairCard key={repair.id} repair={repair} />
+								<RepairCard
+									key={repair.id}
+									repair={repair}
+									onDelete={() => removeRepair.mutate(repair.id)}
+								/>
 							))}
 						</div>
 					)}
