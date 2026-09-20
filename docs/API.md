@@ -163,7 +163,17 @@ Blob write in front of them, with `access: 'private'` for vehicle documents.
 | `GET`    | `/api/users`       | **Admin only.** `?page=&pageSize=&sortBy=id\|username\|roles&sortOrder=asc\|desc&search=` |
 | `GET`    | `/api/users/:uuid` | Own profile, or anyone's for an admin.                                                    |
 | `PATCH`  | `/api/users/:uuid` | Own profile, or anyone's for an admin. **Only an admin may set `roles`.**                 |
-| `DELETE` | `/api/users/:uuid` | Own account (ends the session) or, for an admin, anyone's.                                |
+| `DELETE` | `/api/users/:uuid` | Own account (ends the session) or, for an admin, anyone's. Uploads go with it.            |
+
+### Cron
+
+| Method | Path                   | Notes                                                                                                                                                                                                                         |
+| ------ | ---------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `GET`  | `/api/cron/reap-demos` | **Vercel cron only** — `Authorization: Bearer <CRON_SECRET>`; 401 otherwise, 503 with no secret configured. Deletes demo accounts older than 7 days that never attached a passkey, uploads included. Answers `{ reaped: n }`. |
+
+Scheduled daily at 04:00 UTC in `vercel.json`. Crons run against the production deployment
+only, so `CRON_SECRET` is a production variable. `vercel crons run /api/cron/reap-demos`
+fires it by hand; the predicate lives in `src/lib/server/reaper.ts`.
 
 ## Verifying against a deploy
 
@@ -255,6 +265,7 @@ The schema is declared in `astro.config.mjs`; this table mirrors it.
 | `RESEND_API_KEY`        | Transactional email. Without it `sendEmail` fails at call time, not at build.       |
 | `CONTACT_EMAIL`         | Where the contact form lands. Defaults to the footer address.                       |
 | `BLOB_READ_WRITE_TOKEN` | Vercel Blob (`frunk-uploads`, private). Without it uploads answer 503.              |
+| `CRON_SECRET`           | What Vercel's cron presents to `/api/cron/*`. Production only; unset answers 503.   |
 
 **`RP_ID` and `RP_ORIGIN` are optional, and unset is the right answer in development
 and on preview deploys.** Left blank they are derived from the request, which is the only

@@ -1,4 +1,4 @@
-import { del, get, put } from '@vercel/blob';
+import { del, get, list, put } from '@vercel/blob';
 import { BLOB_READ_WRITE_TOKEN } from 'astro:env/server';
 
 /**
@@ -88,5 +88,32 @@ export async function deleteManagedFiles(urls: Array<string | null | undefined>)
 		await del(pathnames, { token: requireToken() });
 	} catch (cause) {
 		console.error('Blob cleanup failed (rows already deleted):', pathnames, cause);
+	}
+}
+
+/**
+ * Everything under an account's prefix, for when the account itself is gone. The
+ * prefix is the ownership boundary, so nothing has to consult a table to learn what
+ * the person uploaded. Best-effort for the same reason as `deleteManagedFiles`.
+ */
+export async function deleteUserFiles(userId: string): Promise<void> {
+	// Without a token nothing was ever uploaded through this deploy, so there is
+	// nothing to clean — and no error to log on every account deletion in CI.
+	if (!BLOB_READ_WRITE_TOKEN) return;
+
+	try {
+		const token = requireToken();
+		const pathnames: string[] = [];
+		let cursor: string | undefined;
+
+		do {
+			const page = await list({ prefix: `u/${userId}/`, cursor, token });
+			pathnames.push(...page.blobs.map((blob) => blob.pathname));
+			cursor = page.hasMore ? page.cursor : undefined;
+		} while (cursor);
+
+		if (pathnames.length > 0) await del(pathnames, { token });
+	} catch (cause) {
+		console.error(`Blob cleanup failed for user ${userId} (row already deleted):`, cause);
 	}
 }

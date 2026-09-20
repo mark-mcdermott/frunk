@@ -28,8 +28,9 @@ export interface RateLimitDecision {
 const PRUNE_AFTER_MS = 60 * 60 * 1000;
 /**
  * Prune on a fraction of checks. Distinct keys would otherwise accumulate forever,
- * and there is no cron on this deploy — but a delete on every attempt would double the
- * cost of the hot path for a table that only ever holds a few rows.
+ * and the only cron on this deploy is the daily demo reaper — but a delete on every
+ * attempt would double the cost of the hot path for a table that only ever holds a
+ * few rows.
  */
 const PRUNE_PROBABILITY = 0.05;
 

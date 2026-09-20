@@ -234,7 +234,10 @@ Five things about it are easy to get wrong:
   a _link_ and deletes the "anonymous" account afterwards, garage included. A converted
   account keeps its placeholder address (`hasPlaceholderEmail`) and has no password, so
   it cannot enrol TOTP recovery until a set-password flow exists. `roles` stays
-  authoritative for gating. `POST /api/demo` needs `pnpm db:seed-office`.
+  authoritative for gating. `POST /api/demo` needs `pnpm db:seed-office`. **Unconverted
+  demos are reaped after seven days** by `GET /api/cron/reap-demos` — a Vercel cron
+  (`vercel.json`, production only) presenting `CRON_SECRET`; the predicate is DEMO role,
+  no passkey, older than the window, and the account's blobs go with its rows.
 - **`BETTER_AUTH_SECRET` is effectively unrotatable.** Better Auth encrypts TOTP secrets
   and backup codes at rest _with a key derived from it_ — verified 2026-09-19 by enabling
   TOTP under one secret, restarting under another, and watching `get-totp-uri` fail with a
