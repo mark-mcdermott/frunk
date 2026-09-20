@@ -641,8 +641,30 @@ opposite on both counts: genuinely secret, so mark it sensitive.
 
 ## Phase 4 — The applet
 
-- `src/pages/[...slug].astro` with `prerender = false`, mounting
-  `<AppRoot client:only="react" />` — `BrowserRouter` → `AuthProvider` → `App`.
+**Landed 2026-09-19 — the foundation** (`feat/applet-foundation`): the island mounts, the
+shell is built to the mock, and two screens read real data through TanStack Query.
+
+- ~~`src/pages/[...slug].astro`~~ **One catch-all per section** — `src/pages/vehicles/[...slug].astro`
+  and `src/pages/vendors/[...slug].astro`, each `prerender = false` and mounting the same
+  `<AppRoot client:only="react" />`. A single root catch-all would swallow every unmatched
+  URL in the site, so a typo'd marketing link would answer 200 with the applet instead of
+  404. Scoping costs one three-line file per section and keeps real 404s real. Verified:
+  `/vehicles` 200, `/vendors` 200, `/nonexistent` 404.
+- **The island starts at the shell, not the page body.** The app header carries the
+  route-dependent active-nav dot, a contextual primary action and the avatar — all three
+  want state the router owns, so putting the header in Astro would mean plumbing each
+  across the boundary.
+- **One `QueryClient`, module-level.** Constructing it in the component body hands every
+  render a fresh cache, which presents as "the data keeps refetching". `staleTime: 60_000`
+  — vehicle data changes when *you* change it.
+- **`src/app/api.ts` is the applet's whole view of the API**: it unwraps the `{ vehicles: [] }`
+  envelopes once, owns the query `keys` so a mutation cannot invalidate a key the list is
+  not cached under, and redirects to `/signin` on a 401 rather than rendering an empty
+  screen that looks like you own nothing.
+- Still to build: vehicle detail and edit, repairs, notes, galleries, maintenance
+  schedules, user admin. Repairs and Notes are deliberately **absent from the nav** until
+  their screens exist — dead links inside the app are the thing the marketing nav was just
+  cleaned up to avoid.
 - Rebuild the app screens in React against the mocks: vehicles index and detail, vendors,
   repairs, notes, galleries, maintenance schedules, user admin. Follow `docs/DESIGN.md`
   for every component.
