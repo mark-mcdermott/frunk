@@ -1,6 +1,6 @@
 import { Monitor } from 'lucide-react';
-import type { ReactNode } from 'react';
-import { NavLink, useLocation } from 'react-router';
+import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
+import { Link, NavLink, useLocation } from 'react-router';
 import { useSession } from '../lib/auth-client';
 import { initial } from '../lib/user';
 
@@ -26,26 +26,79 @@ const SECTIONS = [
 	{ label: 'Vendors', to: '/vendors' }
 ];
 
-/** `Home › Vehicles`, from the path — muted, chevrons, current page not a link. */
-function Breadcrumbs() {
+export interface Crumb {
+	label: string;
+	to?: string;
+}
+
+const SetCrumbs = createContext<(crumbs: Crumb[]) => void>(() => {});
+
+/**
+ * A screen declares the trail below its section: `Home › Vehicles › 1974 AMC Gremlin`.
+ *
+ * The header sits outside the router outlet, so the entity name it needs is only known
+ * once the page has loaded it — hence a context rather than a prop. `key` is the
+ * serialized trail, so the effect re-runs when the labels actually change and not on
+ * every render that rebuilds the array.
+ */
+export function useCrumbs(crumbs: Crumb[]) {
+	const set = useContext(SetCrumbs);
+	const key = JSON.stringify(crumbs);
+
+	useEffect(() => {
+		set(crumbs);
+		return () => set([]);
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [key, set]);
+}
+
+const CRUMB_LINK = 'text-text-muted transition-colors hover:text-text';
+
+/** `/` is an Astro page outside the router, so it needs a real navigation. */
+function CrumbLink({ to, children }: { to: string; children: ReactNode }) {
+	return to === '/' ? (
+		<a href={to} className={CRUMB_LINK}>
+			{children}
+		</a>
+	) : (
+		<Link to={to} className={CRUMB_LINK}>
+			{children}
+		</Link>
+	);
+}
+
+function Breadcrumbs({ trail }: { trail: Crumb[] }) {
 	const { pathname } = useLocation();
 	const section = SECTIONS.find((s) => pathname.startsWith(s.to));
 
+	const crumbs: Crumb[] = [
+		{ label: 'Home', to: '/' },
+		...(section ? [{ label: section.label, to: section.to }] : []),
+		...trail
+	];
+
 	return (
-		<nav aria-label="Breadcrumb" className="flex items-center gap-2 text-[0.8125rem]">
-			<a href="/" className="text-text-muted transition-colors hover:text-text">
-				Home
-			</a>
-			{section && (
-				<>
-					<span aria-hidden className="text-text-faint">
-						›
+		<nav aria-label="Breadcrumb" className="flex flex-wrap items-center gap-2 text-[0.8125rem]">
+			{crumbs.map((crumb, index) => {
+				const last = index === crumbs.length - 1;
+
+				return (
+					<span key={`${crumb.label}-${index}`} className="flex items-center gap-2">
+						{index > 0 && (
+							<span aria-hidden className="text-text-faint">
+								›
+							</span>
+						)}
+						{last || !crumb.to ? (
+							<span aria-current={last ? 'page' : undefined} className="text-text">
+								{crumb.label}
+							</span>
+						) : (
+							<CrumbLink to={crumb.to}>{crumb.label}</CrumbLink>
+						)}
 					</span>
-					<span aria-current="page" className="text-text">
-						{section.label}
-					</span>
-				</>
-			)}
+				);
+			})}
 		</nav>
 	);
 }
@@ -53,6 +106,8 @@ function Breadcrumbs() {
 export function AppShell({ children }: { children: ReactNode }) {
 	const { data } = useSession();
 	const user = data?.user;
+	const [trail, setTrail] = useState<Crumb[]>([]);
+	const set = useMemo(() => (crumbs: Crumb[]) => setTrail(crumbs), []);
 
 	return (
 		<div className="surface-dark flex min-h-screen flex-col">
@@ -119,11 +174,11 @@ export function AppShell({ children }: { children: ReactNode }) {
 			</header>
 
 			<div className="mx-auto w-full max-w-[1400px] px-6 pt-6 sm:px-10 lg:px-16">
-				<Breadcrumbs />
+				<Breadcrumbs trail={trail} />
 			</div>
 
 			<main className="mx-auto w-full max-w-[1400px] flex-1 px-6 pb-24 pt-6 sm:px-10 lg:px-16">
-				{children}
+				<SetCrumbs.Provider value={set}>{children}</SetCrumbs.Provider>
 			</main>
 		</div>
 	);

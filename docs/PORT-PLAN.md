@@ -661,10 +661,42 @@ shell is built to the mock, and two screens read real data through TanStack Quer
   envelopes once, owns the query `keys` so a mutation cannot invalidate a key the list is
   not cached under, and redirects to `/signin` on a 401 rather than rendering an empty
   screen that looks like you own nothing.
-- Still to build: vehicle detail and edit, repairs, notes, galleries, maintenance
-  schedules, user admin. Repairs and Notes are deliberately **absent from the nav** until
-  their screens exist — dead links inside the app are the thing the marketing nav was just
-  cleaned up to avoid.
+- Repairs and Notes are deliberately **absent from the nav** until their screens exist —
+  dead links inside the app are the thing the marketing nav was just cleaned up to avoid.
+
+**Landed 2026-09-19 — vehicles are full CRUD** (`feat/vehicle-crud`): detail, add, edit
+and delete, verified in a browser and then at the database level (optionals stored as
+`NULL` rather than `''`; a cleared field actually cleared).
+
+- **shadcn is real now.** `button`, `input`, `label`, `select` are in `src/components/ui/`.
+  Three things about the current generator were not obvious:
+  - The `base-nova` style is built on **Base UI, not Radix**, and `shadcn add` did *not*
+    install it — the components imported a package that was not there. `@base-ui/react`
+    had to be added by hand.
+  - It imports from a package literally named **`cn`** — which is shadcn's own
+    clsx+tailwind-merge replacement, not a typosquat. Since `src/lib/utils.ts` had zero
+    consumers, it and `clsx`/`tailwind-merge` were deleted rather than kept as a second
+    implementation.
+  - Its components are written against `background`/`foreground`/`primary`/`muted`/`ring`,
+    which this design layer does not use. **Bridged once in `global.css`** so future adds
+    inherit the palette. `accent` is the one name that cannot be bridged — see `CLAUDE.md`.
+- **Generated files are kept unedited** so they survive being re-added; shadcn's `h-8`
+  dashboard scale is overridden in `src/app/components/Field.tsx` instead.
+- Only `input`, `label` and `select` were kept. `shadcn add` also wrote `button`, but
+  buttons already have a design-system class (`.btn-primary`) used across the marketing
+  site, and swapping them is a wider change than this one — an unused generated file is
+  just dead code, so it was deleted rather than left waiting.
+- **Three departures from `vehicle-edit.webp`**, each because the mock's control implies
+  data the model does not carry: Make is a text input (a select needs a curated marque
+  list; the column is free text), Engine is two fields (`engineSize` + `engineType`, joined
+  for display), and Cover Image is absent (uploads are a Blob job and
+  `BLOB_READ_WRITE_TOKEN` is not provisioned, so "Change Image" would do nothing).
+  Nickname and Current Mileage were *added* — the garage list renders both, and without
+  them there was no way to set either.
+- The detail screen's panels are **read-only**: the mock's `+ Add Note` / `+ Add Repair`
+  and the per-row edit/delete icons wait for those screens, on the same dead-link rule.
+- Still to build: repairs, notes, galleries, maintenance schedules, user admin, vendor
+  detail/edit — and the uploads and per-route code splitting Phase 4 also owns.
 - Rebuild the app screens in React against the mocks: vehicles index and detail, vendors,
   repairs, notes, galleries, maintenance schedules, user admin. Follow `docs/DESIGN.md`
   for every component.

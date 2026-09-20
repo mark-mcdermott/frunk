@@ -1,6 +1,8 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router';
 import { AppShell } from './AppShell';
+import { VehicleDetailPage } from './routes/VehicleDetailPage';
+import { VehicleFormPage } from './routes/VehicleFormPage';
 import { VehiclesPage } from './routes/VehiclesPage';
 import { VendorsPage } from './routes/VendorsPage';
 
@@ -40,6 +42,10 @@ export function AppRoot() {
 				<AppShell>
 					<Routes>
 						<Route path="/vehicles" element={<VehiclesPage />} />
+						{/* Static before dynamic, so `new` is never read as an id. */}
+						<Route path="/vehicles/new" element={<VehicleFormPage />} />
+						<Route path="/vehicles/:id" element={<VehicleDetailPage />} />
+						<Route path="/vehicles/:id/edit" element={<VehicleFormPage />} />
 						<Route path="/vendors" element={<VendorsPage />} />
 						{/* Unknown app paths go to the garage rather than a blank island. */}
 						<Route path="*" element={<Navigate to="/vehicles" replace />} />
