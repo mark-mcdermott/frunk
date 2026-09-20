@@ -93,9 +93,10 @@ export function UserNav() {
 		<div className="flex items-center gap-3" ref={menu}>
 			{demo && (
 				/* The conversion prompt. A demo account is real (Decision 5), so this is an
-				   offer to keep what they already have, not an invitation to start over. */
+				   offer to keep what they already have, not an invitation to start over —
+				   which is why it leads to the profile's passkey prompt, never to sign-up. */
 				<a
-					href="/signup"
+					href="/profile"
 					className="hidden rounded-full bg-accent/12 px-4 py-2 text-[0.8125rem] font-semibold text-accent transition-colors hover:bg-accent/20 sm:block"
 				>
 					Keep my data
@@ -152,7 +153,7 @@ export function UserNav() {
 						{demo && (
 							<a
 								role="menuitem"
-								href="/signup"
+								href="/profile"
 								className="block px-4 py-3 text-[0.875rem] font-semibold text-accent transition-colors hover:bg-[rgb(11_15_24_/_0.04)] sm:hidden"
 							>
 								Keep my data

@@ -1,6 +1,9 @@
-import { Lock, Mail, User } from 'lucide-react';
-import { useState, type SubmitEvent } from 'react';
-import { authErrorMessage, resendVerification, signUp } from '../../lib/auth-client';
+import { useStore } from '@nanostores/react';
+import { KeyRound, Lock, Mail, User } from 'lucide-react';
+import { useEffect, useState, type SubmitEvent } from 'react';
+import { authErrorMessage, resendVerification, signOut, signUp } from '../../lib/auth-client';
+import { isDemo } from '../../lib/roles';
+import { $authStatus, $user, loadUser, setUser } from '../../stores/user';
 import { AuthCard } from './AuthCard';
 import { AuthField } from './AuthField';
 import { DemoLink } from './DemoLink';
@@ -19,8 +22,14 @@ type Step = 'account' | 'verify';
  *
  * What the mock does not show is the second step. A passkey is bound to one device, so
  * the offer of a recovery code belongs here, while the user is still in the flow.
+ *
+ * Nor does it show who is asking. A signed-in demo visitor gets `KeepDemoNotice`
+ * instead of the form: the server refuses their sign-up anyway (`config.ts`), and the
+ * refusal is better read before anything has been typed.
  */
 export function SignUpForm() {
+	const user = useStore($user);
+	const status = useStore($authStatus);
 	const [step, setStep] = useState<Step>('account');
 	const [email, setEmail] = useState('');
 	const [password, setPassword] = useState('');
@@ -28,6 +37,14 @@ export function SignUpForm() {
 	const [pending, setPending] = useState(false);
 	const [error, setError] = useState<string | null>(null);
 	const [resent, setResent] = useState(false);
+
+	useEffect(() => {
+		loadUser();
+	}, []);
+
+	if (status === 'ready' && user && isDemo(user.roles)) {
+		return <KeepDemoNotice />;
+	}
 
 	async function createAccount(event: SubmitEvent<HTMLFormElement>) {
 		event.preventDefault();
@@ -147,6 +164,54 @@ export function SignUpForm() {
 					Sign in
 				</a>
 			</p>
+		</AuthCard>
+	);
+}
+
+/**
+ * The sign-up page, seen from inside a demo. Better Auth's sign-up always mints a
+ * *second* account — nothing about it promotes the one the visitor is using — so the
+ * garage could only be left behind (Decision 5). The two honest exits are offered:
+ * the profile's passkey prompt, which converts the account in place, or signing out
+ * to start a separate one. Signing out clears the shared user store, so the form
+ * takes this card's place without a reload.
+ */
+function KeepDemoNotice() {
+	const [pending, setPending] = useState(false);
+
+	async function startSeparately() {
+		setPending(true);
+		await signOut();
+		setUser(null);
+	}
+
+	return (
+		<AuthCard
+			title="You are in a demo"
+			subtitle="This account is already real. Keep it, or start a separate one."
+		>
+			<p className="mt-6 text-[0.875rem] leading-relaxed text-text-muted">
+				Everything in this garage stays if you add a passkey. An email account created here would
+				start over empty, so that door stays closed while the demo is signed in.
+			</p>
+
+			<a
+				href="/profile"
+				className="mt-6 flex h-14 w-full items-center justify-center gap-3 rounded-[12px] bg-surface-elevated text-[0.9375rem] font-semibold text-[#fefefe] transition-opacity hover:opacity-90"
+			>
+				<KeyRound className="size-[1.125rem] text-accent-bright" strokeWidth={1.75} aria-hidden />
+				Add a passkey on your profile
+			</a>
+
+			<button
+				type="button"
+				disabled={pending}
+				aria-busy={pending}
+				onClick={startSeparately}
+				className="mt-3 flex h-14 w-full items-center justify-center rounded-[12px] border border-border-strong text-[0.9375rem] font-semibold text-text transition-colors hover:border-text-muted disabled:cursor-not-allowed disabled:opacity-60"
+			>
+				{pending ? 'Signing out…' : 'Sign out and start a separate account'}
+			</button>
 		</AuthCard>
 	);
 }
