@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Check, ImagePlus, Plus, Trash2, X } from 'lucide-react';
-import { useRef, useState, type SubmitEvent } from 'react';
+import { useId, useRef, useState, type SubmitEvent } from 'react';
 import {
 	createGallery,
 	createPhoto,
@@ -75,15 +75,18 @@ function GalleryBlock({ gallery, vehicleId }: { gallery: Gallery; vehicleId: str
 	const client = useQueryClient();
 	const [confirming, setConfirming] = useState(false);
 	const refresh = () => client.invalidateQueries({ queryKey: keys.vehicle(vehicleId) });
+	const headingId = useId();
 
 	const removeGallery = useMutation({ mutationFn: deleteGallery, onSuccess: refresh });
 	const removePhoto = useMutation({ mutationFn: deletePhoto, onSuccess: refresh });
 
 	return (
-		<div>
+		<section aria-labelledby={headingId}>
 			<div className="flex items-start justify-between gap-3">
 				<div>
-					<h3 className="text-[0.9375rem] font-semibold text-text">{gallery.name}</h3>
+					<h3 id={headingId} className="text-[0.9375rem] font-semibold text-text">
+						{gallery.name}
+					</h3>
 					{gallery.description && (
 						<p className="mt-1 text-[0.8125rem] text-text-muted">{gallery.description}</p>
 					)}
@@ -147,7 +150,7 @@ function GalleryBlock({ gallery, vehicleId }: { gallery: Gallery; vehicleId: str
 
 				<AddPhotoButton galleryId={gallery.id} vehicleId={vehicleId} />
 			</div>
-		</div>
+		</section>
 	);
 }
 

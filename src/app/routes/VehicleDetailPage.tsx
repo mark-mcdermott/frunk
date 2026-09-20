@@ -15,7 +15,7 @@ import {
 	Trash2,
 	Wrench
 } from 'lucide-react';
-import { useState, type ReactNode } from 'react';
+import { useId, useState, type ReactNode } from 'react';
 import { Link, useParams } from 'react-router';
 import { deleteNote, deleteRepair, getVehicle, keys, type Note, type Repair } from '../api';
 import { useCrumbs } from '../AppShell';
@@ -50,10 +50,12 @@ function Panel({
 	addLabel?: string;
 	children: ReactNode;
 }) {
+	// Named by its heading, each panel is a landmark a screen reader (and a test) can address.
+	const headingId = useId();
 	return (
-		<section className="card p-6">
+		<section aria-labelledby={headingId} className="card p-6">
 			<div className="flex items-center justify-between gap-3">
-				<h2 className="display-sm flex items-center gap-3 text-xl">
+				<h2 id={headingId} className="display-sm flex items-center gap-3 text-xl">
 					<span aria-hidden className="text-text-muted">
 						{icon}
 					</span>
