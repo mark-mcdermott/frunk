@@ -13,10 +13,12 @@ app. The SvelteKit app lives in **`legacy/`** — it is the reference for the po
 excluded from the Astro build and typecheck. It still deploys to Cloudflare Pages from
 `main` and stays live until Phase 6.
 
-**Phases 0–3 are done. Phase 4 is nearly done** — vehicles, repairs, notes, vendors,
-maintenance schedules, galleries, user admin and the profile screen are all built, and
-uploads are live on **Vercel Blob** (store `frunk-uploads`, **private**). The
-repair/note detail screens and per-route code splitting remain.
+**Phases 0–3 are done. Phase 4's build-out is complete** — every screen family is
+built (vehicles, repairs, notes, vendors, maintenance schedules, galleries, user admin,
+profile, and the repair/note detail screens), uploads are live on **Vercel Blob**
+(store `frunk-uploads`, **private**), and **every applet route is code-split**
+(`page()` in `AppRoot.tsx` — the shell paints from the entry chunk, screens load on
+first visit). What remains of Phase 4 is its checkpoint: the component/e2e test layer.
 
 **Profile edits go through Better Auth's `updateUser`**, not `PATCH /api/users/:id` —
 that endpoint refreshes the client session store, so the header avatar and name update

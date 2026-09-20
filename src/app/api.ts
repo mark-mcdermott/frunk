@@ -267,8 +267,19 @@ export const deleteVehicle = (id: string) =>
 export const listRepairs = () =>
 	request<{ repairs: RepairRow[] }>('/api/repairs').then((r) => r.repairs);
 
-export const getRepair = (id: string) =>
-	request<{ repair: RepairRow }>(`/api/repairs/${id}`).then((r) => r.repair);
+/**
+ * Unlike the list, `GET /api/repairs/:id` returns the **raw row** — no vendor or
+ * vehicle names joined in. Screens join those from the cached lists instead of this
+ * type pretending they arrive here. (It used to claim `RepairRow`; the extra fields
+ * were silently undefined.)
+ */
+export interface RepairDetail {
+	repair: Repair & { vehicleId: string };
+	/** Notes attached to this repair — the only place they surface. */
+	notes: NoteDetail[];
+}
+
+export const getRepair = (id: string) => request<RepairDetail>(`/api/repairs/${id}`);
 
 export const createRepair = (body: RepairInput) =>
 	request<{ repair: Repair }>('/api/repairs', {
@@ -287,8 +298,16 @@ export const deleteRepair = (id: string) =>
 
 export const listNotes = () => request<{ notes: NoteRow[] }>('/api/notes').then((r) => r.notes);
 
+/** The raw note row — `GET /api/notes/:uuid` does not join the vehicle in. */
+export interface NoteDetail extends Note {
+	vehicleId: string | null;
+	repairId: string | null;
+	parentNoteId: string | null;
+	createdAt: string;
+}
+
 export const getNote = (uuid: string) =>
-	request<{ note: NoteRow }>(`/api/notes/${uuid}`).then((r) => r.note);
+	request<{ note: NoteDetail; children: NoteDetail[] }>(`/api/notes/${uuid}`);
 
 export const createNote = (body: NoteInput) =>
 	request<{ note: Note }>('/api/notes', {
