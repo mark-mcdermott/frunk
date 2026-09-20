@@ -1,4 +1,3 @@
-import { Monitor } from 'lucide-react';
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
 import { Link, NavLink, useLocation } from 'react-router';
 import { toSessionUser, useSession } from '../lib/auth-client';
@@ -154,22 +153,27 @@ export function AppShell({ children }: { children: ReactNode }) {
 					</nav>
 
 					<div className="ml-auto flex items-center gap-5">
-						<button
-							type="button"
-							aria-label="Theme"
-							className="text-text-muted transition-colors hover:text-text"
-						>
-							<Monitor className="size-[1.125rem]" strokeWidth={1.75} aria-hidden />
-						</button>
-
+						{/* The mock's theme toggle is absent: nothing calls setTheme yet and the
+						    applet is dark by spec, so the control would be decoration. */}
 						{user && (
-							<span
-								aria-label={user.name || user.email}
+							<Link
+								to="/profile"
+								aria-label={`Your profile (${user.name || user.email})`}
 								title={user.name || user.email}
-								className="flex size-8 shrink-0 items-center justify-center rounded-full border border-border bg-surface-raised text-[0.8125rem] font-semibold text-text"
+								className="block shrink-0 rounded-full transition-opacity hover:opacity-80"
 							>
-								{initial(user)}
-							</span>
+								{user.image ? (
+									<img
+										src={user.image}
+										alt=""
+										className="size-8 rounded-full border border-border object-cover"
+									/>
+								) : (
+									<span className="flex size-8 items-center justify-center rounded-full border border-border bg-surface-raised text-[0.8125rem] font-semibold text-text">
+										{initial(user)}
+									</span>
+								)}
+							</Link>
 						)}
 					</div>
 				</div>
