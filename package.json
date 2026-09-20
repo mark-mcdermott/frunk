@@ -8,6 +8,8 @@
 		"build": "astro build",
 		"preview": "astro preview",
 		"check": "astro check",
+		"test:unit": "tests/run.sh",
+		"test:watch": "tests/run.sh --watch",
 		"astro": "astro",
 		"db:generate": "drizzle-kit generate",
 		"db:push": "drizzle-kit push",
@@ -54,7 +56,8 @@
 		"drizzle-kit": "^0.31.10",
 		"tailwindcss": "^4.3.3",
 		"tsx": "^4.23.13",
-		"typescript": "^5.9.3"
+		"typescript": "^5.9.3",
+		"vitest": "^5.0.1"
 	},
 	"packageManager": "pnpm@10.28.2"
 }
