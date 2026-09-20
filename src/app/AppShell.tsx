@@ -119,9 +119,10 @@ export function AppShell({ children }: { children: ReactNode }) {
 	const set = useMemo(() => (crumbs: Crumb[]) => setTrail(crumbs), []);
 
 	return (
-		<div className="surface-dark flex min-h-screen flex-col">
+		<div className="surface-dark flex min-h-screen flex-col pb-[env(safe-area-inset-bottom,0px)]">
 			<header className="border-b border-border">
-				<div className="mx-auto flex max-w-[1400px] items-center gap-8 px-6 py-5 sm:px-10 lg:px-16">
+				{/* Top padding absorbs the notch inset — see Header.astro for the reasoning. */}
+				<div className="mx-auto flex max-w-[1400px] items-center gap-8 px-6 pt-[calc(1.25rem+env(safe-area-inset-top,0px))] pb-5 sm:px-10 lg:px-16">
 					<a href="/" className="wordmark shrink-0 text-lg" aria-label="Frunk, home">
 						FRUNK
 					</a>
