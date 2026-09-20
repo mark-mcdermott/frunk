@@ -2,6 +2,7 @@ import type { APIRoute } from 'astro';
 import { desc, eq } from 'drizzle-orm';
 import { getDb } from '../../../lib/server/db';
 import * as table from '../../../lib/server/db/schema';
+import { deleteManagedFiles } from '../../../lib/server/files';
 import { ownedNote, requireSession } from '../_lib/guard';
 import { handler, json, noContent, notFound, readJson } from '../_lib/http';
 import { updateNoteSchema } from '../_lib/schemas';
@@ -50,8 +51,13 @@ export const DELETE: APIRoute = (context) =>
 		const uuid = context.params.uuid;
 		if (!uuid) return notFound('Note not found');
 
-		await ownedNote(uuid, user.id);
+		const note = await ownedNote(uuid, user.id);
 		const db = getDb();
+
+		const children = await db
+			.select({ imageUrl: table.notes.imageUrl })
+			.from(table.notes)
+			.where(eq(table.notes.parentNoteId, uuid));
 
 		/*
 		 * `parent_note_id` references `notes.uuid` but carries no FK constraint, so
@@ -60,6 +66,7 @@ export const DELETE: APIRoute = (context) =>
 		 */
 		await db.delete(table.notes).where(eq(table.notes.parentNoteId, uuid));
 		await db.delete(table.notes).where(eq(table.notes.uuid, uuid));
+		await deleteManagedFiles([note.imageUrl, ...children.map((c) => c.imageUrl)]);
 
 		return noContent();
 	});
