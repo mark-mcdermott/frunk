@@ -66,7 +66,11 @@ export function NoteFormPage() {
 		enabled: editing && !cached
 	});
 
-	const existing = cached ?? fetched.data;
+	const existing = cached ?? fetched.data?.note;
+	/* A note lives on a vehicle OR a repair. The list cache only ever holds
+	   vehicle-attached rows, so `repairId` comes from the detail fetch or the URL. */
+	const repairId =
+		(existing && 'repairId' in existing ? existing.repairId : null) ?? params.get('repair');
 	useEffect(() => {
 		if (existing) {
 			setForm({
@@ -108,12 +112,15 @@ export function NoteFormPage() {
 						title: state.title.trim(),
 						body: state.body.trim() || null,
 						imageUrl: state.imageUrl,
-						vehicleId: state.vehicleId ?? undefined
+						vehicleId: state.vehicleId ?? undefined,
+						repairId: repairId ?? undefined
 					}),
 		onSuccess: () => {
 			client.invalidateQueries({ queryKey: keys.notes });
+			if (editing) client.invalidateQueries({ queryKey: keys.note(uuid as string) });
 			if (vehicleId) client.invalidateQueries({ queryKey: keys.vehicle(vehicleId) });
-			navigate(vehicleId ? `/vehicles/${vehicleId}` : '/notes');
+			if (repairId) client.invalidateQueries({ queryKey: keys.repair(repairId) });
+			navigate(repairId ? `/repairs/${repairId}` : vehicleId ? `/vehicles/${vehicleId}` : '/notes');
 		}
 	});
 
@@ -122,6 +129,7 @@ export function NoteFormPage() {
 		onSuccess: () => {
 			client.invalidateQueries({ queryKey: keys.notes });
 			if (vehicleId) client.invalidateQueries({ queryKey: keys.vehicle(vehicleId) });
+			if (repairId) client.invalidateQueries({ queryKey: keys.repair(repairId) });
 			navigate('/notes');
 		}
 	});
@@ -131,7 +139,8 @@ export function NoteFormPage() {
 
 		const found: Errors = {};
 		if (!form.title.trim()) found.title = 'Title is required';
-		if (!editing && !form.vehicleId) found.vehicleId = 'Choose which vehicle this note is about';
+		if (!editing && !form.vehicleId && !repairId)
+			found.vehicleId = 'Choose which vehicle this note is about';
 
 		setErrors(found);
 		if (Object.keys(found).length === 0) save.mutate(form);
@@ -174,7 +183,14 @@ export function NoteFormPage() {
 
 			<form onSubmit={submit} noValidate className="card mt-10 max-w-xl p-6 sm:p-8">
 				<div className="flex flex-col gap-5">
-					{editing ? (
+					{repairId ? (
+						<p className="text-[0.875rem] text-text-muted">
+							On{' '}
+							<Link to={`/repairs/${repairId}`} className="text-accent-bright">
+								this repair
+							</Link>
+						</p>
+					) : editing ? (
 						<p className="text-[0.875rem] text-text-muted">
 							On{' '}
 							{vehicleId ? (

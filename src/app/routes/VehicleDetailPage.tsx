@@ -166,7 +166,11 @@ function NoteCard({ note, onDelete }: { note: Note; onDelete: () => void }) {
 	return (
 		<article className="rounded-control border border-border bg-surface-raised p-4">
 			<div className="flex items-start justify-between gap-3">
-				<h3 className="text-[0.9375rem] font-semibold text-text">{note.title}</h3>
+				<h3 className="text-[0.9375rem] font-semibold text-text">
+					<Link to={`/notes/${note.uuid}`} className="transition-opacity hover:opacity-80">
+						{note.title}
+					</Link>
+				</h3>
 				<RowActions
 					label={note.title}
 					editTo={`/notes/${note.uuid}/edit`}
@@ -188,7 +192,11 @@ function RepairCard({ repair, onDelete }: { repair: Repair; onDelete: () => void
 	return (
 		<article className="rounded-control border border-border bg-surface-raised p-4">
 			<div className="flex items-start justify-between gap-3">
-				<h3 className="text-[0.9375rem] font-semibold text-text">{repair.description}</h3>
+				<h3 className="text-[0.9375rem] font-semibold text-text">
+					<Link to={`/repairs/${repair.id}`} className="transition-opacity hover:opacity-80">
+						{repair.description}
+					</Link>
+				</h3>
 				{repair.status === 'completed' && (
 					<span className="shrink-0 rounded-full bg-positive-bg px-2.5 py-1 text-[0.6875rem] font-medium text-positive">
 						Completed

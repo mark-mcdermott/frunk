@@ -824,8 +824,32 @@ at once: the applet finally has **sign out**, `RecoverySetup` is **reachable aga
   no applet theming — and **the shell's dead Theme button is gone** (it never did
   anything; the avatar, now a link to /profile, took its slot). Applet theming is an
   open item; `setTheme()` in `src/lib/theme.ts` still has no caller anywhere.
-- Still to build: the repair and note *detail* screens — and the per-route code
-  splitting Phase 4 also owns.
+**Landed 2026-09-20 — the repair and note detail screens, and per-route code
+splitting** (`feat/detail-screens`). Phase 4's build-out is complete; its checkpoint
+(the e2e layer) is what remains.
+
+- **The repair detail exists for repair-attached notes**, which surfaced nowhere else:
+  the notes index endpoint only joins vehicle-attached notes, so a receipt hung on a
+  repair was invisible. `+ Add Note` passes `?repair=<id>`; the note form shows "On
+  this repair" instead of a vehicle select and lands back on the repair.
+- **The note detail is where attachments actually render** — inline image or a
+  PDF chip, through the ownership-checked `/api/files/*` route. Everything else only
+  says "Has attachment".
+- **Two type lies fixed**: `getRepair`/`getNote` claimed the list shapes (vendor and
+  vehicle names joined in), but both endpoints return raw rows — the extra fields were
+  silently `undefined`. Screens now join names from the cached lists instead.
+- **Seed fix that matters for the production demo**: the seeded notes' `imageUrl`
+  points at `/documents/samples/*.svg`, legacy static assets the Astro app never got —
+  every demo attachment 404'd on dereference. The four sample documents are copied
+  into `public/`.
+- **Code splitting** (Decision 9's last piece): all 14 route components load via
+  `React.lazy` with a Suspense fallback inside the shell. Verified in the build output:
+  14 separate page chunks, the entry-path `AppRoot` chunk at ~12 KB.
+- Mock panels not built, because the data does not exist: the repair mock's separate
+  Attachments panel (a repair's attachments *are* its notes' files) and Repair History
+  (the vehicle's other repairs, already listed in full on the vehicle screen); the note
+  mock's "Created by" (single-user data). Child notes render read-only when legacy
+  data has them; nothing creates nested notes yet.
 - Rebuild the app screens in React against the mocks: vehicles index and detail, vendors,
   repairs, notes, galleries, maintenance schedules, user admin. Follow `docs/DESIGN.md`
   for every component.
