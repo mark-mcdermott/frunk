@@ -17,12 +17,11 @@ import { formatDate, formatTime } from '../format';
  * "1,247 documents" would look finished and mean nothing.
  */
 
-
 /** Label above, value bold, time muted beneath — the mock's right-aligned stacks. */
 function Stamp({ label, iso }: { label: string; iso: string }) {
 	return (
 		<div className="hidden sm:block">
-			<p className="text-[0.625rem] uppercase tracking-[0.12em] text-text-faint">{label}</p>
+			<p className="text-[0.625rem] tracking-[0.12em] text-text-faint uppercase">{label}</p>
 			<p className="mt-1 text-[0.8125rem] font-semibold text-text">{formatDate(iso)}</p>
 			<p className="text-[0.75rem] text-text-muted">{formatTime(iso)}</p>
 		</div>
@@ -98,7 +97,12 @@ export function VehiclesPage() {
 	const client = useQueryClient();
 	const [search, setSearch] = useState('');
 
-	const { data: vehicles, isPending, isError, error } = useQuery({
+	const {
+		data: vehicles,
+		isPending,
+		isError,
+		error
+	} = useQuery({
 		queryKey: keys.vehicles,
 		queryFn: listVehicles
 	});

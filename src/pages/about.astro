@@ -61,7 +61,9 @@ const testimonials = [
 					<div>
 						<p class="eyebrow">About Frunk</p>
 						<h1 class="display dot mt-6 text-[clamp(2.25rem,5vw,3.5rem)]">
-							Built from<br />something real
+							Built from
+							<br />
+							something real
 						</h1>
 						<p class="mt-8 max-w-md text-[0.9375rem] leading-relaxed text-text-muted">
 							Frunk started with a simple idea — your car has a story. Documents, memories, and
@@ -70,7 +72,9 @@ const testimonials = [
 						<div class="mt-10 flex items-start gap-3">
 							<User className="mt-0.5 size-4 shrink-0 text-accent-bright" aria-hidden="true" />
 							<p class="text-[0.8125rem] leading-relaxed text-text-faint">
-								Frunk is built by one person,<br />for people who care about their cars.
+								Frunk is built by one person,
+								<br />
+								for people who care about their cars.
 							</p>
 						</div>
 					</div>
@@ -84,16 +88,14 @@ const testimonials = [
 			<div class="mx-auto max-w-[1400px] px-6 pb-20 sm:px-10 lg:px-16 lg:pb-28">
 				<h2 class="sr-only">What Frunk stands for</h2>
 				<div class="card grid gap-px overflow-hidden bg-border md:grid-cols-3">
-					{
-						pillars.map((pillar) => (
-							<article class="flex flex-col gap-3 bg-surface p-6 lg:p-8">
-								<pillar.icon className="size-5 text-accent-bright" aria-hidden="true" />
-								<h3 class="display-sm text-lg">{pillar.title}</h3>
-								<p class="text-[0.9375rem] text-text">{pillar.lede}</p>
-								<p class="text-[0.8125rem] leading-relaxed text-text-muted">{pillar.body}</p>
-							</article>
-						))
-					}
+					{pillars.map((pillar) => (
+						<article class="flex flex-col gap-3 bg-surface p-6 lg:p-8">
+							<pillar.icon className="size-5 text-accent-bright" aria-hidden="true" />
+							<h3 class="display-sm text-lg">{pillar.title}</h3>
+							<p class="text-[0.9375rem] text-text">{pillar.lede}</p>
+							<p class="text-[0.8125rem] leading-relaxed text-text-muted">{pillar.body}</p>
+						</article>
+					))}
 				</div>
 			</div>
 		</section>
@@ -104,7 +106,9 @@ const testimonials = [
 					<div>
 						<p class="eyebrow">Our story</p>
 						<h2 class="display mt-6 text-[clamp(1.875rem,4vw,2.75rem)]">
-							Designed slowly.<br />Built with care.
+							Designed slowly.
+							<br />
+							Built with care.
 						</h2>
 						<p class="mt-8 max-w-md text-[0.9375rem] leading-relaxed text-text-muted">
 							Frunk isn't a fast product. It's something we're building deliberately — one feature
@@ -132,25 +136,23 @@ const testimonials = [
 						Trusted by people who value what matters.
 					</h2>
 					<div class="grid gap-6 md:grid-cols-3">
-						{
-							testimonials.map((testimonial) => (
-								<figure class="card flex flex-col gap-4 p-6">
-									<span aria-hidden="true" class="text-2xl leading-none text-accent-bright">
-										&ldquo;
-									</span>
-									<blockquote class="text-[0.9375rem] leading-relaxed text-text">
-										{testimonial.quote}
-									</blockquote>
-									<figcaption class="mt-auto flex items-center gap-3 pt-2">
-										<span
-											aria-hidden="true"
-											class="size-7 shrink-0 rounded-full border border-border bg-surface-raised"
-										/>
-										<span class="text-[0.8125rem] text-text-muted">{testimonial.name}</span>
-									</figcaption>
-								</figure>
-							))
-						}
+						{testimonials.map((testimonial) => (
+							<figure class="card flex flex-col gap-4 p-6">
+								<span aria-hidden="true" class="text-2xl leading-none text-accent-bright">
+									&ldquo;
+								</span>
+								<blockquote class="text-[0.9375rem] leading-relaxed text-text">
+									{testimonial.quote}
+								</blockquote>
+								<figcaption class="mt-auto flex items-center gap-3 pt-2">
+									<span
+										aria-hidden="true"
+										class="size-7 shrink-0 rounded-full border border-border bg-surface-raised"
+									/>
+									<span class="text-[0.8125rem] text-text-muted">{testimonial.name}</span>
+								</figcaption>
+							</figure>
+						))}
 					</div>
 				</div>
 			</div>
@@ -158,17 +160,16 @@ const testimonials = [
 
 		<section class="surface-dark">
 			<div class="mx-auto max-w-[1400px] px-6 pb-20 sm:px-10 lg:px-16 lg:pb-28">
-				<div
-					class="card relative isolate flex flex-col justify-center overflow-hidden px-8 py-14 sm:px-12 lg:px-16"
-				>
+				<div class="card relative isolate flex flex-col justify-center overflow-hidden px-8 py-14 sm:px-12 lg:px-16">
 					<div
 						aria-hidden="true"
 						class="absolute inset-y-0 left-0 -z-10 w-1/2 bg-[radial-gradient(ellipse_at_left,rgb(100_56_204/0.35),transparent_70%)]"
-					>
-					</div>
+					></div>
 					<div class="ml-auto max-w-md">
 						<h2 class="display dot text-[clamp(1.5rem,3vw,2rem)]">
-							Open a new kind<br />of glovebox
+							Open a new kind
+							<br />
+							of glovebox
 						</h2>
 						<p class="mt-4 text-[0.9375rem] text-text-muted">
 							Your car has a story. Keep it all in Frunk.

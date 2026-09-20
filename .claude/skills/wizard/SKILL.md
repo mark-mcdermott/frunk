@@ -16,6 +16,7 @@ Interactive setup wizard for new projects. Walks through each configuration opti
 ## Workflow
 
 ### 1. Welcome
+
 Print a brief one-line welcome: "Setting up project config. Press enter or pick defaults to go fast."
 
 ### 2. Ask All Config Questions
@@ -23,24 +24,29 @@ Print a brief one-line welcome: "Setting up project config. Press enter or pick 
 Use AskUserQuestion to ask **all 4 questions at once** (the tool supports up to 4 questions per call):
 
 **Question 1 — Stack**
+
 - Options: `open` (Recommended), `zendcats`
 - Header: "Stack"
 
 **Question 2 — Commit style**
+
 - Options: `gitmoji` (Recommended), `gitmoji-multiline`, `conventional`
 - Header: "Commits"
 
 **Question 3 — Permissions**
+
 - Options: `loose` (Recommended), `tight`
 - Header: "Permissions"
 
 **Question 4 — Auto-PR**
+
 - Options: `off` (Recommended), `on`
 - Header: "Auto-PR"
 
 ### 3. Apply Selections
 
 For each answer, invoke the corresponding skill with the selected value:
+
 1. `stack` with the chosen stack mode
 2. `commit-style` with the chosen style
 3. `permissions` with the chosen mode
@@ -51,6 +57,7 @@ Do not print verbose output for each — just apply them silently.
 ### 4. Print Confirmation
 
 Print a brief summary of what was configured:
+
 ```
 Config complete: stack={X}, commits={X}, permissions={X}, auto-pr={X}
 ```

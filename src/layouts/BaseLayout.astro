@@ -29,7 +29,7 @@ const canonical = new URL(Astro.url.pathname, Astro.site);
 		<meta property="og:url" content={canonical} />
 		<meta name="twitter:card" content="summary_large_image" />
 		<!-- Applied before first paint so the page never flashes the wrong ground. -->
-		<script is:inline set:html={THEME_BOOT_SCRIPT} />
+		<script is:inline set:html={THEME_BOOT_SCRIPT}></script>
 	</head>
 	<body>
 		<slot />

@@ -1,13 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Check, Pencil, Plus, Trash2, X } from 'lucide-react';
 import { useState, type SubmitEvent } from 'react';
-import {
-	createSchedule,
-	deleteSchedule,
-	keys,
-	updateSchedule,
-	type Schedule
-} from '../api';
+import { createSchedule, deleteSchedule, keys, updateSchedule, type Schedule } from '../api';
 import { TextField } from './Field';
 import { formatDate, formatMiles } from '../format';
 

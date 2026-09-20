@@ -59,6 +59,7 @@ Follow the same workflow as `/tdd` (choose test type, ensure framework, write te
 ### 3. After Completion
 
 Report to the user:
+
 - What was built and what test type was used
 - The worktree path
 - Remind them: "Run `/kw <branch-name>` when done to clean up the worktree."

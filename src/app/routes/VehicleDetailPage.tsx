@@ -17,14 +17,7 @@ import {
 } from 'lucide-react';
 import { useState, type ReactNode } from 'react';
 import { Link, useParams } from 'react-router';
-import {
-	deleteNote,
-	deleteRepair,
-	getVehicle,
-	keys,
-	type Note,
-	type Repair
-} from '../api';
+import { deleteNote, deleteRepair, getVehicle, keys, type Note, type Repair } from '../api';
 import { useCrumbs } from '../AppShell';
 import { GalleryEditor } from '../components/GalleryEditor';
 import { ScheduleEditor } from '../components/ScheduleEditor';
@@ -43,7 +36,6 @@ import { formatCost, formatMiles, formatNumericDate } from '../format';
  * Maintenance schedules and galleries are edited in place (`ScheduleEditor`,
  * `GalleryEditor`) — each is a small record attached to the vehicle already on screen.
  */
-
 
 function Panel({
 	icon,
@@ -84,7 +76,15 @@ function Panel({
 }
 
 /** Edit and delete, revealed on hover on a nested card. */
-function RowActions({ editTo, onDelete, label }: { editTo: string; onDelete: () => void; label: string }) {
+function RowActions({
+	editTo,
+	onDelete,
+	label
+}: {
+	editTo: string;
+	onDelete: () => void;
+	label: string;
+}) {
 	return (
 		<div className="flex shrink-0 items-center gap-2">
 			<Link
@@ -171,11 +171,7 @@ function NoteCard({ note, onDelete }: { note: Note; onDelete: () => void }) {
 						{note.title}
 					</Link>
 				</h3>
-				<RowActions
-					label={note.title}
-					editTo={`/notes/${note.uuid}/edit`}
-					onDelete={onDelete}
-				/>
+				<RowActions label={note.title} editTo={`/notes/${note.uuid}/edit`} onDelete={onDelete} />
 			</div>
 			{note.body && <p className="mt-2 text-[0.875rem] text-text-muted">{note.body}</p>}
 			{note.imageUrl && (
@@ -229,8 +225,6 @@ function RepairCard({ repair, onDelete }: { repair: Repair; onDelete: () => void
 		</article>
 	);
 }
-
-
 
 export function VehicleDetailPage() {
 	const { id = '' } = useParams();
@@ -304,7 +298,11 @@ export function VehicleDetailPage() {
 					)}
 
 					<div className="mt-6">
-						<SpecRow icon={<Calendar className="size-4" />} label="Year" value={String(vehicle.year)} />
+						<SpecRow
+							icon={<Calendar className="size-4" />}
+							label="Year"
+							value={String(vehicle.year)}
+						/>
 						<SpecRow
 							icon={<Car className="size-4" />}
 							label="Make & Model"

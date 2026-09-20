@@ -29,16 +29,16 @@ const { label, class: className, ratio = '16 / 10' } = Astro.props;
 	<div
 		aria-hidden="true"
 		class="absolute inset-0 bg-[radial-gradient(120%_90%_at_50%_120%,rgb(100_56_204_/_0.45)_0%,rgb(100_56_204_/_0.10)_45%,transparent_75%)]"
-	>
-	</div>
+	></div>
 	<div
 		aria-hidden="true"
 		class="absolute inset-x-[12%] bottom-[18%] h-px bg-[linear-gradient(90deg,transparent,rgb(152_144_248_/_0.9),transparent)]"
-	>
-	</div>
+	></div>
 	<span
 		aria-hidden="true"
 		class="eyebrow absolute bottom-4 left-4 text-text-faint"
-		style="letter-spacing: 0.18em;">{label}</span
+		style="letter-spacing: 0.18em;"
 	>
+		{label}
+	</span>
 </div>

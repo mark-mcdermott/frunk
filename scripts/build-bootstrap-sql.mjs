@@ -24,14 +24,12 @@ if (migrations.length === 0) {
 }
 
 const guard = (sql) =>
-	sql
-		.replace(/^CREATE TABLE "/gm, 'CREATE TABLE IF NOT EXISTS "')
-		.replace(
-			/^ALTER TABLE (.*) ADD CONSTRAINT (.*?);(?:--> statement-breakpoint)?$/gm,
-			// `$$` is the escape for a literal `$` in a replacement string, so a
-			// dollar-quoted block needs four of them to survive.
-			'DO $$$$ BEGIN ALTER TABLE $1 ADD CONSTRAINT $2; EXCEPTION WHEN duplicate_object THEN NULL; END $$$$;'
-		);
+	sql.replace(/^CREATE TABLE "/gm, 'CREATE TABLE IF NOT EXISTS "').replace(
+		/^ALTER TABLE (.*) ADD CONSTRAINT (.*?);(?:--> statement-breakpoint)?$/gm,
+		// `$$` is the escape for a literal `$` in a replacement string, so a
+		// dollar-quoted block needs four of them to survive.
+		'DO $$$$ BEGIN ALTER TABLE $1 ADD CONSTRAINT $2; EXCEPTION WHEN duplicate_object THEN NULL; END $$$$;'
+	);
 
 const header = `-- Frunk — one-shot database bootstrap.
 --

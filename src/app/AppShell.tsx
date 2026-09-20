@@ -183,7 +183,7 @@ export function AppShell({ children }: { children: ReactNode }) {
 				<Breadcrumbs trail={trail} />
 			</div>
 
-			<main className="mx-auto w-full max-w-[1400px] flex-1 px-6 pb-24 pt-6 sm:px-10 lg:px-16">
+			<main className="mx-auto w-full max-w-[1400px] flex-1 px-6 pt-6 pb-24 sm:px-10 lg:px-16">
 				<SetCrumbs.Provider value={set}>{children}</SetCrumbs.Provider>
 			</main>
 		</div>

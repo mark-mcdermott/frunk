@@ -32,7 +32,12 @@ export class DemoTemplateMissing extends Error {
  * already — is carried across without anyone remembering to come back here.
  */
 function reidentify<T extends { id: unknown }>(row: T, id: string, now: Date) {
-	const { id: _old, createdAt: _created, updatedAt: _updated, ...rest } = row as T & {
+	const {
+		id: _old,
+		createdAt: _created,
+		updatedAt: _updated,
+		...rest
+	} = row as T & {
 		createdAt?: Date;
 		updatedAt?: Date;
 	};
@@ -53,10 +58,7 @@ export async function cloneDemoAccount(userId: string): Promise<string> {
 	const db = getDb();
 	const now = new Date();
 
-	const [template] = await db
-		.select()
-		.from(table.user)
-		.where(eq(table.user.email, TEMPLATE_EMAIL));
+	const [template] = await db.select().from(table.user).where(eq(table.user.email, TEMPLATE_EMAIL));
 
 	if (!template) throw new DemoTemplateMissing();
 

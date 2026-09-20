@@ -39,7 +39,7 @@
 		--border-strong: rgb(255 255 255 / 0.16);
 		--text: #f2f4f8;
 		--text-muted: rgb(242 244 248 / 0.62);
-		--text-faint: rgb(242 244 248 / 0.40);
+		--text-faint: rgb(242 244 248 / 0.4);
 		--accent-text: var(--color-accent-bright);
 		--btn-primary-bg: var(--color-accent);
 		--btn-primary-text: #ffffff;
@@ -57,7 +57,7 @@
 		--surface: #f5f5f7;
 		--surface-raised: #ffffff;
 		--surface-elevated: #0c1019;
-		--border: rgb(11 15 24 / 0.10);
+		--border: rgb(11 15 24 / 0.1);
 		--border-strong: rgb(11 15 24 / 0.18);
 		--text: #0b0f18;
 		--text-muted: rgb(11 15 24 / 0.62);
@@ -66,9 +66,9 @@
 		--btn-primary-bg: #0c1019;
 		--btn-primary-text: #fefefe;
 		--positive: #047857;
-		--positive-bg: rgb(4 120 87 / 0.10);
+		--positive-bg: rgb(4 120 87 / 0.1);
 		--destructive: #b91c1c;
-		--destructive-bg: rgb(185 28 28 / 0.10);
+		--destructive-bg: rgb(185 28 28 / 0.1);
 		color-scheme: light;
 	}
 }

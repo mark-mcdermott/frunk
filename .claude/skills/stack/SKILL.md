@@ -30,6 +30,7 @@ Write `./CLAUDE.md` at the project root with the following content (adapt projec
 # Project
 
 ## Tech Stack (ZENDCATS)
+
 - **Framework**: Next.js (App Router)
 - **Language**: TypeScript (strict)
 - **Validation**: Zod — use for all schemas, form validation, API input/output
@@ -41,6 +42,7 @@ Write `./CLAUDE.md` at the project root with the following content (adapt projec
 - **Auth**: Hand-rolled (no third-party auth libraries)
 
 ## Conventions
+
 - Prefer server components; use `"use client"` only when needed
 - Colocate related files: page, components, actions, schemas in the same route folder
 - Zod schemas are the single source of truth — derive TypeScript types from them with `z.infer<>`
@@ -51,6 +53,7 @@ Write `./CLAUDE.md` at the project root with the following content (adapt projec
 - Imports use `@/` path alias for `src/`
 
 ## Commands
+
 - `npm run dev` — local dev server
 - `npm run build` — production build
 - `npm run lint` — ESLint
@@ -132,6 +135,7 @@ Write `./CLAUDE.md` at the project root:
 # Project
 
 ## Commands
+
 <!-- Fill in as the stack is decided -->
 ```
 
@@ -171,18 +175,22 @@ Reset to the full list of extensions:
 ## Workflow
 
 ### 1. Parse the Mode
+
 - If no mode given or mode is not `zendcats`/`open`, list the available modes and stop.
 
 ### 2. Check for Existing CLAUDE.md
+
 - If `./CLAUDE.md` exists, warn the user it will be overwritten and confirm before proceeding.
 
 ### 3. Apply the Stack
+
 - Write `./CLAUDE.md` with the appropriate content.
 - Rewrite `pre-commit-guard.sh` with the appropriate hook.
 - Update the extension list in `test-reminder.sh`.
 - Preserve the shebang and header comments in both hook files.
 
 ### 4. Confirm
+
 - Tell the user which stack was applied.
 - List what was changed (CLAUDE.md, pre-commit-guard.sh, test-reminder.sh).
 - For `zendcats`, remind them to run `npm install` if eslint/prettier aren't installed yet.

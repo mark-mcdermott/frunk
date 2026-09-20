@@ -85,57 +85,57 @@ function getNotesForVehicle(): typeof noteTemplates {
 // Vendor templates - Scranton area auto shops
 const vendorTemplates = [
 	{
-		name: "Vance Refrigeration Auto",
-		address: "1725 Slough Ave, Scranton, PA 18503",
-		phone: "(570) 555-0101",
-		website: "https://vancerefrigeration.com"
+		name: 'Vance Refrigeration Auto',
+		address: '1725 Slough Ave, Scranton, PA 18503',
+		phone: '(570) 555-0101',
+		website: 'https://vancerefrigeration.com'
 	},
 	{
-		name: "Schrute Farms Garage",
-		address: "1812 Rural Route 6, Honesdale, PA 18431",
-		phone: "(570) 555-0102",
+		name: 'Schrute Farms Garage',
+		address: '1812 Rural Route 6, Honesdale, PA 18431',
+		phone: '(570) 555-0102',
 		website: null
 	},
 	{
 		name: "Poor Richard's Auto",
-		address: "42 Main St, Scranton, PA 18503",
-		phone: "(570) 555-0103",
-		website: "https://poorrichardsauto.com"
+		address: '42 Main St, Scranton, PA 18503',
+		phone: '(570) 555-0103',
+		website: 'https://poorrichardsauto.com'
 	},
 	{
-		name: "Steamtown Auto Care",
-		address: "150 Lackawanna Ave, Scranton, PA 18503",
-		phone: "(570) 555-0104",
+		name: 'Steamtown Auto Care',
+		address: '150 Lackawanna Ave, Scranton, PA 18503',
+		phone: '(570) 555-0104',
 		website: null
 	},
 	{
 		name: "Alfredo's Auto Cafe",
-		address: "88 Pizza Lane, Scranton, PA 18503",
-		phone: "(570) 555-0105",
-		website: "https://alfredosauto.com"
+		address: '88 Pizza Lane, Scranton, PA 18503',
+		phone: '(570) 555-0105',
+		website: 'https://alfredosauto.com'
 	}
 ];
 
 // Repair templates with realistic costs (in cents) and descriptions
 const repairTemplates = [
-	{ description: "Oil change", cost: 4500, status: "completed" },
-	{ description: "Tire rotation", cost: 2500, status: "completed" },
-	{ description: "Brake pad replacement", cost: 35000, status: "completed" },
-	{ description: "Battery replacement", cost: 18000, status: "completed" },
-	{ description: "Air filter replacement", cost: 3500, status: "completed" },
-	{ description: "Transmission fluid change", cost: 15000, status: "completed" },
-	{ description: "Coolant flush", cost: 12000, status: "completed" },
-	{ description: "Spark plug replacement", cost: 20000, status: "completed" },
-	{ description: "Windshield wiper replacement", cost: 2500, status: "completed" },
-	{ description: "Alignment", cost: 8500, status: "completed" },
-	{ description: "AC recharge", cost: 15000, status: "completed" },
-	{ description: "Check engine light diagnosis", cost: 10000, status: "completed" },
-	{ description: "Timing belt replacement", cost: 65000, status: "completed" },
-	{ description: "Water pump replacement", cost: 45000, status: "completed" },
-	{ description: "Alternator replacement", cost: 55000, status: "completed" },
-	{ description: "Scheduled maintenance - 60k miles", cost: 45000, status: "scheduled" },
-	{ description: "State inspection", cost: 3500, status: "scheduled" },
-	{ description: "Suspension work", cost: 80000, status: "in_progress" }
+	{ description: 'Oil change', cost: 4500, status: 'completed' },
+	{ description: 'Tire rotation', cost: 2500, status: 'completed' },
+	{ description: 'Brake pad replacement', cost: 35000, status: 'completed' },
+	{ description: 'Battery replacement', cost: 18000, status: 'completed' },
+	{ description: 'Air filter replacement', cost: 3500, status: 'completed' },
+	{ description: 'Transmission fluid change', cost: 15000, status: 'completed' },
+	{ description: 'Coolant flush', cost: 12000, status: 'completed' },
+	{ description: 'Spark plug replacement', cost: 20000, status: 'completed' },
+	{ description: 'Windshield wiper replacement', cost: 2500, status: 'completed' },
+	{ description: 'Alignment', cost: 8500, status: 'completed' },
+	{ description: 'AC recharge', cost: 15000, status: 'completed' },
+	{ description: 'Check engine light diagnosis', cost: 10000, status: 'completed' },
+	{ description: 'Timing belt replacement', cost: 65000, status: 'completed' },
+	{ description: 'Water pump replacement', cost: 45000, status: 'completed' },
+	{ description: 'Alternator replacement', cost: 55000, status: 'completed' },
+	{ description: 'Scheduled maintenance - 60k miles', cost: 45000, status: 'scheduled' },
+	{ description: 'State inspection', cost: 3500, status: 'scheduled' },
+	{ description: 'Suspension work', cost: 80000, status: 'in_progress' }
 ];
 
 // Gallery templates with associated photos
@@ -152,9 +152,7 @@ const galleryTemplates = [
 	{
 		name: 'Interior',
 		description: 'Inside the cabin',
-		photos: [
-			{ filename: 'car-interior.jpg', caption: 'Dashboard and seats' }
-		]
+		photos: [{ filename: 'car-interior.jpg', caption: 'Dashboard and seats' }]
 	},
 	{
 		name: 'Details',
@@ -179,7 +177,8 @@ function getGalleriesForVehicle(): typeof galleryTemplates {
 function getRandomPastDate(): Date {
 	const now = new Date();
 	const twoYearsAgo = new Date(now.getFullYear() - 2, now.getMonth(), now.getDate());
-	const randomTime = twoYearsAgo.getTime() + Math.random() * (now.getTime() - twoYearsAgo.getTime());
+	const randomTime =
+		twoYearsAgo.getTime() + Math.random() * (now.getTime() - twoYearsAgo.getTime());
 	return new Date(randomTime);
 }
 
@@ -252,9 +251,7 @@ const officeCharacters = [
 		age: 33,
 		roles: [ROLE_IDS.USER],
 		avatar: `${AVATAR_BASE}/pam-beesly.png`,
-		vehicles: [
-			{ make: 'Toyota', model: 'Yaris', year: 2007, vin: 'JTDBT923071234567' }
-		]
+		vehicles: [{ make: 'Toyota', model: 'Yaris', year: 2007, vin: 'JTDBT923071234567' }]
 	},
 	{
 		username: 'andy.bernard@dundermifflin.com',
@@ -271,27 +268,21 @@ const officeCharacters = [
 		age: 40,
 		roles: [ROLE_IDS.USER],
 		avatar: `${AVATAR_BASE}/angela-martin.png`,
-		vehicles: [
-			{ make: 'Volkswagen', model: 'Jetta', year: 2005, vin: '3VWSE69M55M123456' }
-		]
+		vehicles: [{ make: 'Volkswagen', model: 'Jetta', year: 2005, vin: '3VWSE69M55M123456' }]
 	},
 	{
 		username: 'kevin.malone@dundermifflin.com',
 		age: 44,
 		roles: [ROLE_IDS.USER],
 		avatar: `${AVATAR_BASE}/kevin-malone.png`,
-		vehicles: [
-			{ make: 'Chevrolet', model: 'Monte Carlo', year: 1999, vin: '2G1WX12K7Y9234567' }
-		]
+		vehicles: [{ make: 'Chevrolet', model: 'Monte Carlo', year: 1999, vin: '2G1WX12K7Y9234567' }]
 	},
 	{
 		username: 'oscar.martinez@dundermifflin.com',
 		age: 41,
 		roles: [ROLE_IDS.USER],
 		avatar: `${AVATAR_BASE}/oscar-martinez.png`,
-		vehicles: [
-			{ make: 'Honda', model: 'Accord', year: 2008, vin: '1HGCP26878A123456' }
-		]
+		vehicles: [{ make: 'Honda', model: 'Accord', year: 2008, vin: '1HGCP26878A123456' }]
 	},
 	{
 		username: 'stanley.hudson@dundermifflin.com',
@@ -308,18 +299,14 @@ const officeCharacters = [
 		age: 52,
 		roles: [ROLE_IDS.USER],
 		avatar: `${AVATAR_BASE}/phyllis-vance.png`,
-		vehicles: [
-			{ make: 'Buick', model: 'LaCrosse', year: 2010, vin: '1G4GC5GC3AF123456' }
-		]
+		vehicles: [{ make: 'Buick', model: 'LaCrosse', year: 2010, vin: '1G4GC5GC3AF123456' }]
 	},
 	{
 		username: 'meredith.palmer@dundermifflin.com',
 		age: 48,
 		roles: [ROLE_IDS.USER],
 		avatar: `${AVATAR_BASE}/meredith-palmer.png`,
-		vehicles: [
-			{ make: 'Dodge', model: 'Neon', year: 2002, vin: '1B3ES56C42D654321' }
-		]
+		vehicles: [{ make: 'Dodge', model: 'Neon', year: 2002, vin: '1B3ES56C42D654321' }]
 	},
 	{
 		username: 'creed.bratton@dundermifflin.com',
@@ -338,45 +325,35 @@ const officeCharacters = [
 		age: 44,
 		roles: [ROLE_IDS.USER],
 		avatar: `${AVATAR_BASE}/toby-flenderson.png`,
-		vehicles: [
-			{ make: 'Honda', model: 'Civic', year: 2005, vin: '2HGES16505H567890' }
-		]
+		vehicles: [{ make: 'Honda', model: 'Civic', year: 2005, vin: '2HGES16505H567890' }]
 	},
 	{
 		username: 'kelly.kapoor@dundermifflin.com',
 		age: 29,
 		roles: [ROLE_IDS.USER],
 		avatar: `${AVATAR_BASE}/kelly-kapoor.png`,
-		vehicles: [
-			{ make: 'Volkswagen', model: 'Beetle', year: 2008, vin: '3VWRG3AG3AM123456' }
-		]
+		vehicles: [{ make: 'Volkswagen', model: 'Beetle', year: 2008, vin: '3VWRG3AG3AM123456' }]
 	},
 	{
 		username: 'ryan.howard@dundermifflin.com',
 		age: 30,
 		roles: [ROLE_IDS.USER],
 		avatar: `${AVATAR_BASE}/ryan-howard.png`,
-		vehicles: [
-			{ make: 'BMW', model: '3 Series', year: 2009, vin: 'WBAPH5C55BA654321' }
-		]
+		vehicles: [{ make: 'BMW', model: '3 Series', year: 2009, vin: 'WBAPH5C55BA654321' }]
 	},
 	{
 		username: 'darryl.philbin@dundermifflin.com',
 		age: 38,
 		roles: [ROLE_IDS.USER],
 		avatar: `${AVATAR_BASE}/darryl-philbin.png`,
-		vehicles: [
-			{ make: 'Ford', model: 'F-150', year: 2007, vin: '1FTPW14V87KD12345' }
-		]
+		vehicles: [{ make: 'Ford', model: 'F-150', year: 2007, vin: '1FTPW14V87KD12345' }]
 	},
 	{
 		username: 'erin.hannon@dundermifflin.com',
 		age: 26,
 		roles: [ROLE_IDS.USER],
 		avatar: `${AVATAR_BASE}/erin-hannon.png`,
-		vehicles: [
-			{ make: 'Kia', model: 'Rio', year: 2010, vin: 'KNADN4A39A6123456' }
-		]
+		vehicles: [{ make: 'Kia', model: 'Rio', year: 2010, vin: 'KNADN4A39A6123456' }]
 	}
 ];
 
@@ -385,7 +362,7 @@ async function seed() {
 
 	// Clear existing seed data (in reverse order of dependencies)
 	console.log('Clearing existing data...');
-	const usernames = officeCharacters.map(c => c.username);
+	const usernames = officeCharacters.map((c) => c.username);
 
 	// Get existing user UUIDs for these usernames
 	const existingUsers = await db
@@ -409,17 +386,20 @@ async function seed() {
 		const userUuid = crypto.randomUUID();
 
 		// Insert user
-		await db.insert(user).values({
-			id: userUuid,
-			// Better Auth requires `name`. The characters carry no separate display
-			// name, so the address's local part stands in.
-			name: character.username.split('@')[0] ?? character.username,
-			email: character.username,
-			age: character.age,
-			roles: character.roles,
-			image: character.avatar,
-			emailVerified: true
-		}).onConflictDoNothing();
+		await db
+			.insert(user)
+			.values({
+				id: userUuid,
+				// Better Auth requires `name`. The characters carry no separate display
+				// name, so the address's local part stands in.
+				name: character.username.split('@')[0] ?? character.username,
+				email: character.username,
+				age: character.age,
+				roles: character.roles,
+				image: character.avatar,
+				emailVerified: true
+			})
+			.onConflictDoNothing();
 
 		console.log(`Created user: ${character.username}`);
 
@@ -484,9 +464,8 @@ async function seed() {
 						: null;
 
 				// Use appropriate date based on status
-				const repairDate = repair.status === 'scheduled'
-					? getRandomFutureDate()
-					: getRandomPastDate();
+				const repairDate =
+					repair.status === 'scheduled' ? getRandomFutureDate() : getRandomPastDate();
 
 				await db.insert(repairs).values({
 					id: repairId,

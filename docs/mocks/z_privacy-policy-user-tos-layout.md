@@ -10,24 +10,24 @@
 
 ### PRIVACY POLICY
 
-1. Introduction  
-2. What We Collect  
-3. How We Use Data  
-4. Sharing & Disclosure  
-5. Security  
-6. Data Retention  
-7. Your Rights  
-8. Cookies  
-9. Third Parties  
-10. Changes  
-11. Contact  
+1. Introduction
+2. What We Collect
+3. How We Use Data
+4. Sharing & Disclosure
+5. Security
+6. Data Retention
+7. Your Rights
+8. Cookies
+9. Third Parties
+10. Changes
+11. Contact
 
 ---
 
 📄 Download PDF  
-Last updated May 17, 2024  
+Last updated May 17, 2024
 
-↻ Version history  
+↻ Version history
 
 ---
 
@@ -51,9 +51,9 @@ Frunk is built to store the things that matter—securely and privately. This po
 
 We collect only what’s necessary to provide the service:
 
-- Account information  
-- Documents and files you choose to store  
-- Basic usage data for reliability and performance  
+- Account information
+- Documents and files you choose to store
+- Basic usage data for reliability and performance
 
 ---
 
@@ -65,9 +65,9 @@ We collect only what’s necessary to provide the service:
 
 We use your data to:
 
-- Keep your documents organized and accessible  
-- Sync across devices  
-- Improve reliability and performance  
+- Keep your documents organized and accessible
+- Sync across devices
+- Improve reliability and performance
 
 ---
 
@@ -97,15 +97,15 @@ We retain your data only as long as necessary to provide the service.
 
 You have the right to:
 
-- Access your data  
-- Request deletion  
-- Export your information  
+- Access your data
+- Request deletion
+- Export your information
 
 ---
 
 ## Questions?
 
-We’re here to help.  
+We’re here to help.
 
 → Contact us
 
@@ -116,31 +116,31 @@ We’re here to help.
 **FRUNK.**
 
 Everything that matters.  
-Within reach.  
+Within reach.
 
 ---
 
 ### PRODUCT
 
-- Features  
-- Security  
-- Pricing  
+- Features
+- Security
+- Pricing
 
 ### COMPANY
 
-- About  
-- Blog  
-- Careers  
+- About
+- Blog
+- Careers
 
 ### SUPPORT
 
-- Help Center  
-- Contact Us  
-- Status  
+- Help Center
+- Contact Us
+- Status
 
 ### STAY IN THE LOOP
 
-Get updates on new features and everything Frunk.  
+Get updates on new features and everything Frunk.
 
 [ Enter your email ] →
 
@@ -153,4 +153,4 @@ No spam. Unsubscribe anytime.
 ✉️ Email  
 🟦 Bluesky  
 🐘 Mastodon  
-🐙 GitHub  
+🐙 GitHub

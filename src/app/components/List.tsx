@@ -27,7 +27,7 @@ export function SearchInput({
 			</label>
 			<Search
 				aria-hidden
-				className="pointer-events-none absolute left-4 top-1/2 size-4 -translate-y-1/2 text-text-faint"
+				className="pointer-events-none absolute top-1/2 left-4 size-4 -translate-y-1/2 text-text-faint"
 				strokeWidth={1.75}
 			/>
 			<input
@@ -36,7 +36,7 @@ export function SearchInput({
 				value={value}
 				placeholder={placeholder}
 				onChange={(event) => onChange(event.target.value)}
-				className="h-[2.875rem] w-full rounded-control border border-border bg-surface-raised pl-11 pr-4 text-[0.9375rem] text-text transition-colors placeholder:text-text-faint focus:border-accent focus:outline-none"
+				className="h-[2.875rem] w-full rounded-control border border-border bg-surface-raised pr-4 pl-11 text-[0.9375rem] text-text transition-colors placeholder:text-text-faint focus:border-accent focus:outline-none"
 			/>
 		</div>
 	);
@@ -102,15 +102,7 @@ export function ListCard({ children }: { children: ReactNode }) {
 	return <div className="card mt-6 overflow-hidden">{children}</div>;
 }
 
-export function ListEmpty({
-	icon,
-	title,
-	line
-}: {
-	icon: ReactNode;
-	title: string;
-	line: string;
-}) {
+export function ListEmpty({ icon, title, line }: { icon: ReactNode; title: string; line: string }) {
 	return (
 		<div className="flex flex-col items-center gap-3 px-6 py-16 text-center">
 			<span
