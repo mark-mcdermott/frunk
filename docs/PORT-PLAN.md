@@ -922,10 +922,10 @@ Playwright, chromium only, eight specs in ~20 s, wired into CI as its own job.
   **Lint arrived last** (`chore/lint`): there was no linter at all until then — ESLint and
   Prettier with the legacy app's style. The first run reformatted 87 files (one mechanical
   commit) and found 14 things, 7 of them one pattern: every form seeds its state from
-  the loaded row inside an effect (`react-hooks/set-state-in-effect`). Left as a
-  **warning** with a scheduled fix — a key-remounted form component initialised from
-  the row — to land after the journeys cover the vendor and repair _edit_ paths, which
-  they do not yet. The rest were real and fixed: a useless escape, a dead assignment,
+  the loaded row inside an effect (`react-hooks/set-state-in-effect`). ~~Left as a **warning** with a scheduled fix~~ **Landed 2026-09-20** (`refactor/keyed-forms`):
+  every form page is a loader rendering a form keyed on the row and seeded at mount, the
+  rule is an `error`, and the journeys now cover the vendor, repair and note _edit_ paths
+  (a seeded field is asserted before it is changed, which is what the refactor could break). The rest were real and fixed: a useless escape, a dead assignment,
   and the role checkboxes' label association. `.llm/` (untracked, gitignored) holds two
   Phase 3 scripts for the hand-rolled WebAuthn flow Better Auth replaced; ignored by
   both tools and safe to delete.

@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { ArrowLeft, Trash2 } from 'lucide-react';
-import { useEffect, useState, type SubmitEvent } from 'react';
+import { useState, type SubmitEvent } from 'react';
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router';
 import {
 	createNote,
@@ -38,23 +38,21 @@ interface FormState {
 
 type Errors = Partial<Record<'vehicleId' | 'title', string>>;
 
+type ExistingNote = NoteRow | Awaited<ReturnType<typeof getNote>>['note'];
+
+function toForm(note: ExistingNote): FormState {
+	return {
+		vehicleId: note.vehicleId,
+		title: note.title,
+		body: note.body ?? '',
+		imageUrl: note.imageUrl
+	};
+}
+
 export function NoteFormPage() {
 	const { uuid } = useParams();
 	const editing = Boolean(uuid);
-	const [params] = useSearchParams();
-	const navigate = useNavigate();
 	const client = useQueryClient();
-
-	const [form, setForm] = useState<FormState>(() => ({
-		vehicleId: params.get('vehicle'),
-		title: '',
-		body: '',
-		imageUrl: null
-	}));
-	const [errors, setErrors] = useState<Errors>({});
-	const [confirmingDelete, setConfirmingDelete] = useState(false);
-
-	const vehicles = useQuery({ queryKey: keys.vehicles, queryFn: listVehicles });
 
 	/* Arriving here almost always means passing through a list, so prefer the cache and
 	   fall back to the endpoint only on a cold deep link. */
@@ -67,20 +65,44 @@ export function NoteFormPage() {
 	});
 
 	const existing = cached ?? fetched.data?.note;
+
+	if (editing && !existing && fetched.isPending) {
+		return <p className="py-10 text-[0.9375rem] text-text-muted">Loading…</p>;
+	}
+
+	if (editing && !existing && fetched.isError) {
+		return (
+			<p role="alert" className="py-10 text-[0.9375rem] text-destructive">
+				{fetched.error instanceof Error ? fetched.error.message : 'Note not found'}
+			</p>
+		);
+	}
+
+	// Keyed on the row so the form is seeded from it at mount — see VendorFormPage.
+	return <NoteForm key={existing?.uuid ?? 'new'} existing={existing} />;
+}
+
+function NoteForm({ existing }: { existing: ExistingNote | undefined }) {
+	const { uuid } = useParams();
+	const editing = Boolean(uuid);
+	const [params] = useSearchParams();
+	const navigate = useNavigate();
+	const client = useQueryClient();
+
+	const [form, setForm] = useState<FormState>(() =>
+		existing
+			? toForm(existing)
+			: { vehicleId: params.get('vehicle'), title: '', body: '', imageUrl: null }
+	);
+	const [errors, setErrors] = useState<Errors>({});
+	const [confirmingDelete, setConfirmingDelete] = useState(false);
+
+	const vehicles = useQuery({ queryKey: keys.vehicles, queryFn: listVehicles });
+
 	/* A note lives on a vehicle OR a repair. The list cache only ever holds
 	   vehicle-attached rows, so `repairId` comes from the detail fetch or the URL. */
 	const repairId =
 		(existing && 'repairId' in existing ? existing.repairId : null) ?? params.get('repair');
-	useEffect(() => {
-		if (existing) {
-			setForm({
-				vehicleId: existing.vehicleId,
-				title: existing.title,
-				body: existing.body ?? '',
-				imageUrl: existing.imageUrl
-			});
-		}
-	}, [existing]);
 
 	const vehicleId = form.vehicleId;
 	const vehicle = vehicles.data?.find((v) => v.id === vehicleId);
@@ -144,18 +166,6 @@ export function NoteFormPage() {
 
 		setErrors(found);
 		if (Object.keys(found).length === 0) save.mutate(form);
-	}
-
-	if (editing && !existing && fetched.isPending) {
-		return <p className="py-10 text-[0.9375rem] text-text-muted">Loading…</p>;
-	}
-
-	if (editing && !existing && fetched.isError) {
-		return (
-			<p role="alert" className="py-10 text-[0.9375rem] text-destructive">
-				{fetched.error instanceof Error ? fetched.error.message : 'Note not found'}
-			</p>
-		);
 	}
 
 	const busy = save.isPending || remove.isPending;

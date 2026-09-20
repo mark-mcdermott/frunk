@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { ArrowLeft, Trash2 } from 'lucide-react';
-import { useEffect, useState, type SubmitEvent } from 'react';
+import { useState, type SubmitEvent } from 'react';
 import { Link, useNavigate, useParams } from 'react-router';
 import { deleteUser, getUser, keys, updateUser } from '../api';
 import { useCrumbs } from '../AppShell';
@@ -35,19 +35,14 @@ const ROLE_OPTIONS = [
 	{ id: ROLE_IDS.DEMO, label: 'Demo', hint: 'A trial account, reaped after inactivity.' }
 ];
 
+type LoadedUser = NonNullable<Awaited<ReturnType<typeof getUser>>>;
+
 export function UserFormPage() {
 	const { id = '' } = useParams();
-	const navigate = useNavigate();
-	const client = useQueryClient();
 
 	const { data: sessionData } = useSession();
 	const sessionUser = sessionData?.user ? toSessionUser(sessionData.user) : null;
 	const editingSelf = sessionUser?.id === id;
-
-	const [name, setName] = useState('');
-	const [roles, setRoles] = useState<number[]>([]);
-	const [nameError, setNameError] = useState<string | null>(null);
-	const [confirmingDelete, setConfirmingDelete] = useState(false);
 
 	const {
 		data: user,
@@ -59,12 +54,31 @@ export function UserFormPage() {
 		queryFn: () => getUser(id)
 	});
 
-	useEffect(() => {
-		if (user) {
-			setName(user.name);
-			setRoles(user.roles);
-		}
-	}, [user]);
+	if (isPending) {
+		return <p className="py-10 text-[0.9375rem] text-text-muted">Loading…</p>;
+	}
+
+	if (isError || !user) {
+		return (
+			<p role="alert" className="py-10 text-[0.9375rem] text-destructive">
+				{error instanceof Error ? error.message : 'User not found'}
+			</p>
+		);
+	}
+
+	// Keyed on the row so the form is seeded from it at mount — see VendorFormPage.
+	return <UserForm key={user.id} user={user} editingSelf={editingSelf} />;
+}
+
+function UserForm({ user, editingSelf }: { user: LoadedUser; editingSelf: boolean }) {
+	const id = user.id;
+	const navigate = useNavigate();
+	const client = useQueryClient();
+
+	const [name, setName] = useState(user.name);
+	const [roles, setRoles] = useState<number[]>(user.roles);
+	const [nameError, setNameError] = useState<string | null>(null);
+	const [confirmingDelete, setConfirmingDelete] = useState(false);
 
 	useCrumbs([{ label: user ? user.name || user.email : 'User' }, { label: 'Edit' }]);
 
@@ -98,18 +112,6 @@ export function UserFormPage() {
 		}
 		setNameError(null);
 		save.mutate();
-	}
-
-	if (isPending) {
-		return <p className="py-10 text-[0.9375rem] text-text-muted">Loading…</p>;
-	}
-
-	if (isError || !user) {
-		return (
-			<p role="alert" className="py-10 text-[0.9375rem] text-destructive">
-				{error instanceof Error ? error.message : 'User not found'}
-			</p>
-		);
 	}
 
 	const busy = save.isPending || remove.isPending;

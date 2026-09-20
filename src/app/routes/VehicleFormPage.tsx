@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Trash2 } from 'lucide-react';
-import { useEffect, useState, type SubmitEvent } from 'react';
+import { useState, type SubmitEvent } from 'react';
 import { useNavigate, useParams } from 'react-router';
 import {
 	createVehicle,
@@ -145,12 +145,6 @@ function validate(form: FormState): Errors {
 export function VehicleFormPage() {
 	const { id } = useParams();
 	const editing = Boolean(id);
-	const navigate = useNavigate();
-	const client = useQueryClient();
-
-	const [form, setForm] = useState<FormState>(BLANK);
-	const [errors, setErrors] = useState<Errors>({});
-	const [confirmingDelete, setConfirmingDelete] = useState(false);
 
 	const existing = useQuery({
 		queryKey: keys.vehicle(id ?? ''),
@@ -158,10 +152,32 @@ export function VehicleFormPage() {
 		enabled: editing
 	});
 
+	if (editing && existing.isPending) {
+		return <p className="py-10 text-[0.9375rem] text-text-muted">Loading…</p>;
+	}
+
+	if (editing && existing.isError) {
+		return (
+			<p role="alert" className="py-10 text-[0.9375rem] text-destructive">
+				{existing.error instanceof Error ? existing.error.message : 'Vehicle not found'}
+			</p>
+		);
+	}
+
 	const loaded = existing.data?.vehicle;
-	useEffect(() => {
-		if (loaded) setForm(toForm(loaded));
-	}, [loaded]);
+	// Keyed on the row so the form is seeded from it at mount — see VendorFormPage.
+	return <VehicleForm key={loaded?.id ?? 'new'} loaded={loaded} />;
+}
+
+function VehicleForm({ loaded }: { loaded: Vehicle | undefined }) {
+	const { id } = useParams();
+	const editing = Boolean(id);
+	const navigate = useNavigate();
+	const client = useQueryClient();
+
+	const [form, setForm] = useState<FormState>(() => (loaded ? toForm(loaded) : BLANK));
+	const [errors, setErrors] = useState<Errors>({});
+	const [confirmingDelete, setConfirmingDelete] = useState(false);
 
 	const title = loaded
 		? loaded.nickname || `${loaded.year} ${loaded.make} ${loaded.model}`
@@ -201,18 +217,6 @@ export function VehicleFormPage() {
 		const found = validate(form);
 		setErrors(found);
 		if (Object.keys(found).length === 0) save.mutate(toPayload(form));
-	}
-
-	if (editing && existing.isPending) {
-		return <p className="py-10 text-[0.9375rem] text-text-muted">Loading…</p>;
-	}
-
-	if (editing && existing.isError) {
-		return (
-			<p role="alert" className="py-10 text-[0.9375rem] text-destructive">
-				{existing.error instanceof Error ? existing.error.message : 'Vehicle not found'}
-			</p>
-		);
 	}
 
 	const busy = save.isPending || remove.isPending;

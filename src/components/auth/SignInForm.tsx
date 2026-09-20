@@ -1,5 +1,5 @@
 import { KeyRound, Lock, Mail } from 'lucide-react';
-import { useEffect, useState, type SubmitEvent } from 'react';
+import { useState, type SubmitEvent } from 'react';
 import {
 	authErrorMessage,
 	browserSupportsWebAuthn,
@@ -60,9 +60,8 @@ export function SignInForm() {
 	const [token, setToken] = useState('');
 	const [pending, setPending] = useState(false);
 	const [error, setError] = useState<string | null>(null);
-	const [supported, setSupported] = useState(true);
-
-	useEffect(() => setSupported(browserSupportsWebAuthn()), []);
+	// The form is `client:only`, so the window exists at first render and this needs no effect.
+	const [supported] = useState(browserSupportsWebAuthn);
 
 	async function submit(event: SubmitEvent<HTMLFormElement>) {
 		event.preventDefault();

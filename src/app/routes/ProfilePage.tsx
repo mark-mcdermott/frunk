@@ -1,6 +1,6 @@
 import { useMutation } from '@tanstack/react-query';
 import { Camera, Check, KeyRound, LogOut, ShieldCheck, Trash2 } from 'lucide-react';
-import { useEffect, useRef, useState, type ReactNode, type SubmitEvent } from 'react';
+import { useRef, useState, type ReactNode, type SubmitEvent } from 'react';
 import { deleteUpload, deleteUser, uploadFile } from '../api';
 import { useCrumbs } from '../AppShell';
 import { TextField } from '../components/Field';
@@ -52,24 +52,37 @@ export function ProfilePage() {
 	const { data } = useSession();
 	const user = data?.user ? toSessionUser(data.user) : null;
 	const joined = (data?.user as { createdAt?: string | Date } | undefined)?.createdAt;
-	const demo = user ? isDemo(user.roles) : false;
+
+	if (!user) {
+		return <p className="py-10 text-[0.9375rem] text-text-muted">Loading…</p>;
+	}
+
+	// Keyed on the account so the body seeds its form state from the row it is given —
+	// the same pattern as the entity forms (see VendorFormPage).
+	return <ProfileBody key={user.id} user={user} joined={joined} />;
+}
+
+function ProfileBody({
+	user,
+	joined
+}: {
+	user: ReturnType<typeof toSessionUser>;
+	joined: string | Date | undefined;
+}) {
+	const demo = isDemo(user.roles);
 	/*
 	 * A converted account keeps the placeholder address the demo was minted with, and
 	 * it has no password — so recovery, which needs one, cannot be enrolled yet. Both
 	 * facts follow from the placeholder, which is the only trace conversion leaves.
 	 */
-	const placeholder = user ? hasPlaceholderEmail(user) : false;
+	const placeholder = hasPlaceholderEmail(user);
 	/* Set when *this* session did the converting, so the success message survives the
 	   role flip that the server-side hook applies the moment the passkey registers. */
 	const [converted, setConverted] = useState(false);
 
-	const [name, setName] = useState('');
+	const [name, setName] = useState(user.name);
 	const [nameError, setNameError] = useState<string | null>(null);
 	const [saved, setSaved] = useState(false);
-	useEffect(() => {
-		if (user && !name) setName(user.name);
-		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [user?.id]);
 
 	const avatarInput = useRef<HTMLInputElement>(null);
 	const [security, setSecurity] = useState<
@@ -91,7 +104,7 @@ export function ProfilePage() {
 
 	const saveAvatar = useMutation({
 		mutationFn: async (file: File) => {
-			const previous = user?.image ?? null;
+			const previous = user.image ?? null;
 			const uploaded = await uploadFile(file);
 			await updateProfile({ image: uploaded.url });
 			// Only after the new one is saved — a failed save must not orphan the old.
@@ -101,7 +114,7 @@ export function ProfilePage() {
 
 	const removeAvatar = useMutation({
 		mutationFn: async () => {
-			const previous = user?.image ?? null;
+			const previous = user.image ?? null;
 			await updateProfile({ image: null });
 			if (previous?.startsWith('/api/files/')) await deleteUpload(previous).catch(() => {});
 		}
@@ -117,16 +130,12 @@ export function ProfilePage() {
 	});
 
 	const removeAccount = useMutation({
-		mutationFn: () => deleteUser(user?.id ?? ''),
+		mutationFn: () => deleteUser(user.id),
 		onSuccess: () => {
 			// The server already ended the session; land on the marketing page signed out.
 			window.location.assign('/');
 		}
 	});
-
-	if (!user) {
-		return <p className="py-10 text-[0.9375rem] text-text-muted">Loading…</p>;
-	}
 
 	function submitName(event: SubmitEvent<HTMLFormElement>) {
 		event.preventDefault();
