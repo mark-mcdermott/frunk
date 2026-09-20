@@ -2,6 +2,7 @@ import type { APIRoute } from 'astro';
 import { eq } from 'drizzle-orm';
 import { getDb } from '../../../lib/server/db';
 import * as table from '../../../lib/server/db/schema';
+import { deleteManagedFiles } from '../../../lib/server/files';
 import { ownedPhoto, requireSession } from '../_lib/guard';
 import { handler, json, noContent, notFound, readJson } from '../_lib/http';
 import { updatePhotoSchema } from '../_lib/schemas';
@@ -32,8 +33,9 @@ export const DELETE: APIRoute = (context) =>
 		const id = context.params.id;
 		if (!id) return notFound('Photo not found');
 
-		await ownedPhoto(id, user.id);
+		const photo = await ownedPhoto(id, user.id);
 		await getDb().delete(table.vehiclePhotos).where(eq(table.vehiclePhotos.id, id));
+		await deleteManagedFiles([photo.imageUrl]);
 
 		return noContent();
 	});
