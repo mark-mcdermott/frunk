@@ -41,6 +41,9 @@ importers:
       '@tanstack/react-query':
         specifier: ^5.103.1
         version: 5.103.1(react@19.2.8)
+      '@vercel/analytics':
+        specifier: ^2.0.1
+        version: 2.0.1(react@19.2.8)
       '@vercel/blob':
         specifier: ^2.8.0
         version: 2.8.0
@@ -65,9 +68,6 @@ importers:
       nanostores:
         specifier: ^1.5.3
         version: 1.5.3
-      otplib:
-        specifier: ^13.5.0
-        version: 13.5.0
       pg:
         specifier: ^8.23.0
         version: 8.23.0
@@ -138,6 +138,9 @@ importers:
       globals:
         specifier: ^17.12.0
         version: 17.12.0
+      otplib:
+        specifier: ^13.5.0
+        version: 13.5.0
       prettier:
         specifier: ^3.9.8
         version: 3.9.8

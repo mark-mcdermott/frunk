@@ -4,6 +4,7 @@ import '@fontsource-variable/playfair-display/wght-italic.css';
 import '@fontsource-variable/plus-jakarta-sans';
 import '../styles/global.css';
 import { THEME_BOOT_SCRIPT } from '../lib/theme';
+import Analytics from '@vercel/analytics/astro';
 
 interface Props {
 	title: string;
@@ -30,6 +31,8 @@ const canonical = new URL(Astro.url.pathname, Astro.site);
 		<meta name="twitter:card" content="summary_large_image" />
 		<!-- Applied before first paint so the page never flashes the wrong ground. -->
 		<script is:inline set:html={THEME_BOOT_SCRIPT}></script>
+		<!-- Cookieless page views (PORT-PLAN Phase 5); a no-op outside Vercel. -->
+		<Analytics />
 	</head>
 	<body>
 		<slot />
