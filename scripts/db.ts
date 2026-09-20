@@ -22,7 +22,7 @@ export function scriptDb(): ScriptDb {
 	const url = process.env.DATABASE_URL;
 	if (!url) throw new Error('DATABASE_URL is not set');
 
-	let host = '';
+	let host: string;
 	try {
 		host = new URL(url).hostname;
 	} catch {

@@ -1,7 +1,7 @@
 # Port Plan: frunk → Astro + React islands on Vercel
 
 > **How to resume with cleared context:** tell a fresh session
-> *"Read `docs/PORT-PLAN.md` and execute it phase by phase."*
+> _"Read `docs/PORT-PLAN.md` and execute it phase by phase."_
 > Run it on a clean `main`. It is non-additive — do not start it mid-velocity.
 
 Modelled on `fullstack-wolfpack/docs/astro-merge-plan.md`, which is the proven playbook
@@ -20,13 +20,13 @@ marketing pages, the app as a `client:only` React island, `/api/*` as Astro endp
 deployed to Vercel.**
 
 **This is not the same shape of job as wolfpack's migration.** That one was
-*hosting/packaging* — its app was already React. frunk's is three changes at once:
+_hosting/packaging_ — its app was already React. frunk's is three changes at once:
 
-| | from | to |
-|---|---|---|
-| View layer | 60 `.svelte` components | React (a genuine rewrite) |
+|            | from                                                           | to                              |
+| ---------- | -------------------------------------------------------------- | ------------------------------- |
+| View layer | 60 `.svelte` components                                        | React (a genuine rewrite)       |
 | Data layer | 41 `+page.server.ts` load functions & 33 files of form actions | REST endpoints the applet calls |
-| Host | Cloudflare Pages, Workers R2 bindings | Vercel, Vercel Blob |
+| Host       | Cloudflare Pages, Workers R2 bindings                          | Vercel, Vercel Blob             |
 
 The redesign rides along. There are 30 mocks in `frunk-proj/branding/mock/` covering every
 screen, specified in `docs/DESIGN.md`. Since every component is being rewritten anyway,
@@ -49,16 +49,16 @@ Following wolfpack's governing principle: **draw the auth boundary at the API, n
 page.** Astro serves the same static HTML to everyone; the applet decides what to render
 client-side; every API handler checks the session itself. Astro never touches the session.
 
-| Surface | Rendering | Notes |
-|---|---|---|
-| Home, about, pricing, contact, legal, privacy | **Astro static** | SEO + instant paint, no JS |
-| Header / footer | **Astro** + tiny `client:only` user island | reads `/api/auth/me` via a nanostore |
-| Sign in / sign up | **Astro page** + React auth island | `client:only` — WebAuthn is browser JS |
-| Vehicles, vendors, repairs, notes, galleries, users | **`client:only` applet** | react-router owns navigation |
-| `/api/*` | **Astro endpoints** | one bundled Vercel function |
+| Surface                                             | Rendering                                  | Notes                                  |
+| --------------------------------------------------- | ------------------------------------------ | -------------------------------------- |
+| Home, about, pricing, contact, legal, privacy       | **Astro static**                           | SEO + instant paint, no JS             |
+| Header / footer                                     | **Astro** + tiny `client:only` user island | reads `/api/auth/me` via a nanostore   |
+| Sign in / sign up                                   | **Astro page** + React auth island         | `client:only` — WebAuthn is browser JS |
+| Vehicles, vendors, repairs, notes, galleries, users | **`client:only` applet**                   | react-router owns navigation           |
+| `/api/*`                                            | **Astro endpoints**                        | one bundled Vercel function            |
 
-**Island classification rule** (from wolfpack): *does a live browser runtime need to exist
-for this to render?* Yes → `client:only`. No → `client:load` / `client:visible`.
+**Island classification rule** (from wolfpack): _does a live browser runtime need to exist
+for this to render?_ Yes → `client:only`. No → `client:load` / `client:visible`.
 
 **Cross-island state is a nanostore, not React context** — each island is its own React
 root, so context cannot span them. This is the mechanism for "the auth island in the nav
@@ -76,8 +76,8 @@ talks to the app island."
    don't change it.
 
    **DNS — DECIDED 2026-09-02: move the nameservers to Vercel and accept the email
-   breakage.** The domain is registered at *Namecheap*, but its nameservers point at
-   *Cloudflare* (`zainab`/`valentin.ns.cloudflare.com`), so Cloudflare answers DNS today and
+   breakage.** The domain is registered at _Namecheap_, but its nameservers point at
+   _Cloudflare_ (`zainab`/`valentin.ns.cloudflare.com`), so Cloudflare answers DNS today and
    Namecheap's DNS UI is inert.
 
    Moving the nameservers takes **Cloudflare Email Routing** down with them:
@@ -96,27 +96,27 @@ talks to the app island."
 
    - ~~`hello@frunk.cloud` is now dead.~~ **Live again.** The forwarding was re-homed from
      Cloudflare Email Routing to **Namecheap Email Forwarding** — Advanced DNS → Mail
-     Settings → *Email Forwarding* provisions the apex MX and SPF, and the alias itself is
-     mapped on the **Domain** tab under *Redirect Email* (`hello` → the owner's address),
+     Settings → _Email Forwarding_ provisions the apex MX and SPF, and the alias itself is
+     mapped on the **Domain** tab under _Redirect Email_ (`hello` → the owner's address),
      which is a separate screen and easy to miss. The address is safe to keep on the privacy
      page, in the footer `mailto:`, and as Phase 5's contact-form destination.
    - ~~Confirm both hostnames resolve to Vercel and the certificate issued.~~ Done — apex is
      canonical and serves, `www` 308-redirects to it, both over valid TLS.
 
    **The apex MX is the contended record.** Namecheap's forwarding claims it. So does
-   Resend's optional *Enable Receiving*, which warns about exactly this — enabling it would
+   Resend's optional _Enable Receiving_, which warns about exactly this — enabling it would
    replace the forwarding MX and kill `hello@`. Frunk never needs inbound mail
    programmatically, so **leave Resend receiving off**; sending is all that is required, and
    it lives on `send.frunk.cloud` where it cannot collide.
 
    Final shape:
 
-   | role | records | owner |
-   |---|---|---|
-   | Sending | `resend._domainkey` TXT, `send`/`rsend` CNAME | Resend |
-   | Receiving | apex MX ×5, apex SPF | Namecheap forwarding |
-   | Policy | `_dmarc` TXT (`p=none`) | — |
-   | Web | apex + `www` → Vercel | Vercel |
+   | role      | records                                       | owner                |
+   | --------- | --------------------------------------------- | -------------------- |
+   | Sending   | `resend._domainkey` TXT, `send`/`rsend` CNAME | Resend               |
+   | Receiving | apex MX ×5, apex SPF                          | Namecheap forwarding |
+   | Policy    | `_dmarc` TXT (`p=none`)                       | —                    |
+   | Web       | apex + `www` → Vercel                         | Vercel               |
 
    No `rua=` on the DMARC record, so no aggregate reports arrive — add one before tightening
    past `p=none`, since those reports are the evidence that tightening is safe.
@@ -125,9 +125,10 @@ talks to the app island."
    and no DMARC. Superseded in detail by the Resend item in Phase 6; the short version is
    that nothing can send as `noreply@frunk.cloud` until the domain is verified with a
    provider, and Decision 2 makes that a prerequisite for registration working at all.
-2. **Auth — DECIDED: Better Auth.** *(Revised 2026-09-17. Supersedes "passkeys + TOTP
+
+2. **Auth — DECIDED: Better Auth.** _(Revised 2026-09-17. Supersedes "passkeys + TOTP
    ported from wolfpack", which was **built and locally verified** in Phase 3 before this
-   reversal. Reopens Phase 3.)*
+   reversal. Reopens Phase 3.)_
 
    `better-auth` — MIT, self-hosted, a library rather than a service, so no tier and no
    per-MAU cost. Passkeys via `@better-auth/passkey`, TOTP via the bundled
@@ -166,15 +167,15 @@ talks to the app island."
 
    Three ways to reconcile were weighed:
 
-   | | what it does | cost |
-   |---|---|---|
-   | **A — adopt `user.id`** *(chosen)* | retarget every FK from `user.uuid` to `user.id`, rename `userUuid` → `userId` | large mechanical diff, one time |
-   | B — map onto existing tables | tell the Drizzle adapter `id`→`uuid`, `email`→`username` | permanent friction: `emailVerified` is `integer` where it wants `boolean`, PK is `serial` where it wants text; every future plugin re-checked against the mapping |
-   | C — two user tables, linked | Better Auth keeps its own; a join links them | two answers to "who is this person", forever |
+   |                                    | what it does                                                                  | cost                                                                                                                                                              |
+   | ---------------------------------- | ----------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+   | **A — adopt `user.id`** _(chosen)_ | retarget every FK from `user.uuid` to `user.id`, rename `userUuid` → `userId` | large mechanical diff, one time                                                                                                                                   |
+   | B — map onto existing tables       | tell the Drizzle adapter `id`→`uuid`, `email`→`username`                      | permanent friction: `emailVerified` is `integer` where it wants `boolean`, PK is `serial` where it wants text; every future plugin re-checked against the mapping |
+   | C — two user tables, linked        | Better Auth keeps its own; a join links them                                  | two answers to "who is this person", forever                                                                                                                      |
 
    A wins because the churn is mechanical rather than structural — both columns are `text`,
    so it is a retarget and a rename, not a data migration — and because it ends the existing
-   oddity of `user` carrying *two* identities (`id serial` **and** `uuid text`). There is no
+   oddity of `user` carrying _two_ identities (`id serial` **and** `uuid text`). There is no
    production data, which is the condition that makes it cheap; that condition will not
    recur.
 
@@ -187,14 +188,14 @@ talks to the app island."
 
    **Answered 2026-09-19** against Better Auth 1.7.5, running on a real database:
 
-   | carried-forward decision | outcome |
-   |---|---|
-   | account row written in `verify`, not `options` | **Moot.** Email+password has no two-step ceremony, and `addPasskey` requires an existing session — so there is no window in which an abandoned ceremony can strand an empty row. |
-   | challenges consumed on read | **Not verified.** Needs a real authenticator; `verification` was empty after every attempt, which is consistent with cleanup but does not prove replay is refused. **Still open.** |
-   | `RP_ID`/`RP_ORIGIN` derived from request when unset | **Preserved.** `getAuth()` caches one instance per origin rather than taking static config — see `server/auth/config.ts`. |
-   | unknown email answers 404 (deliberate oracle) | **Reversed, and better.** Sign-in returns an identical `Invalid email or password` for known and unknown addresses, and **sign-up with an existing address also returns 200** with a phantom id, creating nothing. Better Auth is anti-enumeration on both endpoints. The old reasoning — "registration must reject a taken email, so the fact is already discoverable" — no longer holds, because registration does not reject. |
-   | `totp/setup` refuses to overwrite working recovery | **Preserved — no guard needed.** Better Auth refuses with `TOTP_ALREADY_ENABLED` once a secret is *confirmed*, and replaces one that is not. That is exactly the old rule: `totpEnabled` stayed false until a code was produced, so a half-finished setup could be redone but a working one could not be clobbered. *(An earlier note here claimed a regression. That was a bad test — it enabled twice without ever confirming the first, so there was no working method to protect.)* |
-   | every `astro:env` var is `access: 'secret'` | Unaffected, kept. |
+   | carried-forward decision                            | outcome                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
+   | --------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+   | account row written in `verify`, not `options`      | **Moot.** Email+password has no two-step ceremony, and `addPasskey` requires an existing session — so there is no window in which an abandoned ceremony can strand an empty row.                                                                                                                                                                                                                                                                                                        |
+   | challenges consumed on read                         | **Not verified.** Needs a real authenticator; `verification` was empty after every attempt, which is consistent with cleanup but does not prove replay is refused. **Still open.**                                                                                                                                                                                                                                                                                                      |
+   | `RP_ID`/`RP_ORIGIN` derived from request when unset | **Preserved.** `getAuth()` caches one instance per origin rather than taking static config — see `server/auth/config.ts`.                                                                                                                                                                                                                                                                                                                                                               |
+   | unknown email answers 404 (deliberate oracle)       | **Reversed, and better.** Sign-in returns an identical `Invalid email or password` for known and unknown addresses, and **sign-up with an existing address also returns 200** with a phantom id, creating nothing. Better Auth is anti-enumeration on both endpoints. The old reasoning — "registration must reject a taken email, so the fact is already discoverable" — no longer holds, because registration does not reject.                                                        |
+   | `totp/setup` refuses to overwrite working recovery  | **Preserved — no guard needed.** Better Auth refuses with `TOTP_ALREADY_ENABLED` once a secret is _confirmed_, and replaces one that is not. That is exactly the old rule: `totpEnabled` stayed false until a code was produced, so a half-finished setup could be redone but a working one could not be clobbered. _(An earlier note here claimed a regression. That was a bad test — it enabled twice without ever confirming the first, so there was no working method to protect.)_ |
+   | every `astro:env` var is `access: 'secret'`         | Unaffected, kept.                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
 
    **And the encryption question is settled: Better Auth encrypts at rest.** The stored
    `two_factor.secret` is hex (`e4b8f6f9…`) while the otpauth URI carries base32
@@ -202,7 +203,7 @@ talks to the app island."
    is redundant** and `ENCRYPTION_KEY` loses its only caller.
 
    > ⚠️ **Confirmed 2026-09-19: `BETTER_AUTH_SECRET` is unrotatable.** The encryption key
-   > *is* derived from it. Tested by enabling TOTP under one secret, restarting the server
+   > _is_ derived from it. Tested by enabling TOTP under one secret, restarting the server
    > under another against the same database, and calling `get-totp-uri`: it fails inside
    > `rawDecrypt` (`better-auth/dist/crypto`) with a ChaCha error. Sign-in still succeeds,
    > because password hashes do not depend on it — so the loss is silent and total.
@@ -218,6 +219,7 @@ talks to the app island."
    - The same is true when the verification mail fails, since it is a background task
      (see `server/email.ts`). "Resend verification email" is on the sign-up screen for
      exactly this, but it cannot help someone who already has an account.
+
 3. **Component library — DECIDED: shadcn.** The earlier "no component library" call was
    made while the target was Svelte; on React, shadcn matches wolfpack and the S in every
    `_PROJECTS.md` stack acronym.
@@ -226,7 +228,7 @@ talks to the app island."
    nothing to share yet, and flat→monorepo later is a mechanical move, not a rewrite.
    The default layout also means every Astro doc applies verbatim and Vercel needs no
    root-directory configuration.
-5. **Demo — DECIDED: it is an account type, not a mode.** This is a *conversion feature*,
+5. **Demo — DECIDED: it is an account type, not a mode.** This is a _conversion feature_,
    not a technical convenience: a logged-out visitor must be able to click "Try the demo"
    and genuinely use the app — create, edit and delete — without signing up. frunk's
    commercial case depends on try-before-buy.
@@ -245,7 +247,7 @@ talks to the app island."
    - **A reaper.** Demo accounts accumulate, and with Blob uploads they accumulate storage.
      Scheduled job: delete `DEMO`-role users older than N days and their blobs.
    - **Upgrade in place.** Because a demo account is a real account, converting is just
-     *attaching a passkey to the account the visitor is already using*. No migration, no
+     _attaching a passkey to the account the visitor is already using_. No migration, no
      re-entry — they keep everything they made during the trial. Design the sign-up flow
      around this; it is the whole try-before-buy story and it falls out for free.
 
@@ -253,6 +255,7 @@ talks to the app island."
    users, 24 vehicles, plus vendors, repairs, notes, galleries and photos, all Office-themed.
    The schema is unchanged, so it carries over near-verbatim; only the password hashing is
    replaced with passkey credential seeding. Keep `scripts/seed-roles.ts` too.
+
 6. **Merch store — DECIDED: dropped for now.** Retiring the robot removes the entire
    product line (all 4 Printful products are robot apparel). Do not port checkout, the
    Stripe webhook, the merch pages, or `src/lib/data/products.ts`. Re-add once there is new
@@ -269,7 +272,7 @@ All eight settled. The plan is ready to execute.
 
 ---
 
-9. **Server-state cache — DECIDED: TanStack Query.** *(Added 2026-09-17.)* The plan had no
+9. **Server-state cache — DECIDED: TanStack Query.** _(Added 2026-09-17.)_ The plan had no
    answer for server state. Phase 4 mounts a `client:only` applet with react-router, which
    has none of SvelteKit's revalidation-on-navigation — so without Query it means
    hand-rolling fetch, cache and invalidation on every screen. It sits on top of the Phase 2
@@ -281,18 +284,18 @@ All eight settled. The plan is ready to execute.
    not sit in plaintext. Purge on sign-out, set a `maxAge`, allowlist via
    `dehydrateOptions`. Code-split per route so Phase 4 does not ship every screen upfront.
 
-10. **Stack name — NASDAQ-VCRZ.** *(Recorded 2026-09-17.)*
+10. **Stack name — NASDAQ-VCRZ.** _(Recorded 2026-09-17.)_
 
     **N**eon · **A**stro · **S**hadcn · **D**rizzle · **A**uth (Better) · **Q**uery
     (TanStack) · **V**ercel (Blob/Analytics) · **C**apacitor · **R**eact · **Z**od
 
     Rule: **every letter names a decision, not a default.** Node, TypeScript, Vite and
-    ESLint are therefore absent — Vite comes *with* Astro rather than being chosen beside it
+    ESLint are therefore absent — Vite comes _with_ Astro rather than being chosen beside it
     — which says nothing about whether they are used. Tauri is out by Decision 7 (restore the
     letter when that reverses); nanostores is out because Better Auth brings it either way.
     Recorded in `_PROJECTS.md`.
 
-11. **Testing — DECIDED: Vitest-weighted, Playwright for flows.** *(Added 2026-09-17.)*
+11. **Testing — DECIDED: Vitest-weighted, Playwright for flows.** _(Added 2026-09-17.)_
 
     `legacy/` still holds 7 Playwright suites (618 lines) asserting against SvelteKit markup;
     they do not survive. Principle: **push tests away from markup, because markup churns.**
@@ -304,7 +307,7 @@ All eight settled. The plan is ready to execute.
     never the row; own row → 200; `DEMO`-role session → isolated identically. That last case
     is not optional: Decision 5 rests demo safety entirely on `user_id` scoping.
 
-    **② Component tests — few.** Only components that *compute*: validation, date maths,
+    **② Component tests — few.** Only components that _compute_: validation, date maths,
     currency and VIN formatting. Not "does the card render the title".
 
     **③ E2E (Playwright) — four or five.** Cross-system flows only, never per-entity CRUD:
@@ -366,7 +369,7 @@ This replaces `vite dev` + SvelteKit's server routes.
 
 ### Outstanding manual setup (Mark)
 
-Phase 1 builds and passes locally; it cannot be *deployed* until these exist:
+Phase 1 builds and passes locally; it cannot be _deployed_ until these exist:
 
 1. Create the Vercel project against `mark-mcdermott/frunk`. Framework preset: **Astro**.
    Root directory: repository root (Decision 4 — no configuration needed).
@@ -453,12 +456,12 @@ SvelteKit dev port and `build/` output; Phase 6 re-points them at the Astro orig
 **Checkpoint — met.** `astro check` 0 errors, `astro build` passes, function count is **1**
 (`_render.func`), and `/` is still static HTML.
 
-*Unauthenticated calls are rejected* — all 18 routes answer 401 except `GET /api/auth/me`,
+_Unauthenticated calls are rejected_ — all 18 routes answer 401 except `GET /api/auth/me`,
 which is 200 with `{"user": null}` by design. A cross-origin mutating call is refused, an
 unknown method or path is 404, and 401 precedes 422 so an unauthenticated bad body does not
 leak the schema.
 
-*Reads and writes hit the database* — 31 assertions against a real Postgres 16, driven
+_Reads and writes hit the database_ — 31 assertions against a real Postgres 16, driven
 through the running endpoints with a real session cookie. Covered: CRUD on every entity;
 PATCH leaving omitted keys alone and an explicit `null` clearing a column; note nesting and
 child deletion; gallery reordering, including an id from another gallery being ignored
@@ -485,7 +488,7 @@ proxied), so this is Mark's to run — three ways to do it, two of them from a p
 its steps was `npx drizzle-kit push --force` against `secrets.DATABASE_URL`. That secret
 is the **legacy** database — it is what `db-backup.yml` dumps daily. So every push to the
 port branch ran a schema push, and once this branch gained a root `drizzle.config.ts`
-(commit `5cfd35b`), that push resolved against the *ported* schema.
+(commit `5cfd35b`), that push resolved against the _ported_ schema.
 
 Run [#94](https://github.com/mark-mcdermott/frunk/actions/runs/33701953738) applied exactly
 three statements, and nothing since (later runs report "No changes detected"):
@@ -524,7 +527,7 @@ database, no secrets. The lesson is already encoded in `db-migrate.yml` — a mi
 manual, uses its own `ASTRO_DATABASE_URL` secret, and refuses to run from `main`. **No
 workflow that runs automatically should hold a schema-push step.**
 
-## Phase 3 — Auth — **REOPENED 2026-09-17** *(was DONE 2026-09-03)*
+## Phase 3 — Auth — **REOPENED 2026-09-17** _(was DONE 2026-09-03)_
 
 > Decision 2 was reversed to Better Auth after this phase completed. **Everything below
 > describes work that was built and verified**, and is kept rather than deleted: the
@@ -548,10 +551,10 @@ workflow that runs automatically should hold a schema-push step.**
 > - Re-run the full local ceremony checklist below — it is a good checklist and it still
 >   applies. Then finally run it on a preview deploy, which was the one gap left in 2026-09-03.
 
-### What was built on 2026-09-03 *(superseded — kept for its reasoning)*
+### What was built on 2026-09-03 _(superseded — kept for its reasoning)_
 
 - ~~Port wolfpack's `api/auth/{register,login}/{options,verify}` and `totp/*`.~~ Done.
-  `_lib/session.ts` was already right: passkeys changed how a session is *established*,
+  `_lib/session.ts` was already right: passkeys changed how a session is _established_,
   not how it is represented, so the ceremonies just call `createSession`.
 - ~~Credential tables; drop `user.password_hash`.~~ Done — `credentials`,
   `webauthn_challenges`, `auth_rate_limits`, plus `totp_secret` / `totp_enabled` on
@@ -606,11 +609,11 @@ These three belong to this phase, not to Phase 6. `ENCRYPTION_KEY` in particular
 a cutover chore: `assertProductionSecrets` refuses any ceremony on an `https://` origin
 without it, which is what kept this phase's checkpoint from ever running on a deploy.
 
-| variable | targets | why |
-|---|---|---|
-| `ENCRYPTION_KEY` | **production + preview** | `assertProductionSecrets` fires on *any* https origin, and preview deploys are https. Setting it on production alone leaves previews unable to run a ceremony — the actual reason this checkpoint stalled. |
-| `RP_ID` | production only | `frunk.cloud` |
-| `RP_ORIGIN` | production only | `https://frunk.cloud` |
+| variable         | targets                  | why                                                                                                                                                                                                        |
+| ---------------- | ------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `ENCRYPTION_KEY` | **production + preview** | `assertProductionSecrets` fires on _any_ https origin, and preview deploys are https. Setting it on production alone leaves previews unable to run a ceremony — the actual reason this checkpoint stalled. |
+| `RP_ID`          | production only          | `frunk.cloud`                                                                                                                                                                                              |
+| `RP_ORIGIN`      | production only          | `https://frunk.cloud`                                                                                                                                                                                      |
 
 `RP_ID` / `RP_ORIGIN` stay **off** preview deliberately — `relyingParty()` derives them from
 the request there, and nothing static can cover Vercel's per-deploy preview hostnames.
@@ -618,7 +621,7 @@ the request there, and nothing static can cover Vercel's per-deploy preview host
 They are **config, not secrets** (the values appear in every page the site serves), so leave
 Vercel's Sensitive flag off. That is not pedantry: sensitive values cannot be read back, and
 `relying-party.ts` warns that a wrong value "does not fail loudly — it silently creates
-passkeys that can never sign in." Being able to *see* that it reads `frunk.cloud` and not
+passkeys that can never sign in." Being able to _see_ that it reads `frunk.cloud` and not
 `www.frunk.cloud` is worth more than secrecy that buys nothing. `ENCRYPTION_KEY` is the
 opposite on both counts: genuinely secret, so mark it sensitive.
 
@@ -640,7 +643,7 @@ opposite on both counts: genuinely secret, so mark it sensitive.
   `GET /api/auth/me` → `{"user":null}`, so the API layer and `astro:env` resolve correctly
   on the real origin.
 
-## Phase 4 — The applet
+## Phase 4 — The applet — **DONE 2026-09-20**
 
 **Landed 2026-09-19 — the foundation** (`feat/applet-foundation`): the island mounts, the
 shell is built to the mock, and two screens read real data through TanStack Query.
@@ -648,8 +651,7 @@ shell is built to the mock, and two screens read real data through TanStack Quer
 - ~~`src/pages/[...slug].astro`~~ **One catch-all per section** — `src/pages/vehicles/[...slug].astro`
   and `src/pages/vendors/[...slug].astro`, each `prerender = false` and mounting the same
   `<AppRoot client:only="react" />`. A single root catch-all would swallow every unmatched
-  URL in the site, so a typo'd marketing link would answer 200 with the applet instead of
-  404. Scoping costs one three-line file per section and keeps real 404s real. Verified:
+  URL in the site, so a typo'd marketing link would answer 200 with the applet instead of 404. Scoping costs one three-line file per section and keeps real 404s real. Verified:
   `/vehicles` 200, `/vendors` 200, `/nonexistent` 404.
 - **The island starts at the shell, not the page body.** The app header carries the
   route-dependent active-nav dot, a contextual primary action and the avatar — all three
@@ -657,7 +659,7 @@ shell is built to the mock, and two screens read real data through TanStack Quer
   across the boundary.
 - **One `QueryClient`, module-level.** Constructing it in the component body hands every
   render a fresh cache, which presents as "the data keeps refetching". `staleTime: 60_000`
-  — vehicle data changes when *you* change it.
+  — vehicle data changes when _you_ change it.
 - **`src/app/api.ts` is the applet's whole view of the API**: it unwraps the `{ vehicles: [] }`
   envelopes once, owns the query `keys` so a mutation cannot invalidate a key the list is
   not cached under, and redirects to `/signin` on a 401 rather than rendering an empty
@@ -671,7 +673,7 @@ and delete, verified in a browser and then at the database level (optionals stor
 
 - **shadcn is real now.** `button`, `input`, `label`, `select` are in `src/components/ui/`.
   Three things about the current generator were not obvious:
-  - The `base-nova` style is built on **Base UI, not Radix**, and `shadcn add` did *not*
+  - The `base-nova` style is built on **Base UI, not Radix**, and `shadcn add` did _not_
     install it — the components imported a package that was not there. `@base-ui/react`
     had to be added by hand.
   - It imports from a package literally named **`cn`** — which is shadcn's own
@@ -692,15 +694,15 @@ and delete, verified in a browser and then at the database level (optionals stor
   list; the column is free text), Engine is two fields (`engineSize` + `engineType`, joined
   for display), and Cover Image is absent (uploads are a Blob job and
   `BLOB_READ_WRITE_TOKEN` is not provisioned, so "Change Image" would do nothing).
-  Nickname and Current Mileage were *added* — the garage list renders both, and without
+  Nickname and Current Mileage were _added_ — the garage list renders both, and without
   them there was no way to set either.
 - The detail screen's panels are **read-only**: the mock's `+ Add Note` / `+ Add Repair`
   and the per-row edit/delete icons wait for those screens, on the same dead-link rule.
-**Landed 2026-09-19 — repairs and notes are full CRUD** (`feat/repairs-and-notes`): both
-index screens with counted filter chips and search, both forms, delete on each, the nav
-entries they were waiting for, and the `+ Add Note` / `+ Add Repair` buttons the vehicle
-detail screen has been missing. `?vehicle=<id>` preselects, so those buttons never ask
-which vehicle you meant.
+  **Landed 2026-09-19 — repairs and notes are full CRUD** (`feat/repairs-and-notes`): both
+  index screens with counted filter chips and search, both forms, delete on each, the nav
+  entries they were waiting for, and the `+ Add Note` / `+ Add Repair` buttons the vehicle
+  detail screen has been missing. `?vehicle=<id>` preselects, so those buttons never ask
+  which vehicle you meant.
 
 - **`src/app/format.ts` now owns every conversion.** Costs are cents, timestamps are ISO,
   and `<input type="date">` speaks `YYYY-MM-DD`; doing that arithmetic per screen is how
@@ -708,7 +710,7 @@ which vehicle you meant.
   in **UTC**, so an evening timestamp west of Greenwich shows the next day — verified
   against a 21:45 row, which the local-getter version reads correctly as the 15th.
 - **A date-only input must not rewrite a stored timestamp.** Sending the input back on
-  every save collapsed `21:45:30` to local midnight when only the *cost* had changed. The
+  every save collapsed `21:45:30` to local midnight when only the _cost_ had changed. The
   form now sends the original value whenever the calendar day is untouched.
 - **Three departures from `repair-edit.webp`:** Cost and Vendor are optional (the mock
   marks both required; the schema does not, and they genuinely are not); there is no Notes
@@ -723,8 +725,8 @@ which vehicle you meant.
 - **Neither index paginates**, though both mocks do. The endpoints have no cursor and
   return everything, so paging would be decoration over a full result set. It goes in with
   the endpoint's `LIMIT`.
-**Landed 2026-09-19 — vendors and maintenance schedules are full CRUD**
-(`feat/vendors-and-schedules`).
+  **Landed 2026-09-19 — vendors and maintenance schedules are full CRUD**
+  (`feat/vendors-and-schedules`).
 
 - **Vendors closed a dead end this port created**: the repair form's "Add a vendor" hint
   linked to a vendors screen that had no way to add one. The form validates that a
@@ -741,13 +743,13 @@ which vehicle you meant.
   attached to the vehicle already on screen, no identity of their own, no mock either
   way — `/vehicles/:id/schedules/new` is navigation the record does not earn. The form
   enforces `createScheduleSchema`'s refinement (at least one interval) client-side.
-**Landed 2026-09-19 — uploads on Vercel Blob, and galleries are full CRUD**
-(`feat/uploads-and-galleries`). The store is **`frunk-uploads`, private, iad1**, created
-and connected via `vercel blob create-store` (the dashboard-API route 403s for blob
-creation; the CLI from a linked repo is what works). An earlier unconnected attempt left
-an empty orphan store — **`frunk-files` (store_nfhGNM9xPPxInwlz), delete it interactively
-with `vercel blob delete-store store_nfhGNM9xPPxInwlz`** (the CLI refuses to do it
-non-interactively, correctly).
+  **Landed 2026-09-19 — uploads on Vercel Blob, and galleries are full CRUD**
+  (`feat/uploads-and-galleries`). The store is **`frunk-uploads`, private, iad1**, created
+  and connected via `vercel blob create-store` (the dashboard-API route 403s for blob
+  creation; the CLI from a linked repo is what works). An earlier unconnected attempt left
+  an empty orphan store — **`frunk-files` (store_nfhGNM9xPPxInwlz), delete it interactively
+  with `vercel blob delete-store store_nfhGNM9xPPxInwlz`** (the CLI refuses to do it
+  non-interactively, correctly).
 
 - **Private is the point.** The legacy R2 setup served documents from public `r2.dev`
   URLs — any leaked link world-readable forever. Here a blob is only reachable through
@@ -762,7 +764,7 @@ non-interactively, correctly).
   before the FK cascade erases the rows), note delete (children included), vehicle
   delete (cover + photos + note attachments), and a PATCH that replaces or clears the
   cover image deletes the old blob — verified against the live store each time.
-  Cleanup is best-effort *after* the rows are gone: a blob failure logs and leaves an
+  Cleanup is best-effort _after_ the rows are gone: a blob failure logs and leaves an
   orphan rather than failing the request.
 - **Known orphan case, accepted:** upload-then-abandon (a file picked in a form that is
   never saved). Bounded, invisible to users, reconcilable later by diffing the store
@@ -771,17 +773,17 @@ non-interactively, correctly).
   (upload on pick, preview, PDF chip); galleries get `GalleryEditor` on the vehicle
   panel — create/delete gallery, add/remove photos. Captions, drag-to-reorder
   (`photoOrder`) and gallery rename ride a later polish pass.
-**Landed 2026-09-19 — user admin** (`feat/user-admin`): the users table (the first
-**server-paginated** list — page/pageSize/search live in the query key,
-`keepPreviousData` holds the old page while the next loads) and the edit screen with
-role checkboxes. The nav entry is admin-gated as presentation only; the auth boundary
-stays at `requireAdmin`, and a non-admin who types /users gets the API's 403 rendered.
+  **Landed 2026-09-19 — user admin** (`feat/user-admin`): the users table (the first
+  **server-paginated** list — page/pageSize/search live in the query key,
+  `keepPreviousData` holds the old page while the next loads) and the edit screen with
+  role checkboxes. The nav entry is admin-gated as presentation only; the auth boundary
+  stays at `requireAdmin`, and a non-admin who types /users gets the API's 403 rendered.
 
 - **Two latent port bugs found under it**: `updateUserSchema` still carried `username`
-  and `avatar` — the *pre-rename* column names, so a PATCH with them targeted columns
+  and `avatar` — the _pre-rename_ column names, so a PATCH with them targeted columns
   that no longer exist (now `name`/`image`; email is deliberately not editable here —
   address changes belong to Better Auth's verified flow). And self-delete ran
-  Better Auth's `signOut` *after* deleting the user row, despite its own comment saying
+  Better Auth's `signOut` _after_ deleting the user row, despite its own comment saying
   it must run before — it survived only because the cascade had already destroyed the
   session and the stale cookie 401'd later anyway.
 - **One real applet bug found by the 403 path**: TanStack's default
@@ -796,15 +798,15 @@ stays at `requireAdmin`, and a non-admin who types /users gets the API's 403 ren
   (accounts are created by sign-up; a password-less admin-created account would bypass
   the only registration path), roles as checkboxes not a single dropdown (it is an
   array, and the mock's own index shows Admin+User on one row), and no avatar upload —
-  files serve from the *owner's* `u/<userId>/` prefix, so an admin-uploaded avatar
+  files serve from the _owner's_ `u/<userId>/` prefix, so an admin-uploaded avatar
   would 404 for the user it belongs to. Avatars come with the profile screen.
 - Deleting yourself is blocked on the admin screen (the API allows it — that is account
   deletion — but it belongs to the profile flow); removing your own admin role warns
   before you save.
-**Landed 2026-09-20 — the profile screen** (`feat/profile`), which pays off three debts
-at once: the applet finally has **sign out**, `RecoverySetup` is **reachable again**
-(sign-up offered it once; there was no second chance until now), and the demo→real
-**passkey conversion** (Decision 5) has a home a demo user can actually find.
+  **Landed 2026-09-20 — the profile screen** (`feat/profile`), which pays off three debts
+  at once: the applet finally has **sign out**, `RecoverySetup` is **reachable again**
+  (sign-up offered it once; there was no second chance until now), and the demo→real
+  **passkey conversion** (Decision 5) has a home a demo user can actually find.
 
 - **Name and avatar save through Better Auth's own `updateUser`**, not our PATCH — it
   refreshes the client session store, so the header chip updates the moment the save
@@ -824,9 +826,9 @@ at once: the applet finally has **sign out**, `RecoverySetup` is **reachable aga
   no applet theming — and **the shell's dead Theme button is gone** (it never did
   anything; the avatar, now a link to /profile, took its slot). Applet theming is an
   open item; `setTheme()` in `src/lib/theme.ts` still has no caller anywhere.
-**Landed 2026-09-20 — the repair and note detail screens, and per-route code
-splitting** (`feat/detail-screens`). Phase 4's build-out is complete; its checkpoint
-(the e2e layer) is what remains.
+  **Landed 2026-09-20 — the repair and note detail screens, and per-route code
+  splitting** (`feat/detail-screens`). Phase 4's build-out is complete; its checkpoint
+  (the e2e layer) is what remains.
 
 - **The repair detail exists for repair-attached notes**, which surfaced nowhere else:
   the notes index endpoint only joins vehicle-attached notes, so a receipt hung on a
@@ -846,7 +848,7 @@ splitting** (`feat/detail-screens`). Phase 4's build-out is complete; its checkp
   `React.lazy` with a Suspense fallback inside the shell. Verified in the build output:
   14 separate page chunks, the entry-path `AppRoot` chunk at ~12 KB.
 - Mock panels not built, because the data does not exist: the repair mock's separate
-  Attachments panel (a repair's attachments *are* its notes' files) and Repair History
+  Attachments panel (a repair's attachments _are_ its notes' files) and Repair History
   (the vehicle's other repairs, already listed in full on the vehicle screen); the note
   mock's "Created by" (single-user data). Child notes render read-only when legacy
   data has them; nothing creates nested notes yet.
@@ -890,12 +892,23 @@ Playwright, chromium only, eight specs in ~20 s, wired into CI as its own job.
   persister and per-route code splitting.
 - Re-establish tests per Decision 11 — the Vitest API suite first, since it is the safety
   net for everything else in this phase.
-- **Checkpoint:** full CRUD on every entity; deep links and client-side routing work;
-  uploads and deletes work; private documents are not publicly fetchable; revisiting a
-  screen serves from cache without refetching; the Playwright flows pass; `pnpm lint` green
-  and in CI.
+- **Checkpoint — met 2026-09-20:** full CRUD on every entity; deep links and client-side
+  routing work; uploads and deletes work; private documents are not publicly fetchable
+  (verified 401/404 over HTTP); revisiting a screen serves from cache; the Playwright
+  journeys pass in CI; `pnpm lint` green and in CI.
 
-## Phase 5 — Static surface
+  **Lint arrived last** (`chore/lint`): there was no linter at all until then — ESLint and
+  Prettier with the legacy app's style. The first run reformatted 87 files (one mechanical
+  commit) and found 14 things, 7 of them one pattern: every form seeds its state from
+  the loaded row inside an effect (`react-hooks/set-state-in-effect`). Left as a
+  **warning** with a scheduled fix — a key-remounted form component initialised from
+  the row — to land after the journeys cover the vendor and repair _edit_ paths, which
+  they do not yet. The rest were real and fixed: a useless escape, a dead assignment,
+  and the role checkboxes' label association. `.llm/` (untracked, gitignored) holds two
+  Phase 3 scripts for the hand-rolled WebAuthn flow Better Auth replaced; ignored by
+  both tools and safe to delete.
+
+## Phase 5 — Static surface — **mostly done; see status below**
 
 - Remaining marketing and legal pages as `.astro`, built to their mocks: about, pricing,
   contact, privacy, terms. `z_privacy-policy-user-tos-layout.md` specifies the legal layout
@@ -909,6 +922,7 @@ Playwright, chromium only, eight specs in ~20 s, wired into CI as its own job.
   Auth's `sendVerificationEmail` (Decision 2) — go through it, so the provider stays a
   contained change. That matters because the one real argument for SES is cost at volume,
   which is worth nothing at zero users and easy to revisit behind this seam.
+
 - No store — Decision 6. The duplicate Stripe webhook problem disappears with it.
 - **Vercel Web Analytics** (`@vercel/analytics`) — one `<Analytics />` in the layout,
   cookieless, so it adds no category to the consent flow. **Web surface only:** the beacon
@@ -918,6 +932,10 @@ Playwright, chromium only, eight specs in ~20 s, wired into CI as its own job.
   What it cannot answer is Decision 5's funnel (demo → create → convert). That needs
   event-based product analytics working on all three platforms, so an absolute endpoint plus
   an API key — PostHog, or `POST /api/events` into Neon. **Deferred; do not block Phase 5.**
+- **Status 2026-09-20:** `about`, `contact` (with `POST /api/contact` through Resend),
+  `privacy` and `terms` exist and are live. `pricing` exists but is disabled
+  (`_pricing.astro`) by decision until there is a price. **Vercel Analytics is not
+  installed.** The legal pages are live and **unreviewed** — review before real users.
 - **Checkpoint:** whole site navigable; view-source shows static HTML on every marketing
   page; contact form delivers.
 
@@ -932,14 +950,15 @@ Playwright, chromium only, eight specs in ~20 s, wired into CI as its own job.
   `STRIPE_*` and `PRINTFUL_API_KEY`, which Decision 6 dropped — those were deleted from the
   Vercel project on 2026-09-19, along with the `R2_*` vars that Vercel Blob replaces.
 
-  | variable | state |
-  |---|---|
-  | `DATABASE_URL` + Neon integration vars | ✅ set (preview + production) |
-  | `ENCRYPTION_KEY` | ✅ set — see Phase 3 |
-  | `RP_ID`, `RP_ORIGIN` | ✅ set (production only) |
-  | `RESEND_API_KEY` | ❌ **needed for Phase 5** — replaces SES |
-  | ~~SES: `SES_FROM_EMAIL`, `AWS_*`~~ | 🗑 delete from Vercel — superseded by Resend, and nothing ever read them |
-  | `BLOB_READ_WRITE_TOKEN` | ✅ set by connecting the `frunk-uploads` store (2026-09-19) |
+  | variable                               | state                                                                   |
+  | -------------------------------------- | ----------------------------------------------------------------------- |
+  | `DATABASE_URL` + Neon integration vars | ✅ set (preview + production)                                           |
+  | `ENCRYPTION_KEY`                       | ✅ set — see Phase 3                                                    |
+  | `RP_ID`, `RP_ORIGIN`                   | ✅ set (production only)                                                |
+  | `RESEND_API_KEY`                       | ❌ **needed for Phase 5** — replaces SES                                |
+  | ~~SES: `SES_FROM_EMAIL`, `AWS_*`~~     | 🗑 delete from Vercel — superseded by Resend, and nothing ever read them |
+  | `BLOB_READ_WRITE_TOKEN`                | ✅ set by connecting the `frunk-uploads` store (2026-09-19)             |
+
 - No production data to migrate (frunk never launched). Re-seed with `seed-office.ts`.
 - Re-point Capacitor at the new origin and verify a passkey ceremony inside the webview.
 - Desktop is out of scope (Decision 7) — no Tauri step.
@@ -963,6 +982,7 @@ Playwright, chromium only, eight specs in ~20 s, wired into CI as its own job.
   > **SES starts every account in sandbox**, able to send only to pre-verified addresses until
   > AWS grants production access on request. No amount of DNS fixes that, and it has a lead
   > time. Resend has no equivalent gate.
+
 - Schedule the demo-account reaper.
 - Retire the Cloudflare Pages project. Update `CLAUDE.md` and `_PROJECTS.md`.
 - **Checkpoint:** prod green on one origin; auth end-to-end; Capacitor build passes.
@@ -978,6 +998,7 @@ Playwright, chromium only, eight specs in ~20 s, wired into CI as its own job.
   And **`email.ts` is a template, not a copy** — its `sendContactEmail` body and HTML are
   worth keeping, but its SES transport is replaced by Resend, and `sendVerificationEmail`
   now belongs to Better Auth's hook rather than being called directly.
+
 - **Reference, don't copy:** wolfpack's `src/pages/api/_lib/*`, `AppRoot.tsx`,
   `[...slug].astro`, `lib/theme-boot.ts`.
 - **Rewrite:** all 60 `.svelte` components → React, to the mocks.

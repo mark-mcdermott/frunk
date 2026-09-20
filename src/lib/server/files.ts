@@ -41,7 +41,10 @@ function requireToken(): string {
 /** Basename only, conservative characters, bounded length — it ends up in a header. */
 function sanitizeFilename(name: string): string {
 	const base = name.split(/[\\/]/).pop() ?? 'file';
-	const clean = base.replace(/[^\w.\-]+/g, '_').replace(/^\.+/, '').slice(0, 100);
+	const clean = base
+		.replace(/[^\w.-]+/g, '_')
+		.replace(/^\.+/, '')
+		.slice(0, 100);
 	return clean || 'file';
 }
 
