@@ -200,11 +200,14 @@ export async function changeEmailAddress(newEmail: string): Promise<void> {
 }
 
 /**
- * Keeping a demo account (Decision 5). The passkey ceremony goes first, labelled with
- * the address being claimed, so a cancelled ceremony changes nothing — no half-kept
- * account holding an email hostage for the reaper to find. The name and address follow
- * once the credential exists; the server-side hook has already promoted the account by
- * then.
+ * Keeping a demo account (Decision 5). The address goes first: the placeholder is
+ * unverified, so `change-email` applies it at once, and the passkey plugin labels the
+ * credential with whatever the account's email is at that moment — Android's passkey
+ * sheet shows that label as its title, and a placeholder there would outlive the
+ * conversion. The ceremony follows, and if it is cancelled the address is handed back to
+ * a fresh placeholder, so an abandoned attempt neither keeps the demo nor holds the
+ * address for the reaper to find. The name comes last, once the credential exists and
+ * the server-side hook has promoted the account.
  */
 export async function keepDemoAccount({
 	email,
@@ -213,9 +216,19 @@ export async function keepDemoAccount({
 	email: string;
 	name: string;
 }): Promise<void> {
-	await registerPasskey(email);
-	await updateProfile({ name });
 	await changeEmailAddress(email);
+	try {
+		await registerPasskey(email);
+	} catch (cause) {
+		await changeEmailAddress(placeholderAddress()).catch(() => {});
+		throw cause;
+	}
+	await updateProfile({ name });
+}
+
+/** The shape the anonymous plugin mints, which `hasPlaceholderEmail` recognises. */
+function placeholderAddress(): string {
+	return `${crypto.randomUUID().replace(/-/g, '')}@anonymous.placeholder.invalid`;
 }
 
 export function authErrorMessage(cause: unknown): string {

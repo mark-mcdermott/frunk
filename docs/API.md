@@ -209,11 +209,12 @@ The caller's own credentials — what the session does not carry.
 | `GET`  | `/api/account`          | `{ hasPassword, passkeys }`.                                                                                                                                                                                                                                                                                                       |
 | `POST` | `/api/account/password` | `{ password }` (8–128 characters). Sets a password on an account that has none — a kept demo, or anyone who only ever used a passkey — through Better Auth's server-only `setPassword`. **204**; 409 if one exists (`change-password` is for that); **403 for a demo account**, which is kept by adding a passkey, not a password. |
 
-**Keeping a demo account** is three calls the profile makes in order: the passkey
-ceremony with `name` set to the address being claimed (so the credential is labelled with
-it), `update-user` for the name, then `change-email`. The ceremony goes first so that a
-cancelled one leaves the demo exactly as it was — no half-kept account holding an address
-for the reaper to find.
+**Keeping a demo account** is three calls the profile makes in order: `change-email` with
+the address being claimed (applied at once, since the placeholder is unverified), the
+passkey ceremony (the plugin labels the credential with the account's email at that
+moment, and Android's sheet shows that label as its title), then `update-user` for the
+name. A cancelled ceremony hands the address back to a fresh placeholder, so an abandoned
+attempt neither keeps the demo nor holds the address for the reaper to find.
 
 ### Contact
 
