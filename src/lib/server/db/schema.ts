@@ -4,7 +4,16 @@
  * Table and column names are unchanged so the port is a drop-in against the same
  * Postgres shape. Deviations are commented inline where they exist.
  */
-import { pgTable, boolean, integer, jsonb, serial, text, timestamp } from 'drizzle-orm/pg-core';
+import {
+	pgTable,
+	bigint,
+	boolean,
+	integer,
+	jsonb,
+	serial,
+	text,
+	timestamp
+} from 'drizzle-orm/pg-core';
 
 // Roles table - defines available roles and their mutual exclusivity
 export const roles = pgTable('roles', {
@@ -173,6 +182,20 @@ export type Passkey = typeof passkey.$inferSelect;
  * frunk send mail, and it uses this. Postgres rather than memory because serverless
  * instances do not share one.
  */
+/**
+ * Better Auth's own request limiter, with `rateLimit.storage: 'database'` in
+ * `auth/config.ts`. Its default store is memory, which on Vercel means one counter per
+ * function instance — a limit that resets whenever a new instance spins up. One row per
+ * client address and path (`10.0.0.5|/sign-in/email`); Better Auth creates, bumps and
+ * prunes them itself, and the field names are its defaults so nothing is mapped.
+ */
+export const rateLimit = pgTable('rate_limit', {
+	id: text('id').primaryKey(),
+	key: text('key').notNull().unique(),
+	count: integer('count').notNull(),
+	lastRequest: bigint('last_request', { mode: 'number' }).notNull()
+});
+
 export const authRateLimits = pgTable('auth_rate_limits', {
 	key: text('key').primaryKey(),
 	count: integer('count').notNull().default(0),
