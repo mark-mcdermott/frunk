@@ -1,32 +1,25 @@
 ---
-import { Picture } from 'astro:assets';
+import Render from './Render.astro';
 import render from '../assets/renders/front-storage.png';
 
 /**
- * The studio render every marketing page leads with: the open front trunk, lit from
- * inside in the accent violet (DESIGN.md §6). One source at 1400 × 960 — twice the
- * widest slot it fills — and Astro's image pipeline cuts the AVIF and WebP sizes at
- * build, with a JPEG fallback (the render has no transparency to keep).
- *
- * `eager` is for the one above the fold, the home hero; everything else lazy-loads.
+ * The render every marketing page leads with: the open front trunk, lit from inside
+ * in the accent violet. Its slot is about 700 px wide at the widest layout, so the
+ * 1400-px source is exactly the retina size.
  */
 interface Props {
 	eager?: boolean;
 	class?: string;
 }
 
-const { eager = false, class: className = '' } = Astro.props;
+const { eager = false, class: className } = Astro.props;
 ---
 
-<Picture
+<Render
 	src={render}
 	alt="A silver car with its front trunk open — a wallet, a key, a coin and a photograph inside, lit in violet"
 	widths={[560, 800, 1120, 1400]}
 	sizes="(min-width: 1024px) 704px, calc(100vw - 3rem)"
-	formats={['avif', 'webp']}
-	fallbackFormat="jpg"
-	loading={eager ? 'eager' : 'lazy'}
-	fetchpriority={eager ? 'high' : 'auto'}
-	decoding={eager ? 'sync' : 'async'}
-	class={`h-auto w-full rounded-[var(--radius-card)] border border-border ${className}`.trim()}
+	eager={eager}
+	class={className}
 />
