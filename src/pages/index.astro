@@ -3,6 +3,10 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 import Footer from '../components/Footer.astro';
 import FrontStorageRender from '../components/FrontStorageRender.astro';
 import MockImage from '../components/MockImage.astro';
+import Render from '../components/Render.astro';
+import pillarStructured from '../assets/renders/pillar-structured.png';
+import pillarPersonal from '../assets/renders/pillar-personal.png';
+import pillarProtected from '../assets/renders/pillar-protected.png';
 import { primaryNav } from '../lib/nav';
 import { UserNav } from '../components/auth/UserNav';
 import { Car, Cloud, Gauge, Heart, Lock, RefreshCw, Shield, Wrench } from 'lucide-react';
@@ -25,21 +29,27 @@ const pillars = [
 		kicker: 'Structured',
 		lines: ['Everything organized.', 'Always within reach.'],
 		note: ['Bank-level encryption', 'keeps everything secure.'],
-		Icon: Shield
+		Icon: Shield,
+		image: pillarStructured,
+		alt: 'The open front trunk holding three slate cards embossed with a shield, a car, a cloud and a document, lit in violet'
 	},
 	{
 		num: '02',
 		kicker: 'Personal',
 		lines: ['Your memories.', 'Your journey.', 'Your story.'],
 		note: ['The moments that move you,', 'kept close and protected.'],
-		Icon: Heart
+		Icon: Heart,
+		image: pillarPersonal,
+		alt: 'The open front trunk holding a leather journal embossed with a heart, a black-and-white photograph of two people, a coin and a key'
 	},
 	{
 		num: '03',
 		kicker: 'Protected',
 		lines: ['The essentials you need.', 'The items you value.'],
 		note: ['Everything important.', 'In its place.'],
-		Icon: Lock
+		Icon: Lock,
+		image: pillarProtected,
+		alt: 'The open front trunk holding a leather wallet embossed with a shield and a car key fob'
 	}
 ];
 
@@ -157,7 +167,12 @@ const personas = [
 								))}
 							</div>
 							<div class="px-6 py-6">
-								<MockImage label={pillar.kicker} ratio="4 / 3" />
+								<Render
+									src={pillar.image}
+									alt={pillar.alt}
+									widths={[360, 540, 720]}
+									sizes="(min-width: 1024px) 360px, calc(100vw - 3rem)"
+								/>
 							</div>
 							<div class="mt-auto flex items-start gap-3 border-t border-border px-6 py-5">
 								<pillar.Icon
