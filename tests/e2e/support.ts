@@ -69,7 +69,7 @@ export async function blobExists(url: string): Promise<boolean> {
 export async function attachVirtualAuthenticator(page: Page) {
 	const cdp = await page.context().newCDPSession(page);
 	await cdp.send('WebAuthn.enable');
-	await cdp.send('WebAuthn.addVirtualAuthenticator', {
+	const { authenticatorId } = await cdp.send('WebAuthn.addVirtualAuthenticator', {
 		options: {
 			protocol: 'ctap2',
 			transport: 'internal',
@@ -79,5 +79,5 @@ export async function attachVirtualAuthenticator(page: Page) {
 			automaticPresenceSimulation: true
 		}
 	});
-	return cdp;
+	return { cdp, authenticatorId };
 }

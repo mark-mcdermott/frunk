@@ -1089,11 +1089,16 @@ Playwright, chromium only, eight specs in ~20 s, wired into CI as its own job.
   contains DEMO **and** the account has no passkey **and** it is older than the window.
   Conversion — an `after` hook on `/passkey/verify-registration` in `config.ts` — flips
   the role to USER and clears `isAnonymous`, so a converted account never matches; the
-  no-passkey clause is the belt to that brace. Two gaps a converted account carries,
+  no-passkey clause is the belt to that brace. ~~Two gaps a converted account carries,
   deliberately left for a later account-settings pass: it keeps the placeholder address
-  (shown as "No email on file", never as an email) and it has no password, so TOTP
-  recovery cannot be enrolled — Better Auth's `setPassword` for credential-less users is
-  the eventual answer. The passkey journey asserts the whole conversion in Postgres.
+  and it has no password, so TOTP recovery cannot be enrolled.~~ **Closed 2026-09-21 (the
+  account-settings pass):** the keep step asks for an address and a name before the
+  passkey, the passkey is labelled with the address, `change-email` applies it at once
+  (the placeholder is unverified) and mails the verification link, and
+  `POST /api/account/password` sets a password on a kept account so recovery can be
+  enrolled. `tests/account.test.ts` walks a kept account through address, password,
+  verification, sign-in and recovery; the passkey journey reads the credential's label
+  back from the virtual authenticator and asserts the whole conversion in Postgres.
 - ~~Retire the Cloudflare Pages project.~~ **Done 2026-09-21** — deployments, custom
   domains and the project are gone; `frunk.cloud` is served by Vercel alone. ~~Update
   `CLAUDE.md` and `_PROJECTS.md`.~~ Both

@@ -78,6 +78,7 @@ export function TextField({
 	error,
 	type = 'text',
 	inputMode,
+	autoComplete,
 	placeholder,
 	prefix,
 	suffix
@@ -89,8 +90,9 @@ export function TextField({
 	optional?: boolean;
 	hint?: ReactNode;
 	error?: string;
-	type?: 'text' | 'number' | 'date';
+	type?: 'text' | 'number' | 'date' | 'email';
 	inputMode?: 'numeric' | 'decimal';
+	autoComplete?: string;
 	placeholder?: string;
 	/** Static adornments — the mock's `$` on cost and `mi` on mileage. */
 	prefix?: string;
@@ -111,6 +113,7 @@ export function TextField({
 					id={id}
 					type={type}
 					inputMode={inputMode}
+					autoComplete={autoComplete}
 					placeholder={placeholder}
 					value={value}
 					aria-invalid={error ? true : undefined}
