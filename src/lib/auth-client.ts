@@ -186,6 +186,38 @@ export async function updateProfile(body: { name?: string; image?: string | null
 	if (result?.error) throw new AuthError(result.error.message ?? 'Could not save your profile.');
 }
 
+/**
+ * Better Auth's `change-email`. On an unverified address (every demo's placeholder,
+ * and a sign-up that has not clicked its link yet) the change applies at once and the
+ * verification mail goes to the new address; on a verified one the old address stays
+ * until the new one is verified. The session store is told to refetch either way, so
+ * the profile shows the new address without a reload.
+ */
+export async function changeEmailAddress(newEmail: string): Promise<void> {
+	const result = await authClient.changeEmail({ newEmail, callbackURL: '/profile' });
+	if (result?.error) throw new AuthError(result.error.message ?? 'Could not change the address.');
+	authClient.$store.notify('$sessionSignal');
+}
+
+/**
+ * Keeping a demo account (Decision 5). The passkey ceremony goes first, labelled with
+ * the address being claimed, so a cancelled ceremony changes nothing — no half-kept
+ * account holding an email hostage for the reaper to find. The name and address follow
+ * once the credential exists; the server-side hook has already promoted the account by
+ * then.
+ */
+export async function keepDemoAccount({
+	email,
+	name
+}: {
+	email: string;
+	name: string;
+}): Promise<void> {
+	await registerPasskey(email);
+	await updateProfile({ name });
+	await changeEmailAddress(email);
+}
+
 export function authErrorMessage(cause: unknown): string {
 	if (cause instanceof AuthError) return cause.message;
 	if (cause instanceof Error && cause.name === 'NotAllowedError') {
