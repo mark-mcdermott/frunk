@@ -4,7 +4,7 @@ import Footer from '../components/Footer.astro';
 import MockImage from '../components/MockImage.astro';
 import { primaryNav } from '../lib/nav';
 import { UserNav } from '../components/auth/UserNav';
-import { Cloud, Heart, Lock, RefreshCw, Shield } from 'lucide-react';
+import { Car, Cloud, Gauge, Heart, Lock, RefreshCw, Shield, Wrench } from 'lucide-react';
 
 /**
  * Home — built to `docs/mocks/home.webp`.
@@ -49,25 +49,29 @@ const stats = [
 ];
 
 /*
- * Placeholder copy carried over from the mock. These are not real customers — replace
- * before the Phase 6 cutover. The mock's "FEATURED IN" press row is deliberately not
- * built: frunk has no coverage yet and real publication logos would misrepresent it.
+ * The mock fills this row with three testimonials and a "FEATURED IN" press strip.
+ * Neither is built: frunk has no customers to quote and no coverage to cite, and invented
+ * ones would misrepresent it. The cards keep the mock's rhythm with the people frunk is
+ * built for instead — scenarios, not endorsements.
  */
-const testimonials = [
+const personas = [
 	{
-		quote: ['Finally, a place for everything', 'that actually matters.', 'Frunk just works.'],
-		name: 'Alex R.',
-		role: 'Entrepreneur'
+		text: 'Registration, the insurance card, the last three oil changes and the receipt for the tyres. One tap, not a dig.',
+		label: 'The daily driver',
+		note: 'One car, everything about it',
+		Icon: Car
 	},
 	{
-		quote: ['Frunk gives me peace of mind', 'knowing my important things', 'are always with me.'],
-		name: 'Maya L.',
-		role: 'Photographer'
+		text: 'Every part sourced, every hour logged, every photo of the build in order. A restoration with a paper trail.',
+		label: 'The project car',
+		note: 'A build worth documenting',
+		Icon: Wrench
 	},
 	{
-		quote: ['Sleek, thoughtful, and', 'incredibly useful. I can’t imagine', 'going back.'],
-		name: 'Jordan T.',
-		role: 'Designer'
+		text: 'Service intervals that nudge before the dash light does, with the shop’s number and the last invoice beside them.',
+		label: 'The long commute',
+		note: 'High mileage, no surprises',
+		Icon: Gauge
 	}
 ];
 ---
@@ -227,44 +231,32 @@ const testimonials = [
 			</div>
 		</section>
 
-		<!-- Testimonials -->
+		<!-- Who it is for -->
 		<section class="surface-light">
 			<div class="mx-auto max-w-[1400px] px-6 py-20 sm:px-10 lg:px-16 lg:py-28">
 				<div class="grid gap-12 lg:grid-cols-[minmax(0,0.8fr)_minmax(0,2fr)] lg:gap-16">
 					<div>
-						<p class="eyebrow">Peace of mind</p>
+						<p class="eyebrow">Built for</p>
 						<h2 class="display dot mt-6 text-[clamp(2rem,4vw,2.75rem)]">
-							Trusted by people who value what matters
+							Made for the way people actually keep cars
 						</h2>
 					</div>
 
 					<ul class="grid gap-6 sm:grid-cols-3">
-						{testimonials.map((testimonial) => (
+						{personas.map((persona) => (
 							<li class="card flex flex-col p-6">
-								<span aria-hidden="true" class="display text-3xl text-accent-text">
-									&ldquo;
+								<span
+									aria-hidden="true"
+									class="grid size-9 place-items-center rounded-full bg-accent/15 text-accent-text"
+								>
+									<persona.Icon className="size-4" strokeWidth={1.75} />
 								</span>
-								<blockquote class="mt-3 text-[0.9375rem] leading-relaxed text-text">
-									{testimonial.quote.map((line, i) => (
-										<>
-											{i > 0 && <br />}
-											{line}
-										</>
-									))}
-								</blockquote>
+								<p class="mt-4 text-[0.9375rem] leading-relaxed text-text">{persona.text}</p>
 								<div class="mt-auto pt-8">
 									<div class="h-px w-10 bg-accent-text opacity-60" />
-									<div class="mt-5 flex items-center gap-3">
-										<span
-											aria-hidden="true"
-											class="grid size-8 shrink-0 place-items-center rounded-full bg-accent/15 text-xs font-semibold text-accent-text"
-										>
-											{testimonial.name.charAt(0)}
-										</span>
-										<div>
-											<p class="text-sm font-semibold text-text">{testimonial.name}</p>
-											<p class="text-xs text-text-muted">{testimonial.role}</p>
-										</div>
+									<div class="mt-5">
+										<p class="text-sm font-semibold text-text">{persona.label}</p>
+										<p class="text-xs text-text-muted">{persona.note}</p>
 									</div>
 								</div>
 							</li>
