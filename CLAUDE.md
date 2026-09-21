@@ -325,12 +325,11 @@ the semantic green and red).
 
 ## Known rough edges
 
-- **Photography is landing.** The front-storage render, the three pillar tiles and the
-  phone are in (`src/assets/renders/`, PNG sources at twice their slot, served through
-  `astro:assets` by `Render.astro` as AVIF and WebP with a JPEG fallback — PNG for the
-  phone, whose bezel corners are transparent). The closing compartment and the about
-  page's night shot still use `src/components/MockImage.astro`; the sources are sliced
-  from the PSD in `frunk-proj/branding/`, outside the repo.
+- **Photography.** Every render is in (`src/assets/renders/`, PNG sources at twice their
+  slot, served through `astro:assets` by `Render.astro` as AVIF and WebP with a JPEG
+  fallback — PNG for the phone, whose bezel corners are transparent). The sources are
+  sliced from the PSD in `frunk-proj/branding/`, outside the repo; `MockImage.astro`, the
+  placeholder that stood in for them, is gone.
 
 ## Roadmap
 
