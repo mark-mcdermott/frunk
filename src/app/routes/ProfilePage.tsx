@@ -1,12 +1,14 @@
-import { useMutation } from '@tanstack/react-query';
-import { Camera, Check, KeyRound, LogOut, ShieldCheck, Trash2 } from 'lucide-react';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { Camera, Check, KeyRound, LogOut, Mail, ShieldCheck, Trash2 } from 'lucide-react';
 import { useRef, useState, type ReactNode, type SubmitEvent } from 'react';
-import { deleteUpload, deleteUser, uploadFile } from '../api';
+import { deleteUpload, deleteUser, getAccount, keys, setAccountPassword, uploadFile } from '../api';
 import { useCrumbs } from '../AppShell';
 import { TextField } from '../components/Field';
 import { RecoverySetup } from '../../components/auth/RecoverySetup';
 import {
 	authErrorMessage,
+	changeEmailAddress,
+	keepDemoAccount,
 	registerPasskey,
 	signOut,
 	toSessionUser,
@@ -21,13 +23,14 @@ import { formatDate } from '../format';
  * The account screen, built to `docs/mocks/profile.webp` — collapsed from its
  * five-row menu into the sections that have something real behind them:
  *
- * - **Account**: name and avatar. Both save through Better Auth's own endpoint so the
- *   session store refreshes and the header avatar updates without a reload.
- * - **Security**: add a passkey; set up TOTP recovery. This is where `RecoverySetup`
- *   finally becomes reachable again — sign-up offers it once, and until now there was
- *   no second chance. Recovery needs the account password (Better Auth re-checks it
- *   before handing out a secret), so a demo account — which has none — sees the
- *   convert-by-passkey prompt instead (Decision 5).
+ * - **Account**: name, avatar and email. Name and avatar save through Better Auth's own
+ *   endpoint so the session store refreshes and the header updates without a reload;
+ *   the address goes through `change-email`, which verifies the new one by mail.
+ * - **Security**: add a passkey; set a password; set up TOTP recovery. Recovery needs
+ *   the password (Better Auth re-checks it before handing out a secret), so an account
+ *   without one — a converted demo, or anyone who only ever used a passkey — is offered
+ *   the password first. A demo account sees the keep step instead (Decision 5): an
+ *   address and a name, then the passkey that makes the account theirs.
  * - **Delete account** — the self-deletion the admin screen deliberately refuses.
  *
  * The mock's Notifications and Appearance rows have nothing behind them (no
@@ -45,6 +48,31 @@ function Section({ title, children }: { title: string; children: ReactNode }) {
 
 const SECONDARY_BUTTON =
 	'flex items-center gap-2 rounded-full border border-accent/50 px-4 py-2.5 text-[0.875rem] text-text transition-colors hover:bg-accent/10 disabled:opacity-60';
+const QUIET_BUTTON = 'text-[0.875rem] text-text-muted transition-colors hover:text-text';
+const INPUT =
+	'mt-2 h-[2.875rem] w-full rounded-control border border-border bg-surface-raised px-4 text-[0.9375rem] text-text focus:border-accent focus:outline-none';
+
+const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+/** Better Auth's default minimum; the server refuses shorter ones with a 422. */
+const MIN_PASSWORD = 8;
+
+function Positive({ children }: { children: ReactNode }) {
+	return (
+		<p className="flex items-center gap-2 text-[0.875rem] text-positive">
+			<ShieldCheck className="size-4 shrink-0" strokeWidth={1.75} aria-hidden />
+			<span>{children}</span>
+		</p>
+	);
+}
+
+function Failure({ error, fallback }: { error: unknown; fallback: string }) {
+	if (!error) return null;
+	return (
+		<p role="alert" className="mt-3 text-[0.875rem] text-destructive">
+			{error instanceof Error ? error.message : fallback}
+		</p>
+	);
+}
 
 export function ProfilePage() {
 	useCrumbs([{ label: 'Profile' }]);
@@ -69,12 +97,10 @@ function ProfileBody({
 	user: ReturnType<typeof toSessionUser>;
 	joined: string | Date | undefined;
 }) {
+	const client = useQueryClient();
 	const demo = isDemo(user.roles);
-	/*
-	 * A converted account keeps the placeholder address the demo was minted with, and
-	 * it has no password — so recovery, which needs one, cannot be enrolled yet. Both
-	 * facts follow from the placeholder, which is the only trace conversion leaves.
-	 */
+	/* An account that was kept before the keep step asked for an address still carries
+	   the placeholder the demo was minted with; it is never shown as an email. */
 	const placeholder = hasPlaceholderEmail(user);
 	/* Set when *this* session did the converting, so the success message survives the
 	   role flip that the server-side hook applies the moment the passkey registers. */
@@ -85,12 +111,11 @@ function ProfileBody({
 	const [saved, setSaved] = useState(false);
 
 	const avatarInput = useRef<HTMLInputElement>(null);
-	const [security, setSecurity] = useState<
-		'idle' | 'password' | 'recovery' | 'recovery-done' | 'passkey-added'
-	>('idle');
-	const [password, setPassword] = useState('');
-	const [securityError, setSecurityError] = useState<string | null>(null);
 	const [confirmingDelete, setConfirmingDelete] = useState(false);
+
+	// What the session does not carry: whether a password exists, and how many passkeys.
+	const account = useQuery({ queryKey: keys.account, queryFn: getAccount, enabled: !demo });
+	const refreshAccount = () => client.invalidateQueries({ queryKey: keys.account });
 
 	const saveName = useMutation({
 		mutationFn: async () => {
@@ -118,15 +143,6 @@ function ProfileBody({
 			await updateProfile({ image: null });
 			if (previous?.startsWith('/api/files/')) await deleteUpload(previous).catch(() => {});
 		}
-	});
-
-	const addPasskey = useMutation({
-		mutationFn: () => registerPasskey(),
-		onSuccess: () => {
-			if (demo) setConverted(true);
-			setSecurity('passkey-added');
-		},
-		onError: (cause) => setSecurityError(authErrorMessage(cause))
 	});
 
 	const removeAccount = useMutation({
@@ -236,18 +252,6 @@ function ProfileBody({
 							value={name}
 							onChange={setName}
 						/>
-						{!demo && !placeholder && (
-							<p className="text-[0.8125rem] text-text-muted">
-								Signed in as <span className="text-text">{user.email}</span>. Changing the address
-								needs a verified email flow, which is not built yet.
-							</p>
-						)}
-						{!demo && placeholder && (
-							<p className="text-[0.8125rem] text-text-muted">
-								This account started as a demo and has no email address yet. Adding one needs a
-								verified email flow, which is not built yet.
-							</p>
-						)}
 						<div className="flex items-center gap-3">
 							<button
 								type="submit"
@@ -262,151 +266,29 @@ function ProfileBody({
 								</span>
 							)}
 						</div>
-						{saveName.isError && (
-							<p role="alert" className="text-[0.875rem] text-destructive">
-								{saveName.error instanceof Error ? saveName.error.message : 'Could not save.'}
-							</p>
-						)}
+						<Failure error={saveName.error} fallback="Could not save." />
 					</form>
+
+					{!demo && <EmailSettings user={user} placeholder={placeholder} />}
 				</Section>
 
 				<Section title="Security">
 					{demo || converted ? (
-						converted ? (
-							<p className="flex items-center gap-2 text-[0.9375rem] text-positive">
-								<ShieldCheck className="size-5" strokeWidth={1.75} aria-hidden />
-								Passkey added — this account is yours now, data and all.
-							</p>
-						) : (
-							<div>
-								<p className="max-w-md text-[0.875rem] text-text-muted">
-									This is a demo account. Add a passkey and it becomes a real one — everything you
-									have added stays.
-								</p>
-								<button
-									type="button"
-									disabled={addPasskey.isPending}
-									onClick={() => addPasskey.mutate()}
-									className={`mt-4 ${SECONDARY_BUTTON}`}
-								>
-									<KeyRound className="size-4 text-accent-bright" strokeWidth={1.75} aria-hidden />
-									{addPasskey.isPending ? 'Waiting for your device…' : 'Add a passkey'}
-								</button>
-								{securityError && (
-									<p role="alert" className="mt-3 text-[0.875rem] text-destructive">
-										{securityError}
-									</p>
-								)}
-							</div>
-						)
+						<KeepAccount
+							user={user}
+							converted={converted}
+							onConverted={() => {
+								setConverted(true);
+								refreshAccount();
+							}}
+						/>
 					) : (
-						<div className="flex flex-col gap-5">
-							<div className="flex flex-wrap items-center gap-3">
-								<button
-									type="button"
-									disabled={addPasskey.isPending}
-									onClick={() => addPasskey.mutate()}
-									className={SECONDARY_BUTTON}
-								>
-									<KeyRound className="size-4 text-accent-bright" strokeWidth={1.75} aria-hidden />
-									{addPasskey.isPending ? 'Waiting for your device…' : 'Add a passkey'}
-								</button>
-								{security === 'passkey-added' && (
-									<span className="flex items-center gap-1.5 text-[0.875rem] text-positive">
-										<Check className="size-4" strokeWidth={2} aria-hidden /> Added
-									</span>
-								)}
-							</div>
-
-							{placeholder ? (
-								<p className="max-w-md text-[0.875rem] text-text-muted">
-									Recovery needs a password, and an account that started as a demo has none yet.
-									Setting one is coming with account settings — until then, keep a second passkey on
-									another device.
-								</p>
-							) : user.twoFactorEnabled || security === 'recovery-done' ? (
-								<p className="flex items-center gap-2 text-[0.875rem] text-positive">
-									<ShieldCheck className="size-4" strokeWidth={1.75} aria-hidden />
-									Recovery is set up — a lost device is not a lost account.
-								</p>
-							) : security === 'idle' ? (
-								<div>
-									<p className="max-w-md text-[0.875rem] text-text-muted">
-										A passkey lives on one device. Recovery is how you get back in after losing it.
-									</p>
-									<button
-										type="button"
-										onClick={() => setSecurity('password')}
-										className={`mt-3 ${SECONDARY_BUTTON}`}
-									>
-										<ShieldCheck
-											className="size-4 text-accent-bright"
-											strokeWidth={1.75}
-											aria-hidden
-										/>
-										Set up recovery
-									</button>
-								</div>
-							) : security === 'password' ? (
-								<form
-									onSubmit={(event) => {
-										event.preventDefault();
-										if (password) setSecurity('recovery');
-									}}
-									className="max-w-sm"
-								>
-									<label
-										htmlFor="confirm-password"
-										className="text-[0.8125rem] font-medium text-text"
-									>
-										Confirm your password to continue
-									</label>
-									<input
-										id="confirm-password"
-										type="password"
-										autoComplete="current-password"
-										value={password}
-										onChange={(event) => setPassword(event.target.value)}
-										className="mt-2 h-[2.875rem] w-full rounded-control border border-border bg-surface-raised px-4 text-[0.9375rem] text-text focus:border-accent focus:outline-none"
-									/>
-									<div className="mt-3 flex items-center gap-3">
-										<button type="submit" className="btn-primary">
-											Continue
-										</button>
-										<button
-											type="button"
-											onClick={() => {
-												setSecurity('idle');
-												setPassword('');
-											}}
-											className="text-[0.875rem] text-text-muted transition-colors hover:text-text"
-										>
-											Cancel
-										</button>
-									</div>
-								</form>
-							) : (
-								<div className="max-w-sm">
-									<RecoverySetup
-										password={password}
-										onDone={() => {
-											setSecurity('recovery-done');
-											setPassword('');
-										}}
-										onSkip={() => {
-											setSecurity('idle');
-											setPassword('');
-										}}
-									/>
-								</div>
-							)}
-
-							{securityError && (
-								<p role="alert" className="text-[0.875rem] text-destructive">
-									{securityError}
-								</p>
-							)}
-						</div>
+						<SecuritySettings
+							user={user}
+							placeholder={placeholder}
+							hasPassword={account.data?.hasPassword}
+							onPasswordSet={refreshAccount}
+						/>
 					)}
 				</Section>
 
@@ -445,13 +327,7 @@ function ProfileBody({
 									Cancel
 								</button>
 							</div>
-							{removeAccount.isError && (
-								<p role="alert" className="mt-3 text-[0.875rem] text-destructive">
-									{removeAccount.error instanceof Error
-										? removeAccount.error.message
-										: 'Could not delete the account.'}
-								</p>
-							)}
+							<Failure error={removeAccount.error} fallback="Could not delete the account." />
 						</div>
 					) : (
 						<button
@@ -466,5 +342,427 @@ function ProfileBody({
 				</Section>
 			</div>
 		</>
+	);
+}
+
+/**
+ * The address on a real account: shown with its verification state, and changeable.
+ * Because the placeholder a converted demo carries is never shown, "Add an email" and
+ * "Change email" are the same form with different words.
+ */
+function EmailSettings({
+	user,
+	placeholder
+}: {
+	user: ReturnType<typeof toSessionUser>;
+	placeholder: boolean;
+}) {
+	const [editing, setEditing] = useState(false);
+	const [draft, setDraft] = useState('');
+	const [error, setError] = useState<string | null>(null);
+	const [sentTo, setSentTo] = useState<string | null>(null);
+
+	const change = useMutation({
+		mutationFn: (email: string) => changeEmailAddress(email),
+		onSuccess: (_, email) => {
+			setSentTo(email);
+			setEditing(false);
+			setDraft('');
+		}
+	});
+
+	function submit(event: SubmitEvent<HTMLFormElement>) {
+		event.preventDefault();
+		const email = draft.trim().toLowerCase();
+		if (!EMAIL_PATTERN.test(email)) {
+			setError('Enter a valid email address');
+			return;
+		}
+		setError(null);
+		change.mutate(email);
+	}
+
+	return (
+		<div className="mt-6 max-w-sm">
+			<p className="text-[0.8125rem] font-medium text-text">Email</p>
+			{placeholder ? (
+				<p className="mt-1 text-[0.875rem] text-text-muted">
+					No email on file. This account started as a demo; add an address so recovery and account
+					mail have somewhere to go.
+				</p>
+			) : (
+				<p className="mt-1 text-[0.875rem] text-text-muted">
+					<span className="text-text">{user.email}</span>
+					{!user.emailVerified && ' — not verified yet; check your inbox for the link.'}
+				</p>
+			)}
+
+			{sentTo && (
+				<p className="mt-2 flex items-center gap-2 text-[0.875rem] text-positive">
+					<Mail className="size-4 shrink-0" strokeWidth={1.75} aria-hidden />
+					<span>
+						Check your inbox at <span className="font-medium">{sentTo}</span> for the confirmation
+						link.
+					</span>
+				</p>
+			)}
+
+			{editing ? (
+				<form onSubmit={submit} noValidate className="mt-3">
+					<label htmlFor="new-email" className="text-[0.8125rem] font-medium text-text">
+						New email address
+					</label>
+					<input
+						id="new-email"
+						type="email"
+						autoComplete="email"
+						value={draft}
+						onChange={(event) => setDraft(event.target.value)}
+						className={INPUT}
+					/>
+					{error && (
+						<p role="alert" className="mt-2 text-[0.8125rem] text-destructive">
+							{error}
+						</p>
+					)}
+					<div className="mt-3 flex items-center gap-3">
+						<button
+							type="submit"
+							disabled={change.isPending}
+							className="btn-primary disabled:opacity-60"
+						>
+							{change.isPending ? 'Sending…' : 'Send confirmation'}
+						</button>
+						<button
+							type="button"
+							onClick={() => {
+								setEditing(false);
+								setError(null);
+							}}
+							className={QUIET_BUTTON}
+						>
+							Cancel
+						</button>
+					</div>
+					<Failure error={change.error} fallback="Could not change the address." />
+				</form>
+			) : (
+				<button
+					type="button"
+					onClick={() => setEditing(true)}
+					className={`mt-3 ${SECONDARY_BUTTON}`}
+				>
+					<Mail className="size-4 text-accent-bright" strokeWidth={1.75} aria-hidden />
+					{placeholder ? 'Add an email' : 'Change email'}
+				</button>
+			)}
+		</div>
+	);
+}
+
+/**
+ * The keep step (Decision 5). A demo visitor who wants their garage to outlive the
+ * week gives an address and a name, and adds a passkey — the passkey is what makes the
+ * account theirs; the address is what the passkey is labelled with and where account
+ * mail goes. The ceremony runs first, so cancelling it leaves the demo exactly as it
+ * was.
+ */
+function KeepAccount({
+	user,
+	converted,
+	onConverted
+}: {
+	user: ReturnType<typeof toSessionUser>;
+	converted: boolean;
+	onConverted: () => void;
+}) {
+	const [email, setEmail] = useState('');
+	const [name, setName] = useState(user.name === 'Anonymous' ? '' : user.name);
+	const [errors, setErrors] = useState<{ email?: string; name?: string }>({});
+	const [keptAs, setKeptAs] = useState<string | null>(null);
+	const [failure, setFailure] = useState<string | null>(null);
+
+	const keep = useMutation({
+		mutationFn: keepDemoAccount,
+		onSuccess: (_, input) => {
+			setKeptAs(input.email);
+			onConverted();
+		},
+		onError: (cause) => setFailure(authErrorMessage(cause))
+	});
+
+	function submit(event: SubmitEvent<HTMLFormElement>) {
+		event.preventDefault();
+		const found: { email?: string; name?: string } = {};
+		const address = email.trim().toLowerCase();
+		if (!EMAIL_PATTERN.test(address)) found.email = 'Enter a valid email address';
+		if (!name.trim()) found.name = 'Name is required';
+		setErrors(found);
+		if (found.email || found.name) return;
+		setFailure(null);
+		keep.mutate({ email: address, name: name.trim() });
+	}
+
+	if (converted) {
+		return (
+			<div className="flex flex-col gap-2">
+				<Positive>Passkey added — this account is yours now, data and all.</Positive>
+				{keptAs && (
+					<p className="flex items-center gap-2 text-[0.875rem] text-text-muted">
+						<Mail className="size-4 shrink-0" strokeWidth={1.75} aria-hidden />
+						<span>
+							Check your inbox at <span className="text-text">{keptAs}</span> for the confirmation
+							link.
+						</span>
+					</p>
+				)}
+			</div>
+		);
+	}
+
+	return (
+		<form onSubmit={submit} noValidate className="max-w-sm">
+			<p className="text-[0.875rem] text-text-muted">
+				This is a demo account. Keep it by adding a passkey — everything you have added stays. Your
+				address is what the passkey is saved under, and where account mail goes.
+			</p>
+			<div className="mt-4 flex flex-col gap-4">
+				<TextField
+					id="keep-email"
+					label="Email address"
+					type="email"
+					autoComplete="email"
+					error={errors.email}
+					value={email}
+					onChange={setEmail}
+				/>
+				<TextField
+					id="keep-name"
+					label="Your name"
+					autoComplete="name"
+					error={errors.name}
+					value={name}
+					onChange={setName}
+				/>
+			</div>
+			<button type="submit" disabled={keep.isPending} className={`mt-4 ${SECONDARY_BUTTON}`}>
+				<KeyRound className="size-4 text-accent-bright" strokeWidth={1.75} aria-hidden />
+				{keep.isPending ? 'Waiting for your device…' : 'Add a passkey and keep it'}
+			</button>
+			{failure && (
+				<p role="alert" className="mt-3 text-[0.875rem] text-destructive">
+					{failure}
+				</p>
+			)}
+		</form>
+	);
+}
+
+/**
+ * A real account's credentials: another passkey, a password where there is none, and
+ * TOTP recovery once there is one. `hasPassword` is undefined while it loads, in which
+ * case neither the password form nor the recovery button is offered yet.
+ */
+function SecuritySettings({
+	user,
+	placeholder,
+	hasPassword,
+	onPasswordSet
+}: {
+	user: ReturnType<typeof toSessionUser>;
+	placeholder: boolean;
+	hasPassword: boolean | undefined;
+	onPasswordSet: () => void;
+}) {
+	const [security, setSecurity] = useState<
+		'idle' | 'password' | 'recovery' | 'recovery-done' | 'passkey-added'
+	>('idle');
+	const [password, setPassword] = useState('');
+	const [securityError, setSecurityError] = useState<string | null>(null);
+
+	const [settingPassword, setSettingPassword] = useState(false);
+	const [newPassword, setNewPassword] = useState('');
+	const [passwordError, setPasswordError] = useState<string | null>(null);
+	const [passwordSet, setPasswordSet] = useState(false);
+
+	const addPasskey = useMutation({
+		mutationFn: () => registerPasskey(placeholder ? undefined : user.email),
+		onSuccess: () => setSecurity('passkey-added'),
+		onError: (cause) => setSecurityError(authErrorMessage(cause))
+	});
+
+	const savePassword = useMutation({
+		mutationFn: (value: string) => setAccountPassword(value),
+		onSuccess: () => {
+			setPasswordSet(true);
+			setSettingPassword(false);
+			setNewPassword('');
+			onPasswordSet();
+		}
+	});
+
+	function submitPassword(event: SubmitEvent<HTMLFormElement>) {
+		event.preventDefault();
+		if (newPassword.length < MIN_PASSWORD) {
+			setPasswordError(`Use at least ${MIN_PASSWORD} characters`);
+			return;
+		}
+		setPasswordError(null);
+		savePassword.mutate(newPassword);
+	}
+
+	return (
+		<div className="flex flex-col gap-5">
+			<div className="flex flex-wrap items-center gap-3">
+				<button
+					type="button"
+					disabled={addPasskey.isPending}
+					onClick={() => addPasskey.mutate()}
+					className={SECONDARY_BUTTON}
+				>
+					<KeyRound className="size-4 text-accent-bright" strokeWidth={1.75} aria-hidden />
+					{addPasskey.isPending ? 'Waiting for your device…' : 'Add a passkey'}
+				</button>
+				{security === 'passkey-added' && (
+					<span className="flex items-center gap-1.5 text-[0.875rem] text-positive">
+						<Check className="size-4" strokeWidth={2} aria-hidden /> Added
+					</span>
+				)}
+			</div>
+
+			{hasPassword === false ? (
+				settingPassword ? (
+					<form onSubmit={submitPassword} noValidate className="max-w-sm">
+						<label htmlFor="new-password" className="text-[0.8125rem] font-medium text-text">
+							New password
+						</label>
+						<input
+							id="new-password"
+							type="password"
+							autoComplete="new-password"
+							value={newPassword}
+							onChange={(event) => setNewPassword(event.target.value)}
+							className={INPUT}
+						/>
+						{passwordError && (
+							<p role="alert" className="mt-2 text-[0.8125rem] text-destructive">
+								{passwordError}
+							</p>
+						)}
+						<div className="mt-3 flex items-center gap-3">
+							<button
+								type="submit"
+								disabled={savePassword.isPending}
+								className="btn-primary disabled:opacity-60"
+							>
+								{savePassword.isPending ? 'Saving…' : 'Save password'}
+							</button>
+							<button
+								type="button"
+								onClick={() => {
+									setSettingPassword(false);
+									setPasswordError(null);
+								}}
+								className={QUIET_BUTTON}
+							>
+								Cancel
+							</button>
+						</div>
+						<Failure error={savePassword.error} fallback="Could not set the password." />
+					</form>
+				) : (
+					<div>
+						<p className="max-w-md text-[0.875rem] text-text-muted">
+							This account has no password. Recovery needs one, and so does signing in anywhere a
+							passkey cannot reach.
+						</p>
+						<button
+							type="button"
+							onClick={() => setSettingPassword(true)}
+							className={`mt-3 ${SECONDARY_BUTTON}`}
+						>
+							<ShieldCheck className="size-4 text-accent-bright" strokeWidth={1.75} aria-hidden />
+							Set a password
+						</button>
+					</div>
+				)
+			) : hasPassword === undefined ? null : (
+				<>
+					{passwordSet && <Positive>Password set.</Positive>}
+					{user.twoFactorEnabled || security === 'recovery-done' ? (
+						<Positive>Recovery is set up — a lost device is not a lost account.</Positive>
+					) : security === 'idle' || security === 'passkey-added' ? (
+						<div>
+							<p className="max-w-md text-[0.875rem] text-text-muted">
+								A passkey lives on one device. Recovery is how you get back in after losing it.
+							</p>
+							<button
+								type="button"
+								onClick={() => setSecurity('password')}
+								className={`mt-3 ${SECONDARY_BUTTON}`}
+							>
+								<ShieldCheck className="size-4 text-accent-bright" strokeWidth={1.75} aria-hidden />
+								Set up recovery
+							</button>
+						</div>
+					) : security === 'password' ? (
+						<form
+							onSubmit={(event) => {
+								event.preventDefault();
+								if (password) setSecurity('recovery');
+							}}
+							className="max-w-sm"
+						>
+							<label htmlFor="confirm-password" className="text-[0.8125rem] font-medium text-text">
+								Confirm your password to continue
+							</label>
+							<input
+								id="confirm-password"
+								type="password"
+								autoComplete="current-password"
+								value={password}
+								onChange={(event) => setPassword(event.target.value)}
+								className={INPUT}
+							/>
+							<div className="mt-3 flex items-center gap-3">
+								<button type="submit" className="btn-primary">
+									Continue
+								</button>
+								<button
+									type="button"
+									onClick={() => {
+										setSecurity('idle');
+										setPassword('');
+									}}
+									className={QUIET_BUTTON}
+								>
+									Cancel
+								</button>
+							</div>
+						</form>
+					) : (
+						<div className="max-w-sm">
+							<RecoverySetup
+								password={password}
+								onDone={() => {
+									setSecurity('recovery-done');
+									setPassword('');
+								}}
+								onSkip={() => {
+									setSecurity('idle');
+									setPassword('');
+								}}
+							/>
+						</div>
+					)}
+				</>
+			)}
+
+			{securityError && (
+				<p role="alert" className="text-[0.875rem] text-destructive">
+					{securityError}
+				</p>
+			)}
+		</div>
 	);
 }
