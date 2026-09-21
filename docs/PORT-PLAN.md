@@ -1004,7 +1004,7 @@ Playwright, chromium only, eight specs in ~20 s, wired into CI as its own job.
   live demo button had been answering 503 since the cutover — `DemoTemplateMissing` in the
   runtime logs — because nothing had ever seeded the production branch.
 - ~~Re-point Capacitor at the new origin and verify a passkey ceremony inside the webview.~~
-  **Done 2026-09-20** (`feat/capacitor`), with a finding that changes the native plan:
+  **Done 2026-09-20** (`feat/capacitor`), with a finding that was resolved the next day:
 
   - The shells moved from `legacy/` to the repo root with their history, on Capacitor 8.5.
     `capacitor.config.ts` loads the deployed origin (`CAP_SERVER_URL`, default
@@ -1022,14 +1022,24 @@ Playwright, chromium only, eight specs in ~20 s, wired into CI as its own job.
     browser entitlement. **Email + password works** in the webview, so sign-in is not
     blocked, but demo→real conversion is — and that is the funnel the whole demo design
     serves.
-  - **Next, in order:** (1) try the cheap remedy — an Associated Domains entitlement
-    (`webcredentials:frunk.cloud`) plus an `apple-app-site-association` file served from
-    the site, which needs the Apple Team ID and is what recent iOS releases require before
-    allowing WebAuthn from an embedded webview for that relying party; (2) if that is not
-    honoured, a native passkey plugin bridging to `ASAuthorizationController` (and Android's
-    Credential Manager with `assetlinks.json`), whose `clientDataJSON` origin is the
-    associated domain, so Better Auth's verifier accepts it unchanged. Either way the
-    Team ID gates it.
+  - **Resolved 2026-09-21 by the cheap remedy** (PR #77). With the app associated to the
+    site — `public/.well-known/apple-app-site-association` naming
+    `VRFF4MSHAC.com.frunk.app` under `webcredentials`, served as `application/json` by a
+    header in `vercel.json`, and `ios/App/App/App.entitlements` carrying
+    `webcredentials:frunk.cloud` — WKWebView hands WebAuthn to the system. Verified in the
+    iOS 26 simulator against **production**: a demo started in the app, "Add a passkey"
+    raised the real "Add a passkey?" sheet, Face ID (simulated) registered it, the account
+    converted ("this account is yours now"), and after signing out, "Use a passkey" on the
+    sign-in page raised the sign-in sheet and landed in the garage. No native plugin needed.
+    Three practicalities: the entitlement carries `?mode=developer`, which lets an
+    Xcode-installed build fetch the association file straight from the site instead of
+    through Apple's CDN — drop it for a store build; the simulator needs Face ID enrolled
+    (Features → Face ID, or `notifyutil -s com.apple.BiometricKit.enrollmentChanged 1`)
+    or the sheet says so and stops; and the passkey is labelled with the demo account's
+    placeholder address (`…@anonymous.placeholder.invalid`), which is ugly in the sheet and
+    in Passwords — the account-settings pass that gives converted accounts a real address
+    is what fixes it. Android is the same idea with `assetlinks.json` and Credential
+    Manager, and still waits for a Java runtime on this machine.
   - Two fixes found by the test: the headers ran under the status bar (`viewport-fit=cover`
     plus `env(safe-area-inset-*)` padding on both headers and the applet's bottom), and the
     profile's demo branch never rendered a failed ceremony — the button just reset.
@@ -1076,6 +1086,9 @@ Playwright, chromium only, eight specs in ~20 s, wired into CI as its own job.
   production branch nightly (2026-09-21, from the `database` environment's secret); the
   repo-level `DATABASE_URL` secret that pointed at the legacy database can go.
 - **Checkpoint:** prod green on one origin; auth end-to-end; Capacitor build passes.
+  **Met 2026-09-21** on iOS: password, code and passkey sign-in and the demo conversion are
+  verified on production, in the browser and inside the app. Still open: the Android build
+  (Java), and the Cloudflare project retirement that makes the origin truly singular.
 
 ---
 
