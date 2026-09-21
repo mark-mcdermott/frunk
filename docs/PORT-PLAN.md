@@ -1072,8 +1072,9 @@ Playwright, chromium only, eight specs in ~20 s, wired into CI as its own job.
   recovery cannot be enrolled — Better Auth's `setPassword` for credential-less users is
   the eventual answer. The passkey journey asserts the whole conversion in Postgres.
 - Retire the Cloudflare Pages project. ~~Update `CLAUDE.md` and `_PROJECTS.md`.~~ Both
-  current as of 2026-09-20 (the roster on its own PR). `db-backup.yml` still dumps the
-  legacy database nightly; re-point or retire it with the Cloudflare project.
+  current as of 2026-09-20 (the roster on its own PR). `db-backup.yml` now dumps the
+  production branch nightly (2026-09-21, from the `database` environment's secret); the
+  repo-level `DATABASE_URL` secret that pointed at the legacy database can go.
 - **Checkpoint:** prod green on one origin; auth end-to-end; Capacitor build passes.
 
 ---
