@@ -251,10 +251,10 @@ Five things about it are easy to get wrong:
   (`anonymous({ disableDeleteAnonymousUser: true })`): no auth ceremony deletes a demo
   account, only the reaper does. "Keep my data" and the sign-up page both send a demo
   visitor to `/profile`'s passkey prompt; `tests/demo-conversion.test.ts` asserts both
-  guards in Postgres. **Keeping a demo asks for an address and a name first** (2026-09-21): the passkey
-  ceremony runs labelled with the address, then `update-user` and `change-email` follow —
-  the placeholder is unverified, so the change applies at once and the verification mail
-  goes to the new address. A kept account can then set a password
+  guards in Postgres. **Keeping a demo asks for an address and a name first** (2026-09-21): `change-email`
+  applies the address at once (the placeholder is unverified; the verification mail goes
+  to the new address), the passkey ceremony runs labelled with it, and `update-user`
+  sets the name; a cancelled ceremony hands the address back to a fresh placeholder. A kept account can then set a password
   (`POST /api/account/password`, Better Auth's server-only `setPassword`) and enrol
   recovery. `hasPlaceholderEmail` still guards accounts kept before this. `roles` stays
   authoritative for gating. `POST /api/demo` needs `pnpm db:seed-office`. **Unconverted
