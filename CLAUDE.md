@@ -325,8 +325,11 @@ the semantic green and red).
 
 ## Known rough edges
 
-- **No photography.** The studio renders live in `frunk-proj/branding/mock/`, outside the
-  repo; only flattened WebP mocks were committed. `src/components/MockImage.astro` stands in.
+- **Photography is landing.** The front-storage render is in (`src/assets/renders/`, one
+  1400-px PNG source, served through `astro:assets` by `FrontStorageRender.astro` as AVIF
+  and WebP). The pillar tiles, the phone, the closing compartment and the about page's
+  night shot still use `src/components/MockImage.astro`; the sources are sliced from the
+  PSD in `frunk-proj/branding/`, outside the repo.
 
 ## Roadmap
 
