@@ -133,8 +133,9 @@ pnpm cap:ios                                     # open the Xcode project
 CAP_SERVER_URL=http://localhost:4321 pnpm cap:sync   # point a build at a dev server
 ```
 
-The shells load the deployed site rather than bundling it. Passkeys do not work inside the
-iOS webview yet — see Phase 6 of the port plan.
+The shells load the deployed site rather than bundling it. Passkeys work inside the iOS
+shell through Associated Domains; the site-association file and the entitlement are in the
+repo.
 
 ## Project structure
 
