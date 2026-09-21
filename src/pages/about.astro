@@ -5,13 +5,14 @@
  * Sections alternate ground per DESIGN.md §4, so each <section> carries its own
  * `.surface-*` class rather than inheriting the page theme.
  *
- * Photography is still `MockImage`: the studio renders live in the PSD outside the
+ * The night shot is still `MockImage`: the studio renders live in the PSD outside the
  * repo (CLAUDE.md, "Known rough edges"). Same ratios and rim light as the mock, so
  * layout and contrast are verifiable now; swap for <Image> when the renders land.
  */
 import BaseLayout from '../layouts/BaseLayout.astro';
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
+import FrontStorageRender from '../components/FrontStorageRender.astro';
 import MockImage from '../components/MockImage.astro';
 import { ArrowRight, Box, Lock, Shield, User } from 'lucide-react';
 
@@ -79,7 +80,7 @@ const testimonials = [
 						</div>
 					</div>
 
-					<MockImage label="Frunk / front storage perspective" ratio="16 / 11" />
+					<FrontStorageRender />
 				</div>
 			</div>
 		</section>
