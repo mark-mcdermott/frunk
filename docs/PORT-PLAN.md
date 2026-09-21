@@ -989,14 +989,14 @@ Playwright, chromium only, eight specs in ~20 s, wired into CI as its own job.
   `STRIPE_*` and `PRINTFUL_API_KEY`, which Decision 6 dropped — those were deleted from the
   Vercel project on 2026-09-19, along with the `R2_*` vars that Vercel Blob replaces.
 
-  | variable                               | state                                                                   |
-  | -------------------------------------- | ----------------------------------------------------------------------- |
-  | `DATABASE_URL` + Neon integration vars | ✅ set (preview + production)                                           |
-  | ~~`ENCRYPTION_KEY`~~                   | 🗑 removed 2026-09-20 — Better Auth encrypts at rest (see Phase 3)       |
-  | `RP_ID`, `RP_ORIGIN`                   | ✅ set (production only)                                                |
-  | `RESEND_API_KEY`                       | ✅ set (production + preview), verified 2026-09-20                      |
-  | ~~SES: `SES_FROM_EMAIL`, `AWS_*`~~     | 🗑 **still on Vercel as of 2026-09-20** — delete; nothing ever read them |
-  | `BLOB_READ_WRITE_TOKEN`                | ✅ set by connecting the `frunk-uploads` store (2026-09-19)             |
+  | variable                               | state                                                             |
+  | -------------------------------------- | ----------------------------------------------------------------- |
+  | `DATABASE_URL` + Neon integration vars | ✅ set (preview + production)                                     |
+  | ~~`ENCRYPTION_KEY`~~                   | 🗑 removed 2026-09-20 — Better Auth encrypts at rest (see Phase 3) |
+  | `RP_ID`, `RP_ORIGIN`                   | ✅ set (production only)                                          |
+  | `RESEND_API_KEY`                       | ✅ set (production + preview), verified 2026-09-20                |
+  | ~~SES: `SES_FROM_EMAIL`, `AWS_*`~~     | 🗑 deleted 2026-09-21; nothing ever read them                      |
+  | `BLOB_READ_WRITE_TOKEN`                | ✅ set by connecting the `frunk-uploads` store (2026-09-19)       |
 
 - ~~No production data to migrate (frunk never launched). Re-seed with `seed-office.ts`.~~
   **Seeded 2026-09-20** through `db-migrate.yml`'s `seed-office` action (run #6), after a
@@ -1058,8 +1058,9 @@ Playwright, chromium only, eight specs in ~20 s, wired into CI as its own job.
   `include:amazonses.com` to the apex. That was SES-shaped advice and would have been wrong
   here — worth remembering if the provider ever changes again.)
 
-  Still open: `_dmarc` is at `p=none` with no `rua=`, so no aggregate reports arrive. Add one
-  before tightening, since those reports are what prove tightening is safe.
+  ~~Still open: `_dmarc` is at `p=none` with no `rua=`.~~ **Done 2026-09-21:** the record
+  carries `rua=` pointing at Postmark's free DMARC digests. Tighten to `p=quarantine` once a
+  few weeks of reports show only Resend sending as frunk.cloud.
 
   > Choosing Resend over SES also removes a scheduling risk that was on this critical path:
   > **SES starts every account in sandbox**, able to send only to pre-verified addresses until
@@ -1081,7 +1082,9 @@ Playwright, chromium only, eight specs in ~20 s, wired into CI as its own job.
   (shown as "No email on file", never as an email) and it has no password, so TOTP
   recovery cannot be enrolled — Better Auth's `setPassword` for credential-less users is
   the eventual answer. The passkey journey asserts the whole conversion in Postgres.
-- Retire the Cloudflare Pages project. ~~Update `CLAUDE.md` and `_PROJECTS.md`.~~ Both
+- ~~Retire the Cloudflare Pages project.~~ **Done 2026-09-21** — deployments, custom
+  domains and the project are gone; `frunk.cloud` is served by Vercel alone. ~~Update
+  `CLAUDE.md` and `_PROJECTS.md`.~~ Both
   current as of 2026-09-20 (the roster on its own PR). `db-backup.yml` now dumps the
   production branch nightly (2026-09-21, from the `database` environment's secret); the
   repo-level `DATABASE_URL` secret that pointed at the legacy database can go.

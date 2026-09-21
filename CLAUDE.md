@@ -10,8 +10,8 @@ Named for "front trunk" — the storage compartment in EVs and mid-engine cars.
 
 The repository root is now the **Astro rewrite** (`docs/PORT-PLAN.md`), not the SvelteKit
 app. The SvelteKit app lives in **`legacy/`** — it is the reference for the port and is
-excluded from the Astro build and typecheck. It still deploys to Cloudflare Pages from
-`main` and stays live until Phase 6.
+excluded from the Astro build and typecheck. The Cloudflare Pages project was retired on
+2026-09-21, so `legacy/` is reference only now and can go once nothing in it is needed.
 
 **Phases 0–3 are done. Phase 4's build-out is complete** — every screen family is
 built (vehicles, repairs, notes, vendors, maintenance schedules, galleries, user admin,
@@ -68,7 +68,7 @@ cap:sync` after a dependency change, `CAP_SERVER_URL=http://localhost:<port>` to
 
 Dropped for now: the merch store (Stripe + Printful), Tauri desktop, Skeleton UI.
 
-## Legacy stack (`legacy/`, still live on Cloudflare)
+## Legacy stack (`legacy/`, retired from Cloudflare 2026-09-21)
 
 - **SvelteKit 2** + **Svelte 5** (runes), **Skeleton UI v4**
 - **Cloudflare Pages** (`@sveltejs/adapter-cloudflare`), **R2** for file storage
