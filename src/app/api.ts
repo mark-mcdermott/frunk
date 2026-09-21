@@ -236,6 +236,7 @@ export type VehicleInput = {
  * create.
  */
 export const keys = {
+	account: ['account'] as const,
 	vehicles: ['vehicles'] as const,
 	vehicle: (id: string) => ['vehicles', id] as const,
 	vendors: ['vendors'] as const,
@@ -416,6 +417,18 @@ export const updateUser = (id: string, body: { name?: string; roles?: number[] }
 	}).then((r) => r.user);
 
 export const deleteUser = (id: string) => request<void>(`/api/users/${id}`, { method: 'DELETE' });
+
+// ---- account (the caller's own credentials; see docs/API.md)
+
+export interface AccountSecurity {
+	hasPassword: boolean;
+	passkeys: number;
+}
+
+export const getAccount = () => request<AccountSecurity>('/api/account');
+
+export const setAccountPassword = (password: string) =>
+	request<void>('/api/account/password', { method: 'POST', body: JSON.stringify({ password }) });
 
 /** Removes one of the caller's own uploaded files — see `DELETE /api/uploads`. */
 export const deleteUpload = (url: string) =>

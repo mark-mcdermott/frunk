@@ -83,6 +83,11 @@ function build(rp: { id: string; origin: string }) {
 			}
 		},
 
+		emailAndPassword: {
+			enabled: true,
+			requireEmailVerification: true
+		},
+
 		/**
 		 * frunk's own columns on `user`. Declared here so Better Auth round-trips them
 		 * instead of dropping them on write. `roles` stays authoritative for demo
@@ -93,12 +98,20 @@ function build(rp: { id: string; origin: string }) {
 				roles: { type: 'number[]', defaultValue: [], input: false },
 				age: { type: 'number', required: false },
 				cookieConsent: { type: 'string', required: false, input: false }
+			},
+			/**
+			 * The account-settings pass (Decision 5's loose end). A demo account carries a
+			 * placeholder address, and keeping the account asks for a real one: because the
+			 * placeholder is unverified, `updateEmailWithoutVerification` lets the change
+			 * apply at once, with the verification mail going to the new address. A verified
+			 * account changing its address keeps the old one until the new one is verified —
+			 * Better Auth's default when no change-confirmation mail is configured, and the
+			 * right one here: a typo cannot lock anyone out.
+			 */
+			changeEmail: {
+				enabled: true,
+				updateEmailWithoutVerification: true
 			}
-		},
-
-		emailAndPassword: {
-			enabled: true,
-			requireEmailVerification: true
 		},
 
 		emailVerification: {
