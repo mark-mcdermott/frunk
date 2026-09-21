@@ -85,6 +85,8 @@ test('signs in with a password and enrols TOTP recovery from the profile', async
 	// The code trusts this browser, so signing out and back in asks for no code.
 	await page.goto('/profile');
 	await page.getByRole('button', { name: 'Sign out' }).click();
+	// Sign-out navigates home on its own; a goto racing that navigation is aborted.
+	await expect(page).toHaveURL(/\/$/);
 	await page.goto('/signin');
 	await page.getByLabel('Email address').fill(email);
 	await page.getByLabel('Password').fill(password);
