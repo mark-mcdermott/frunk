@@ -1042,7 +1042,14 @@ Playwright, chromium only, eight specs in ~20 s, wired into CI as its own job.
     placeholder address (`…@anonymous.placeholder.invalid`), which is ugly in the sheet and
     in Passwords — the account-settings pass that gives converted accounts a real address
     is what fixes it. Android is the same idea with `assetlinks.json` and Credential
-    Manager, and still waits for a Java runtime on this machine.
+    Manager. **Done 2026-09-21** (PR #90): with `assetlinks.json` live and the WebView opted
+    in by a Capacitor plugin at load time, the Android 16 emulator's Credential Manager
+    opens its "Create passkey" sheet inside the app, labelled with the address being
+    claimed. Two things the test taught: the opt-in has to run before the first page
+    load (a plugin's `load()`, not `MainActivity.onCreate`), and it needs a WebView that
+    advertises the feature — the Android 15 image's WebView 124 does not, the Android 16
+    image's 134 does. Finishing the ceremony needs a Google account for Google Password
+    Manager, which the emulator does not have; a real phone does.
   - Two fixes found by the test: the headers ran under the status bar (`viewport-fit=cover`
     plus `env(safe-area-inset-*)` padding on both headers and the applet's bottom), and the
     profile's demo branch never rendered a failed ceremony — the button just reset.

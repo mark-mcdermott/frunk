@@ -64,7 +64,15 @@ cap:sync` after a dependency change, `CAP_SERVER_URL=http://localhost:<port>` to
   `ios/App/App/App.entitlements` carries `webcredentials:frunk.cloud` — with both, a demo
   converted and signed back in with a passkey inside the app (simulator, against
   production, 2026-09-21). The entitlement's `?mode=developer` suffix is for Xcode builds;
-  drop it for a store build. Email + password works there too.
+  drop it for a store build. **Android is the same shape** (2026-09-21):
+  `public/.well-known/assetlinks.json` names `com.frunk.app` and its signing certificate,
+  and `android/app/src/main/java/com/frunk/app/WebAuthnSupport.java` opts the WebView in
+  at plugin-load time — from `MainActivity.onCreate` the setting arrives after the first
+  page load and the page reports "WebAuthn is not supported". The WebView must be 134 or
+  so: the Android 15 emulator image's WebView 124 does not advertise the feature at all,
+  the Android 16 image's does, and there Credential Manager's passkey sheet opens inside
+  the app. Storing the passkey needs Google Password Manager, so a signed-in Google
+  account (a real phone, or the emulator's Play Store). Email + password works there too.
 
 Dropped for now: the merch store (Stripe + Printful), Tauri desktop, Skeleton UI.
 
