@@ -7,6 +7,7 @@ import Render from '../components/Render.astro';
 import pillarStructured from '../assets/renders/pillar-structured.png';
 import pillarPersonal from '../assets/renders/pillar-personal.png';
 import pillarProtected from '../assets/renders/pillar-protected.png';
+import phone from '../assets/renders/phone.png';
 import { primaryNav } from '../lib/nav';
 import { UserNav } from '../components/auth/UserNav';
 import { Car, Cloud, Gauge, Heart, Lock, RefreshCw, Shield, Wrench } from 'lucide-react';
@@ -241,7 +242,14 @@ const personas = [
 					</div>
 
 					<div class="mx-auto w-full max-w-[320px]">
-						<MockImage label="Frunk on iPhone" ratio="9 / 19" class="rounded-[40px]" />
+						<Render
+							src={phone}
+							alt="An iPhone showing the Frunk app: the car with its front trunk open above a list of Documents, Personal and Essentials"
+							widths={[330, 480, 660]}
+							sizes="(min-width: 1024px) 330px, 70vw"
+							fallbackFormat="png"
+							frame={false}
+						/>
 					</div>
 				</div>
 			</div>
