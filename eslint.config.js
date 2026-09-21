@@ -8,8 +8,7 @@ import globals from 'globals';
 import tseslint from 'typescript-eslint';
 
 /**
- * Lint for the Astro app. `legacy/` keeps its own config and is not linted here — it
- * is the reference for the port, not part of it.
+ * Lint for the Astro app.
  *
  * Formatting is Prettier's job; `eslint-config-prettier` goes last so no rule here
  * argues with it. Type-aware rules are deliberately off: `astro check` already
@@ -19,7 +18,6 @@ import tseslint from 'typescript-eslint';
 export default tseslint.config(
 	{
 		ignores: [
-			'legacy/**',
 			// Worktrees that background sessions leave behind carry a whole second copy.
 			'.claude/**',
 			'android/**',
