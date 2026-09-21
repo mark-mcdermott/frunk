@@ -50,9 +50,10 @@ test('a demo account converts by adding a passkey and signs back in with it', as
 			`select roles::text || '|' || is_anonymous || '|' || email || '|' || email_verified || '|' || name from "user" where id = '${user.id}'`
 		)
 	).toBe(`{2}|false|${email}|false|Journey Keeper`);
-	// And the credential itself is labelled with the address, not the placeholder.
+	// And the credential itself is labelled with the address, not the placeholder — both
+	// the user name and the display name, which is what Android's sheet shows as its title.
 	const { credentials } = await cdp.send('WebAuthn.getCredentials', { authenticatorId });
-	expect(credentials.map((c) => c.userName)).toEqual([email]);
+	expect(credentials.map((c) => [c.userName, c.userDisplayName])).toEqual([[email, email]]);
 
 	await page.getByRole('button', { name: 'Sign out' }).click();
 	await expect(page).toHaveURL(/\/$/);
