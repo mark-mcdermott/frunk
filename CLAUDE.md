@@ -59,9 +59,12 @@ outstanding.
 - **Capacitor** (iOS/Android) — the shells live at the repo root (`ios/`, `android/`,
   `capacitor.config.ts`) and **load the deployed origin** rather than bundling; `pnpm
 cap:sync` after a dependency change, `CAP_SERVER_URL=http://localhost:<port>` to point a
-  build at a dev server. **WKWebView refuses WebAuthn** (`NotAllowedError`, verified in the
-  simulator 2026-09-20), so passkeys inside the app need Associated Domains or a native
-  plugin — see Phase 6 in the plan. Email + password works there.
+  build at a dev server. **WKWebView refuses WebAuthn unless the app is associated with
+  the site**: `public/.well-known/apple-app-site-association` names the app and
+  `ios/App/App/App.entitlements` carries `webcredentials:frunk.cloud` — with both, a demo
+  converted and signed back in with a passkey inside the app (simulator, against
+  production, 2026-09-21). The entitlement's `?mode=developer` suffix is for Xcode builds;
+  drop it for a store build. Email + password works there too.
 
 Dropped for now: the merch store (Stripe + Printful), Tauri desktop, Skeleton UI.
 
@@ -143,6 +146,12 @@ server fails silently in two separate ways under Vitest. **Two checkouts cannot 
 once**: both use `frunk_test` and port 4455, so the second inherits the first's rows and
 rate-limit counters (a spurious 429 from `/api/demo` is the symptom). Set `TEST_DB` and
 `TEST_PORT` in one of them.
+
+**Nothing else may run `astro` in a checkout while a dev server is up in it** — the
+harness's or your own. `astro check` (and so `pnpm check`) alongside a running
+`astro dev` leaves that server's Vite dependency cache stale, and every page it serves
+from then on answers 504 "Outdated Optimize Dep" until it is restarted. Run the verify
+loop first, then the suite.
 
 `pnpm test:e2e` runs the **browser journeys** (`tests/e2e/`, Playwright, chromium only)
 through the same harness (`tests/run.sh --e2e`). Eight specs, serial, in filename order,
@@ -258,6 +267,13 @@ Five things about it are easy to get wrong:
   demos are reaped after seven days** by `GET /api/cron/reap-demos` — a Vercel cron
   (`vercel.json`, production only) presenting `CRON_SECRET`; the predicate is DEMO role,
   no passkey, older than the window, and the account's blobs go with its rows.
+- **TOTP is recovery in intent and a second factor in mechanism.** Better Auth's plugin
+  does not know the difference: once a code is enrolled, `sign-in/email` answers
+  `{ twoFactorRedirect: true }` plus a challenge cookie instead of a session, and only
+  `verify-totp` against that cookie opens one (verified over HTTP 2026-09-20). A cold
+  `verify-totp` — the old "Lost your device?" form — is a 401. `signIn()` in
+  `auth-client.ts` returns the challenge as a value and `SignInForm` carries on to the
+  code; `recoverWithCode` trusts the device for thirty days. The recovery journey walks it.
 - **`BETTER_AUTH_SECRET` is effectively unrotatable.** Better Auth encrypts TOTP secrets
   and backup codes at rest _with a key derived from it_ — verified 2026-09-19 by enabling
   TOTP under one secret, restarting under another, and watching `get-totp-uri` fail with a
@@ -349,8 +365,6 @@ That coupling dies with `legacy/`.
   own placeholder names. Replace before the Phase 6 cutover.
 - The two duplicate Stripe webhook handlers in `legacy/` are moot — the store is dropped
   (Decision 6) and neither is ported.
-- `.claude/skills/` holds a superseded generation of skills (`baos`, `batdd`, `waf`,
-  `qcheck`…) predating the global `~/.claude/skills`. Stale and misleading.
 
 ## Roadmap
 

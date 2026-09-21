@@ -63,9 +63,26 @@ export async function signUp(email: string, password: string, name: string): Pro
 	return toSessionUser(data.user as Record<string, unknown>);
 }
 
-export async function signIn(email: string, password: string): Promise<SessionUser> {
-	const data = unwrap(await authClient.signIn.email({ email, password }));
-	return toSessionUser(data.user as Record<string, unknown>);
+/** A password sign-in either opens a session or, with recovery enrolled, asks for the code. */
+export type SignInResult = { user: SessionUser } | { twoFactorRedirect: true };
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+	return typeof value === 'object' && value !== null;
+}
+
+export async function signIn(email: string, password: string): Promise<SignInResult> {
+	const data: unknown = unwrap(await authClient.signIn.email({ email, password }));
+	/*
+	 * Better Auth's two-factor plugin does not know that frunk's TOTP is meant as recovery
+	 * rather than a second factor. Once a code is enrolled, every password sign-in answers
+	 * `{ twoFactorRedirect: true }` and a challenge cookie instead of a session, and the
+	 * session opens only when `verify-totp` accepts a code against that cookie (verified
+	 * over HTTP, 2026-09-20). Treating that answer as a user was how a recovery-enrolled
+	 * account became one that could not sign in with its password at all.
+	 */
+	if (isRecord(data) && data.twoFactorRedirect === true) return { twoFactorRedirect: true };
+	if (isRecord(data) && isRecord(data.user)) return { user: toSessionUser(data.user) };
+	throw new AuthError('Something went wrong. Please try again.');
 }
 
 /**
@@ -84,9 +101,15 @@ export async function signInWithPasskey(): Promise<void> {
 		throw new AuthError(result.error.message ?? 'Could not sign in with a passkey.');
 }
 
-/** TOTP is recovery, not a second factor — it stands in for a passkey that is gone. */
+/**
+ * TOTP is recovery, not a second factor — it stands in for a passkey that is gone. It
+ * completes the password sign-in that answered `twoFactorRedirect`; on its own, with no
+ * challenge cookie, Better Auth refuses it (401 `INVALID_TWO_FACTOR_COOKIE`). The device
+ * is trusted for thirty days afterwards, so the code is not demanded on every sign-in
+ * from a browser that has already proved itself.
+ */
 export async function recoverWithCode(code: string): Promise<void> {
-	unwrap(await authClient.twoFactor.verifyTotp({ code }));
+	unwrap(await authClient.twoFactor.verifyTotp({ code, trustDevice: true }));
 }
 
 export async function startRecoverySetup(password: string): Promise<{ totpURI: string }> {
