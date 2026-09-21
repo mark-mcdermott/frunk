@@ -5,8 +5,10 @@ import type { ImageMetadata } from 'astro';
 /**
  * A studio render served through `astro:assets` (DESIGN.md §6). One PNG source under
  * `src/assets/renders/` at twice the widest slot it fills; the build cuts AVIF and WebP
- * at the given widths, with a JPEG fallback — the renders are opaque, so nothing is
- * lost flattening them. `eager` is for the one above the fold; the rest lazy-load.
+ * at the given widths, with a JPEG fallback for the opaque renders and PNG for the one
+ * with transparent corners (`fallbackFormat`). `frame` draws the card border the
+ * photographs sit in; the phone brings its own bezel and turns it off. `eager` is for
+ * the one above the fold; the rest lazy-load.
  */
 interface Props {
 	src: ImageMetadata;
@@ -14,10 +16,22 @@ interface Props {
 	widths: number[];
 	sizes: string;
 	eager?: boolean;
+	frame?: boolean;
+	fallbackFormat?: 'jpg' | 'png';
 	class?: string;
 }
 
-const { src, alt, widths, sizes, eager = false, class: className = '' } = Astro.props;
+const {
+	src,
+	alt,
+	widths,
+	sizes,
+	eager = false,
+	frame = true,
+	fallbackFormat = 'jpg',
+	class: className = ''
+} = Astro.props;
+const frameClass = frame ? 'rounded-[var(--radius-card)] border border-border' : '';
 ---
 
 <Picture
@@ -26,9 +40,9 @@ const { src, alt, widths, sizes, eager = false, class: className = '' } = Astro.
 	widths={widths}
 	sizes={sizes}
 	formats={['avif', 'webp']}
-	fallbackFormat="jpg"
+	fallbackFormat={fallbackFormat}
 	loading={eager ? 'eager' : 'lazy'}
 	fetchpriority={eager ? 'high' : 'auto'}
 	decoding={eager ? 'sync' : 'async'}
-	class={`h-auto w-full rounded-[var(--radius-card)] border border-border ${className}`.trim()}
+	class={`h-auto w-full ${frameClass} ${className}`.replace(/\s+/g, ' ').trim()}
 />
