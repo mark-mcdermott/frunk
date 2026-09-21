@@ -1,6 +1,7 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
 import Footer from '../components/Footer.astro';
+import FrontStorageRender from '../components/FrontStorageRender.astro';
 import MockImage from '../components/MockImage.astro';
 import { primaryNav } from '../lib/nav';
 import { UserNav } from '../components/auth/UserNav';
@@ -124,7 +125,7 @@ const personas = [
 					</div>
 
 					<div class="relative">
-						<MockImage label="Fig. 01 — Frunk / front storage perspective" ratio="16 / 11" />
+						<FrontStorageRender eager />
 						<!-- Technical-drawing motif (DESIGN.md §1) -->
 						<dl class="mt-4 flex flex-wrap gap-x-10 gap-y-2 text-[0.6875rem] uppercase tracking-[0.12em] text-text-faint">
 							<div class="flex gap-2">
