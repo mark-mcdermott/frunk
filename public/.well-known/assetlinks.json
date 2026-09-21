@@ -1,0 +1,15 @@
+[
+	{
+		"relation": [
+			"delegate_permission/common.handle_all_urls",
+			"delegate_permission/common.get_login_creds"
+		],
+		"target": {
+			"namespace": "android_app",
+			"package_name": "com.frunk.app",
+			"sha256_cert_fingerprints": [
+				"CC:22:CD:09:DA:BC:C7:49:52:2B:16:38:F8:6C:D8:8B:B2:9F:F5:4E:D2:71:26:B5:7B:4D:3F:47:29:9C:56:3E"
+			]
+		}
+	}
+]
