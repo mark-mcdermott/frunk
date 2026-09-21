@@ -8,7 +8,7 @@
 --
 -- GENERATED FILE — do not edit. Regenerate with:
 --   pnpm db:generate && pnpm db:bootstrap-sql
--- Source: 0000_sad_silver_surfer.sql
+-- Source: 0000_sad_silver_surfer.sql, 0001_graceful_absorbing_man.sql
 
 CREATE TABLE IF NOT EXISTS "account" (
 	"id" text PRIMARY KEY NOT NULL,
@@ -267,6 +267,14 @@ DO $$ BEGIN ALTER TABLE "two_factor" ADD CONSTRAINT "two_factor_user_id_user_id_
 DO $$ BEGIN ALTER TABLE "vehicle_photos" ADD CONSTRAINT "vehicle_photos_gallery_id_galleries_id_fk" FOREIGN KEY ("gallery_id") REFERENCES "public"."galleries"("id") ON DELETE cascade ON UPDATE no action; EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 DO $$ BEGIN ALTER TABLE "vehicles" ADD CONSTRAINT "vehicles_user_id_user_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."user"("id") ON DELETE cascade ON UPDATE no action; EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 DO $$ BEGIN ALTER TABLE "vendors" ADD CONSTRAINT "vendors_user_id_user_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."user"("id") ON DELETE cascade ON UPDATE no action; EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+CREATE TABLE IF NOT EXISTS "rate_limit" (
+	"id" text PRIMARY KEY NOT NULL,
+	"key" text NOT NULL,
+	"count" integer NOT NULL,
+	"last_request" bigint NOT NULL,
+	CONSTRAINT "rate_limit_key_unique" UNIQUE("key")
+);
+
 
 --
 -- Roles. The ids are load-bearing: ROLE_IDS in src/lib/roles.ts is { DEMO: 1, USER: 2,
