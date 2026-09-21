@@ -5,15 +5,15 @@
  * Sections alternate ground per DESIGN.md §4, so each <section> carries its own
  * `.surface-*` class rather than inheriting the page theme.
  *
- * The night shot is still `MockImage`: the studio renders live in the PSD outside the
- * repo (CLAUDE.md, "Known rough edges"). Same ratios and rim light as the mock, so
+ * Both photographs are real renders now, served through `Render.astro`.
  * layout and contrast are verifiable now; swap for <Image> when the renders land.
  */
 import BaseLayout from '../layouts/BaseLayout.astro';
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
 import FrontStorageRender from '../components/FrontStorageRender.astro';
-import MockImage from '../components/MockImage.astro';
+import Render from '../components/Render.astro';
+import deskAtNight from '../assets/renders/desk-at-night.png';
 import { ArrowRight, Box, Lock, Shield, User } from 'lucide-react';
 
 const pillars = [
@@ -125,7 +125,12 @@ const testimonials = [
 						</a>
 					</div>
 
-					<MockImage label="Frunk on a desk at night" ratio="16 / 10" />
+					<Render
+						src={deskAtNight}
+						alt="A laptop showing the Frunk wordmark on a desk at night, under a lamp, beside a mug and a plant"
+						widths={[560, 800, 1120, 1400]}
+						sizes="(min-width: 1024px) 640px, calc(100vw - 3rem)"
+					/>
 				</div>
 			</div>
 		</section>

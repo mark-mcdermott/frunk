@@ -2,12 +2,12 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 import Footer from '../components/Footer.astro';
 import FrontStorageRender from '../components/FrontStorageRender.astro';
-import MockImage from '../components/MockImage.astro';
 import Render from '../components/Render.astro';
 import pillarStructured from '../assets/renders/pillar-structured.png';
 import pillarPersonal from '../assets/renders/pillar-personal.png';
 import pillarProtected from '../assets/renders/pillar-protected.png';
 import phone from '../assets/renders/phone.png';
+import openCompartment from '../assets/renders/open-compartment.png';
 import { primaryNav } from '../lib/nav';
 import { UserNav } from '../components/auth/UserNav';
 import { Car, Cloud, Gauge, Heart, Lock, RefreshCw, Shield, Wrench } from 'lucide-react';
@@ -299,7 +299,12 @@ const personas = [
 			<div class="relative mx-auto max-w-[1400px] px-6 py-24 sm:px-10 lg:px-16 lg:py-32">
 				<div class="grid gap-12 lg:grid-cols-2 lg:gap-16">
 					<div class="hidden lg:block">
-						<MockImage label="Frunk / open compartment" ratio="4 / 3" />
+						<Render
+							src={openCompartment}
+							alt="A close-up of the open front trunk at night, a backpack inside, lit in violet"
+							widths={[600, 900, 1200]}
+							sizes="(min-width: 1024px) 600px, calc(100vw - 3rem)"
+						/>
 					</div>
 					<div class="lg:pt-6">
 						<p class="eyebrow">Ready when you are</p>
