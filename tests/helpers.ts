@@ -13,12 +13,15 @@ export interface ApiOptions {
 	body?: unknown;
 	/** A cookie jar string from `signUpAndSignIn`, or nothing for an anonymous call. */
 	cookie?: string;
+	/** A forwarded client address, which is what Better Auth's limiter keys on. */
+	ip?: string;
 }
 
-export async function api(path: string, { method = 'GET', body, cookie }: ApiOptions = {}) {
+export async function api(path: string, { method = 'GET', body, cookie, ip }: ApiOptions = {}) {
 	const headers: Record<string, string> = { Origin: BASE };
 	if (body !== undefined) headers['content-type'] = 'application/json';
 	if (cookie) headers.cookie = cookie;
+	if (ip) headers['x-forwarded-for'] = ip;
 
 	return fetch(`${BASE}${path}`, {
 		method,
@@ -51,6 +54,23 @@ let counter = 0;
 export const TEST_PASSWORD = 'a-sufficiently-long-test-password';
 
 /**
+ * A distinct client address per account. Better Auth's limiter keys on the forwarded
+ * address, and the suite signs up and in far more often than one real client would; a
+ * fresh address per account keeps the tests clear of the limits that
+ * `tests/rate-limit.test.ts` then trips on purpose.
+ *
+ * The middle octets are drawn once per module, because Vitest evaluates this file
+ * afresh for every test file: a plain counter restarted at `10.0.0.1` in each, and two
+ * files' second accounts shared a bucket.
+ */
+const subnet = Math.floor(Math.random() * 0x10000);
+let addresses = 0;
+export function fakeAddress(): string {
+	addresses += 1;
+	return `10.${subnet >> 8}.${subnet & 255}.${addresses & 255}`;
+}
+
+/**
  * A signed-in user, ready to own things.
  *
  * `emailVerified` is forced straight in the database because `requireEmailVerification`
@@ -60,10 +80,12 @@ export const TEST_PASSWORD = 'a-sufficiently-long-test-password';
 export async function signUpAndSignIn(): Promise<TestUser> {
 	const email = `test-${Date.now()}-${counter++}@example.com`;
 	const password = TEST_PASSWORD;
+	const ip = fakeAddress();
 
 	const created = await api('/api/auth/sign-up/email', {
 		method: 'POST',
-		body: { email, password, name: 'Test User' }
+		body: { email, password, name: 'Test User' },
+		ip
 	});
 	if (!created.ok) throw new Error(`sign-up failed: ${created.status}`);
 
@@ -72,7 +94,8 @@ export async function signUpAndSignIn(): Promise<TestUser> {
 
 	const signedIn = await api('/api/auth/sign-in/email', {
 		method: 'POST',
-		body: { email, password }
+		body: { email, password },
+		ip
 	});
 	if (!signedIn.ok) throw new Error(`sign-in failed: ${signedIn.status}`);
 

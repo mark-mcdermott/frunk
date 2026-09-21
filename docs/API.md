@@ -74,11 +74,14 @@ browser for thirty days. A passkey sign-in is never challenged — the passkey _
 strong factor, which is the whole reason the code exists. So the way back after losing a
 device is: email + password, then the code.
 
-**Rate limits.** Better Auth's own limiter is on in production (in memory, per instance —
-which on serverless is only a partial guard), and the two-factor plugin keeps its attempt
-and lockout counters in Postgres. frunk's Postgres limiter (`auth_rate_limits`) covers
-the two endpoints outside Better Auth that a stranger can hit: `POST /api/demo` (3 an
-hour per address) and `POST /api/contact` (5 an hour). A 429 carries `Retry-After`.
+**Rate limits**, all per client address and all in Postgres. Better Auth's own limiter
+runs on every `/api/auth/*` request with its counters in the `rate_limit` table (its
+default is memory, which on Vercel is one counter per function instance): 10 password
+sign-ins a minute, 10 sign-ups and 5 verification-mail requests per ten minutes, 100 of
+anything else per ten seconds, and the two-factor plugin's own rule plus its lockout.
+Those answer 429 with `X-Retry-After`. frunk's limiter (`auth_rate_limits`) covers the two
+endpoints outside Better Auth that a stranger can hit — `POST /api/demo` (3 an hour) and
+`POST /api/contact` (5 an hour) — and answers 429 with `Retry-After`.
 
 **Anti-enumeration is Better Auth's default.** Sign-in cannot tell a caller whether an
 address exists, and neither can sign-up. Stricter than the deliberate 404 the hand-rolled
