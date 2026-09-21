@@ -31,7 +31,8 @@ on:
         type: choice
         options:
           - status # connect and report what is there, change nothing
-          - push # apply the schema, then seed roles
+          - bootstrap # run drizzle/bootstrap.sql: additive and re-runnable, the safe way to add a table
+          - push # drizzle-kit push --force: reconciles the live schema to schema.ts, destructive if they drifted
           - seed-office # seed roles, then the Office fixtures (Creed is the demo template)
       confirm:
         description: Type the database name to allow a write (ignored for "status")
@@ -115,6 +116,19 @@ jobs:
             }
             await c.end();
           "
+
+      # bootstrap.sql is every statement wrapped in IF NOT EXISTS, so it only ever adds.
+      # Prefer it to `push` for a new table or column; `push --force` will also drop
+      # whatever it finds in the database that schema.ts no longer declares.
+      - name: Install psql client
+        if: inputs.action == 'bootstrap'
+        run: sudo apt-get install -y -q postgresql-client >/dev/null
+
+      - name: Apply the bootstrap SQL
+        if: inputs.action == 'bootstrap'
+        env:
+          DATABASE_URL: ${{ secrets.ASTRO_DATABASE_URL }}
+        run: psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -q -f drizzle/bootstrap.sql
 
       - name: Apply schema
         if: inputs.action == 'push'

@@ -255,9 +255,11 @@ three role rows, with every statement guarded so a second run is a no-op. This w
 phone.
 
 **2. A button.** The `Database migrate` GitHub Action (`.github/workflows/db-migrate.yml`)
-has three actions: `status` prints the host, database, tables, roles and whether the demo
-template exists; `push` applies the schema and seeds the roles; `seed-office` also loads
-the sample garage. Actions tab → Run workflow. Works from a phone, and the connection
+has four actions: `status` prints the host, database, tables, roles and whether the demo
+template exists; `bootstrap` runs `drizzle/bootstrap.sql`, which only ever adds and is
+the way to ship a new table or column; `push` runs `drizzle-kit push --force`, which also
+drops whatever the database has that `schema.ts` no longer declares; `seed-office` loads
+the sample garage. All but `status` seed the roles. Actions tab → Run workflow. Works from a phone, and the connection
 string never leaves GitHub Secrets.
 
 - It reads **`ASTRO_DATABASE_URL`** from the `database` environment — the production
