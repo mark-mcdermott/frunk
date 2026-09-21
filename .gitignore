@@ -9,8 +9,6 @@ node_modules
 .wrangler
 /dist
 /.astro
-/legacy/.svelte-kit
-/legacy/build
 
 # OS
 .DS_Store

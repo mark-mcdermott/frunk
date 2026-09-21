@@ -1,5 +1,3 @@
-# The SvelteKit app keeps its own config and is not part of the Astro build.
-legacy/
 # Native shells, generated output and scaffolding
 android/
 ios/
