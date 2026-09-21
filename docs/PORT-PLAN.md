@@ -973,7 +973,7 @@ Playwright, chromium only, eight specs in ~20 s, wired into CI as its own job.
   (`_pricing.astro`) by decision until there is a price. ~~**Vercel Analytics is not
   installed.**~~ **Installed 2026-09-20** (`chore/loose-ends`): `<Analytics />` from
   `@vercel/analytics/astro` in `BaseLayout.astro`, so every page carries it. The legal
-  pages are live and **unreviewed** — review before real users. (The privacy page's
+  pages are live and ~~unreviewed~~ **reviewed 2026-09-21** (Mark; "good for now"). (The privacy page's
   "AES-256-GCM" claim was corrected the same day: Better Auth encrypts recovery secrets,
   and the algorithm is no longer named.)
 - **Checkpoint:** whole site navigable; view-source shows static HTML on every marketing
@@ -1091,7 +1091,9 @@ Playwright, chromium only, eight specs in ~20 s, wired into CI as its own job.
   repo-level `DATABASE_URL` secret that pointed at the legacy database can go.
 - **Checkpoint:** prod green on one origin; auth end-to-end; Capacitor build passes.
   **Met 2026-09-21** on iOS: password, code and passkey sign-in and the demo conversion are
-  verified on production, in the browser and inside the app. Still open: the Android build
+  verified on production, in the browser and inside the app, and the email path is verified
+  live the same day — a real sign-up on frunk.cloud, with the verification mail delivered to
+  a hey.com inbox. Still open: the Android build
   (Java), and the Cloudflare project retirement that makes the origin truly singular.
 
 ---
