@@ -261,8 +261,8 @@ the sample garage. Actions tab → Run workflow. Works from a phone, and the con
 string never leaves GitHub Secrets.
 
 - It reads **`ASTRO_DATABASE_URL`** from the `database` environment — the production
-  branch's string, which is Sensitive on Vercel and so reachable from nowhere else. Not
-  `DATABASE_URL`: that secret feeds `db-backup.yml`, which dumps the **legacy** database.
+  branch's string, which is Sensitive on Vercel and so reachable from nowhere else. The
+  nightly `db-backup.yml` reads the same secret, so one place knows where production is.
 - A write requires typing the database name (`status` prints it), so it cannot fire by
   accident, and it never runs on a git push: a migration should not be a side effect of a
   deploy. It also refuses a ref without `astro.config.mjs`.

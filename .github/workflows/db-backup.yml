@@ -1,3 +1,10 @@
+# Nightly pg_dump of the production branch into the private backup repo.
+#
+# The one scheduled workflow allowed near a database, because it only reads. It takes the
+# connection string from the `database` environment — the same ASTRO_DATABASE_URL that the
+# manual migrate workflow uses — so there is exactly one place that knows where production
+# is. (Until 2026-09-21 this dumped the legacy Cloudflare-era database through a separate
+# DATABASE_URL secret; that database is retired with the Cloudflare project.)
 name: Daily DB Backup
 
 on:
@@ -13,6 +20,7 @@ jobs:
   backup:
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    environment: database
 
     steps:
       - name: Install PostgreSQL 17 client
@@ -24,7 +32,7 @@ jobs:
 
       - name: Dump database
         env:
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          DATABASE_URL: ${{ secrets.ASTRO_DATABASE_URL }}
         run: |
           /usr/lib/postgresql/17/bin/pg_dump --version
           /usr/lib/postgresql/17/bin/pg_dump "$DATABASE_URL" --no-owner --no-acl --clean --if-exists > backup.sql
