@@ -42,8 +42,8 @@ everything important about your vehicles.
 - **Capacitor** shells for iOS and Android that load the deployed origin
 - **Vitest** (API suite) and **Playwright** (browser journeys)
 
-The previous SvelteKit version lives in [`legacy/`](legacy/) as a reference for the port
-and is excluded from the build.
+The previous SvelteKit version was kept in `legacy/` as a reference for the port until
+2026-09-21; it lives in the git history before that.
 
 ## Getting started
 
@@ -157,7 +157,6 @@ docs/                 # PORT-PLAN.md (roadmap), API.md, DESIGN.md, mocks/
 tests/                # API suite (*.test.ts), e2e/ journeys, run.sh (the harness)
 drizzle/              # migrations and the generated bootstrap.sql
 ios/ android/         # Capacitor shells
-legacy/               # the SvelteKit app, reference only
 ```
 
 ## The Frunk Story

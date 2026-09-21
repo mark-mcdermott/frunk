@@ -417,8 +417,9 @@ inlined ahead of paint. **Deploying to Vercel is blocked on the manual setup abo
 
 The old SvelteKit app moved to `legacy/` rather than being deleted — it is the reference for
 Phase 2's 25 load functions and Phase 4's 60 components, and it is excluded from the Astro
-build and typecheck. Delete the directory at the end of Phase 5. `legacy/` also holds the
-Capacitor shells (`android/`, `ios/`, `capacitor.config.ts`), which are pinned to the
+build and typecheck. ~~Delete the directory at the end of Phase 5.~~ **Deleted 2026-09-21**,
+once the Cloudflare project was gone; the last commit holding it is `5f2364c`. `legacy/`
+also held the Capacitor shells (`android/`, `ios/`, `capacitor.config.ts`), which are pinned to the
 SvelteKit dev port and `build/` output; ~~Phase 6 re-points them at the Astro origin~~
 **moved to the repo root and re-pointed 2026-09-20 — see Phase 6.**
 

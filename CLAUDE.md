@@ -6,12 +6,12 @@ Also known as **drivetracks** (older name for the same project).
 
 Named for "front trunk" — the storage compartment in EVs and mid-engine cars.
 
-## ⚠️ Mid-port
+## The port
 
-The repository root is now the **Astro rewrite** (`docs/PORT-PLAN.md`), not the SvelteKit
-app. The SvelteKit app lives in **`legacy/`** — it is the reference for the port and is
-excluded from the Astro build and typecheck. The Cloudflare Pages project was retired on
-2026-09-21, so `legacy/` is reference only now and can go once nothing in it is needed.
+The repository is the **Astro rewrite** (`docs/PORT-PLAN.md`). The SvelteKit app it
+replaced was kept in `legacy/` as the reference for the port until 2026-09-21, when the
+Cloudflare Pages project was retired and the directory deleted; it is in the history up to
+commit `5f2364c` (`git show 5f2364c:legacy/src/...`) if anything needs consulting.
 
 **Phases 0–3 are done. Phase 4's build-out is complete** — every screen family is
 built (vehicles, repairs, notes, vendors, maintenance schedules, galleries, user admin,
@@ -68,12 +68,6 @@ cap:sync` after a dependency change, `CAP_SERVER_URL=http://localhost:<port>` to
 
 Dropped for now: the merch store (Stripe + Printful), Tauri desktop, Skeleton UI.
 
-## Legacy stack (`legacy/`, retired from Cloudflare 2026-09-21)
-
-- **SvelteKit 2** + **Svelte 5** (runes), **Skeleton UI v4**
-- **Cloudflare Pages** (`@sveltejs/adapter-cloudflare`), **R2** for file storage
-- **Playwright** for e2e
-
 ## Commands
 
 ```bash
@@ -123,17 +117,13 @@ Editor when you have no terminal. See "Database setup" in `docs/API.md`.
 `pnpm install` is required after any gap — dependencies drift and the build fails
 misleadingly when `node_modules` is stale.
 
-The legacy commands (`pnpm test`, `db:push`) still live in `legacy/package.json` and run
-from that directory with its own `pnpm install`. Its `cap:*` scripts are dead — the shells
-moved to the root.
-
 ## Verify loop
 
 A change is done when **`pnpm check` reports 0 errors**, **`pnpm lint` reports 0 errors**,
 **`pnpm format:check` is clean** and **`pnpm build` passes**. ESLint (flat config,
 typescript-eslint, `react-hooks`, `jsx-a11y`, the Astro plugin) and Prettier (tabs, single
-quotes, no trailing commas, 100 columns, Tailwind class sorting — the legacy app's style,
-carried over) both run in CI's `check` job. `legacy/` is excluded from both.
+quotes, no trailing commas, 100 columns, Tailwind class sorting — the SvelteKit app's
+style, carried over) both run in CI's `check` job.
 
 `react-hooks/set-state-in-effect` is an **error**. Every form page is a loader that renders
 a form component keyed on the row (`<VendorForm key={existing?.id ?? 'new'} …>`), so state
@@ -296,30 +286,6 @@ inputs sync. Give it a `slot="fallback"` skeleton (`.skeleton` in `global.css`,
 **Auth boundary is drawn at the API, not the page.** Astro serves the same static HTML to
 everyone; the applet decides what to render; every API handler checks the session itself.
 
-## Legacy architecture (`legacy/`)
-
-- `legacy/src/routes/` — file-based routes. Marketing pages (`about`, `pricing`, `contact`, `legal`),
-  the app (`vehicles`, `vendors`, `repairs`, `notes`, `users`), the store (`merch`), and
-  `demo/` which mirrors the app against seeded sample data for logged-out visitors.
-- `legacy/src/lib/server/` — server-only: `auth.ts`, `db/`, `email.ts`, `password.ts`, `stripe.ts`,
-  `printful.ts`. Never import these from client code.
-- `legacy/src/lib/components/` — shared UI. `pages/` holds full page bodies shared between the real
-  app and its `demo/` twin, so a change to a list or detail view must be made once there
-  rather than duplicated.
-- `legacy/src/lib/utils/` — framework-free helpers (`demoRoutes.ts`, `dom.ts`).
-- `legacy/src/hooks.server.ts` — resolves the session cookie into `locals.user` / `locals.session`
-  on every request.
-
-**Auth** was hand-rolled session auth: opaque token in an `auth-session` cookie, sessions
-table in Postgres, sliding expiry, SES for verification email. The port keeps the session
-half and replaced everything in front of it with passkeys (see above).
-
-**Demo mode** — routes under `demo/` reuse the same page components with `basePath` set, so
-links stay inside the demo. Check `isDemoPath` / `demoPath` in `src/lib/utils/demoRoutes.ts`
-before hardcoding any route.
-(Decision 5 retires the `demo/` route tree: a demo visitor becomes a real `DEMO`-role
-account, so the API never needs to know.)
-
 ## Design
 
 The redesign is specified in **`docs/DESIGN.md`**, derived from the mocks committed in
@@ -333,10 +299,6 @@ the two font families (Playfair Display + Plus Jakarta Sans, self-hosted), and t
 `.surface-light` / `.surface-dark` blocks that let a full-bleed section pick its own ground.
 Read that file alongside the spec; it records where the spec was silent (`--accent-text`,
 the semantic green and red).
-
-The legacy `legacy/src/routes/layout.css` still sources tokens from **theme-forseen** and
-loads Skeleton's `cerberus` theme, with Arvo + Open Sans — none of which match the mocks.
-That coupling dies with `legacy/`.
 
 ## Conventions
 
@@ -361,10 +323,6 @@ That coupling dies with `legacy/`.
 
 - **No photography.** The studio renders live in `frunk-proj/branding/mock/`, outside the
   repo; only flattened WebP mocks were committed. `src/components/MockImage.astro` stands in.
-- **Placeholder marketing copy** on the home page — the three testimonials are the mock's
-  own placeholder names. Replace before the Phase 6 cutover.
-- The two duplicate Stripe webhook handlers in `legacy/` are moot — the store is dropped
-  (Decision 6) and neither is ported.
 
 ## Roadmap
 
