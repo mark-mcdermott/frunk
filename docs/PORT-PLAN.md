@@ -401,10 +401,12 @@ Phase 1 builds and passes locally; it cannot be _deployed_ until these exist:
 
 **Two gaps carried into later phases, both deliberate:**
 
-- **No photography.** The studio automotive renders live in `frunk-proj/branding/mock/`,
-  outside the repo — only flattened WebP mocks were committed. `src/components/MockImage.astro`
-  stands in at the right aspect ratio with the violet rim light, and every usage is a
-  one-line swap once the renders land.
+- ~~**No photography.**~~ **Landed 2026-09-21.** The studio automotive renders lived in
+  `frunk-proj/branding/mock/`, outside the repo, and `src/components/MockImage.astro` stood
+  in at the right aspect ratio with the violet rim light. Mark sliced all six from the PSD
+  at twice their slot (hero and page leads, three pillar tiles, the phone, the closing
+  compartment, the about page's desk at night); they live in `src/assets/renders/` and are
+  served through `astro:assets` by `Render.astro` as AVIF and WebP. The placeholder is gone.
 - **Placeholder marketing copy.** The three testimonials are the mock's own placeholder
   names and must be replaced before the Phase 6 cutover. The mock's "FEATURED IN" press-logo
   row is **deliberately not built** — frunk has no coverage, and real publication logos
