@@ -362,8 +362,6 @@ That coupling dies with `legacy/`.
   own placeholder names. Replace before the Phase 6 cutover.
 - The two duplicate Stripe webhook handlers in `legacy/` are moot — the store is dropped
   (Decision 6) and neither is ported.
-- `.claude/skills/` holds a superseded generation of skills (`baos`, `batdd`, `waf`,
-  `qcheck`…) predating the global `~/.claude/skills`. Stale and misleading.
 
 ## Roadmap
 
