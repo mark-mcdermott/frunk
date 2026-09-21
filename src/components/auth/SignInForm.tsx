@@ -16,11 +16,13 @@ import { FormError } from './FormError';
 import { SubmitButton } from './SubmitButton';
 
 /**
- * `password` is the normal way in. `recover` is the way in when the second factor is
- * all you have, and `recovered` is the state it leaves you in: signed in, but with
- * nothing on this device — so the one useful next step is offered right there.
+ * `password` is the normal way in. `code` is where it continues when recovery is
+ * enrolled: Better Auth answers the password with a challenge rather than a session,
+ * and the six-digit code completes it. `recovered` is the state that leaves you in —
+ * signed in, but with nothing on this device — so the one useful next step is offered
+ * right there, with a way past it for a browser that cannot do passkeys.
  */
-type Mode = 'password' | 'recover' | 'recovered';
+type Mode = 'password' | 'code' | 'recovered';
 
 const COPY: Record<Mode, { title: string; subtitle: string; label: string; pendingLabel: string }> =
 	{
@@ -30,8 +32,8 @@ const COPY: Record<Mode, { title: string; subtitle: string; label: string; pendi
 			label: 'Sign in',
 			pendingLabel: 'Signing in…'
 		},
-		recover: {
-			title: 'Lost your device',
+		code: {
+			title: 'One more step',
 			subtitle: 'Enter the six-digit code from your authenticator app.',
 			label: 'Verify code',
 			pendingLabel: 'Checking…'
@@ -68,7 +70,7 @@ export function SignInForm() {
 		setError(null);
 		setPending(true);
 		try {
-			if (mode === 'recover') {
+			if (mode === 'code') {
 				await recoverWithCode(token);
 				setMode('recovered');
 			} else if (mode === 'recovered') {
@@ -77,9 +79,13 @@ export function SignInForm() {
 				window.location.assign(AFTER_AUTH);
 				return;
 			} else {
-				await signIn(email, password);
-				window.location.assign(AFTER_AUTH);
-				return;
+				const result = await signIn(email, password);
+				if ('twoFactorRedirect' in result) {
+					setMode('code');
+				} else {
+					window.location.assign(AFTER_AUTH);
+					return;
+				}
 			}
 		} catch (cause) {
 			setError(authErrorMessage(cause));
@@ -132,7 +138,7 @@ export function SignInForm() {
 					</>
 				)}
 
-				{mode === 'recover' && (
+				{mode === 'code' && (
 					<AuthField
 						id="code"
 						label="Six-digit code from your authenticator app"
@@ -148,16 +154,24 @@ export function SignInForm() {
 					/>
 				)}
 
-				{mode !== 'recovered' && (
+				{mode === 'password' && (
+					<p className="text-[0.8125rem] text-text-muted">
+						Lost your passkey? Your password still signs you in — with your recovery code, if you
+						set one up.
+					</p>
+				)}
+
+				{mode === 'code' && (
 					<button
 						type="button"
 						onClick={() => {
-							setMode(mode === 'recover' ? 'password' : 'recover');
+							setMode('password');
+							setToken('');
 							setError(null);
 						}}
 						className="self-end text-[0.875rem] text-accent-text underline decoration-dotted underline-offset-4 transition-opacity hover:opacity-80"
 					>
-						{mode === 'recover' ? 'Back to sign in' : 'Lost your device?'}
+						Back to sign in
 					</button>
 				)}
 
@@ -169,6 +183,15 @@ export function SignInForm() {
 					pending={pending}
 					disabled={mode === 'recovered' && !supported}
 				/>
+
+				{mode === 'recovered' && (
+					<a
+						href={AFTER_AUTH}
+						className="self-center text-[0.875rem] text-text-muted underline decoration-dotted underline-offset-4 transition-colors hover:text-text"
+					>
+						Continue without a passkey
+					</a>
+				)}
 			</form>
 
 			{mode === 'password' && supported && (
