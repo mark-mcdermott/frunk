@@ -1,4 +1,10 @@
 {
 	"$schema": "https://openapi.vercel.sh/vercel.json",
-	"crons": [{ "path": "/api/cron/reap-demos", "schedule": "0 4 * * *" }]
+	"crons": [{ "path": "/api/cron/reap-demos", "schedule": "0 4 * * *" }],
+	"headers": [
+		{
+			"source": "/.well-known/apple-app-site-association",
+			"headers": [{ "key": "content-type", "value": "application/json" }]
+		}
+	]
 }
