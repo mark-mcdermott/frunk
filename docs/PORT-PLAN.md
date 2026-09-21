@@ -1045,6 +1045,17 @@ Playwright, chromium only, eight specs in ~20 s, wired into CI as its own job.
     plus `env(safe-area-inset-*)` padding on both headers and the applet's bottom), and the
     profile's demo branch never rendered a failed ceremony — the button just reset.
 
+- **Sign-in throttling moved to Postgres — 2026-09-21.** Better Auth's limiter was on in
+  production but in memory, one counter per Vercel instance; it now uses the database
+  store (`rate_limit`), is on in every environment, and has explicit rules for the
+  endpoints that cost something (10 password sign-ins a minute, 10 sign-ups and 5
+  verification mails per ten minutes, per address). `tests/rate-limit.test.ts` asserts
+  the 429 and the row behind it; the suites give each account its own forwarded address.
+- **Native plan, decided 2026-09-21:** v1 ships as the responsive site plus "Add to Home
+  Screen" — no store submission, so App Store guideline 4.2 (minimum functionality) does
+  not apply yet. The iOS App Store is a v2 goal; before it, drop the developer-mode suffix
+  from the entitlement, bundle the applet instead of loading it, and add native features
+  worth reviewing. Android waits for a Java runtime on the development Mac.
 - Desktop is out of scope (Decision 7) — no Tauri step.
 - ~~Resolve the DNS/email trade in Decision 1 before switching nameservers.~~ **Moot.** The
   nameservers already left Cloudflare — `frunk.cloud` now answers from Namecheap BasicDNS

@@ -59,6 +59,31 @@ function build(rp: { id: string; origin: string }) {
 		database: drizzleAdapter(getDb(), { provider: 'pg', schema }),
 
 		/**
+		 * The request limiter, on everywhere and backed by Postgres (`rate_limit`).
+		 *
+		 * Better Auth's default is on in production only, in memory — and on Vercel that
+		 * is one counter per function instance, reset whenever a new one spins up, so a
+		 * password-guesser was slowed rather than stopped. The database store is one row
+		 * per address and path, shared by every instance. It is enabled in development
+		 * and tests as well, so the code path that runs on every production auth request
+		 * is the one the suites exercise; the suites give each account its own forwarded
+		 * address so they never trip limits meant for a single client.
+		 *
+		 * The rules override the defaults for the endpoints that cost something: password
+		 * guesses, and the two that send mail. Two-factor keeps the plugin's own rule plus
+		 * its Postgres lockout; the passkey ceremonies keep the general 100 per 10 s.
+		 */
+		rateLimit: {
+			enabled: true,
+			storage: 'database',
+			customRules: {
+				'/sign-in/email': { window: 60, max: 10 },
+				'/sign-up/email': { window: 600, max: 10 },
+				'/send-verification-email': { window: 600, max: 5 }
+			}
+		},
+
+		/**
 		 * frunk's own columns on `user`. Declared here so Better Auth round-trips them
 		 * instead of dropping them on write. `roles` stays authoritative for demo
 		 * accounts (Decision 5) — the anonymous plugin's `isAnonymous` is bookkeeping.
