@@ -59,9 +59,12 @@ outstanding.
 - **Capacitor** (iOS/Android) — the shells live at the repo root (`ios/`, `android/`,
   `capacitor.config.ts`) and **load the deployed origin** rather than bundling; `pnpm
 cap:sync` after a dependency change, `CAP_SERVER_URL=http://localhost:<port>` to point a
-  build at a dev server. **WKWebView refuses WebAuthn** (`NotAllowedError`, verified in the
-  simulator 2026-09-20), so passkeys inside the app need Associated Domains or a native
-  plugin — see Phase 6 in the plan. Email + password works there.
+  build at a dev server. **WKWebView refuses WebAuthn unless the app is associated with
+  the site**: `public/.well-known/apple-app-site-association` names the app and
+  `ios/App/App/App.entitlements` carries `webcredentials:frunk.cloud` — with both, a demo
+  converted and signed back in with a passkey inside the app (simulator, against
+  production, 2026-09-21). The entitlement's `?mode=developer` suffix is for Xcode builds;
+  drop it for a store build. Email + password works there too.
 
 Dropped for now: the merch store (Stripe + Printful), Tauri desktop, Skeleton UI.
 
