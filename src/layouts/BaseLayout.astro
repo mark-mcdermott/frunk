@@ -23,7 +23,16 @@ const canonical = new URL(Astro.url.pathname, Astro.site);
 		<title>{title}</title>
 		<meta name="description" content={description} />
 		<link rel="canonical" href={canonical} />
-		<link rel="icon" href="/favicon.ico" sizes="any" />
+		<!-- The mark is the wordmark's F with its violet dot; the ICO is for the browsers that
+		     still ask for one, the SVG for the rest, and the touch icon and manifest are what
+		     "Add to Home Screen" reads on iOS and Android — v1's app, per the plan. -->
+		<link rel="icon" href="/favicon.ico" sizes="32x32" />
+		<link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+		<link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+		<link rel="manifest" href="/manifest.webmanifest" />
+		<meta name="theme-color" content="#03060f" />
+		<meta name="apple-mobile-web-app-title" content="Frunk" />
+		<meta name="mobile-web-app-capable" content="yes" />
 		<meta property="og:title" content={title} />
 		<meta property="og:description" content={description} />
 		<meta property="og:type" content="website" />
