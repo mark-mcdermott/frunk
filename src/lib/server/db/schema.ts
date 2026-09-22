@@ -62,7 +62,9 @@ export const user = pgTable('user', {
 	// --- frunk's own columns. Declared to Better Auth as additionalFields. ---
 	roles: integer('roles').array().notNull().default([]),
 	age: integer('age'),
-	cookieConsent: jsonb('cookie_consent')
+	cookieConsent: jsonb('cookie_consent'),
+	/** The maintenance digest (`/api/cron/maintenance-digest`) skips accounts that turn this off. */
+	remindersByEmail: boolean('reminders_by_email').notNull().default(true)
 });
 
 /**
@@ -342,6 +344,14 @@ export const repairs = pgTable('repairs', {
 	mileage: integer('mileage'),
 	cost: integer('cost'), // Store in cents
 	status: text('status').notNull().default('completed'), // completed, scheduled, in_progress
+	/**
+	 * The maintenance schedule this repair counts toward, if any. A completed repair
+	 * linked here becomes the schedule's "last done"; the schedule outlives the repair
+	 * (set null), and the repair outlives the schedule the same way.
+	 */
+	scheduleId: text('schedule_id').references(() => maintenanceSchedules.id, {
+		onDelete: 'set null'
+	}),
 	createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
 	updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow()
 });
@@ -413,6 +423,11 @@ export const maintenanceSchedules = pgTable('maintenance_schedules', {
 	intervalMonths: integer('interval_months'), // e.g. 6
 	lastCompletedDate: timestamp('last_completed_date', { withTimezone: true, mode: 'date' }),
 	lastCompletedMileage: integer('last_completed_mileage'),
+	/**
+	 * When the digest last mailed about this schedule being due. Cleared whenever it is
+	 * completed, so each due cycle earns exactly one email rather than one a day.
+	 */
+	reminderSentAt: timestamp('reminder_sent_at', { withTimezone: true, mode: 'date' }),
 	createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
 	updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow()
 });
