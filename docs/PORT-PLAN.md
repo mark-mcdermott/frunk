@@ -1143,6 +1143,10 @@ stays the one place that says what frunk is.
   due cycle (`reminder_sent_at`), only to verified non-demo addresses, with a
   **Reminders** switch on the profile (`user.reminders_by_email`). The seed gives every
   car one schedule in each state and an odometer reading, so the demo shows all of it.
+  **Renewals joined the same day:** the registration, inspection, emissions and insurance
+  dates the vehicle table always had now have a form section, a Renewals block on the
+  detail with the same pills, a place in the badge counts and in the digest — once per
+  date, tracked in `expiration_reminders`, so a renewed registration earns its own cycle.
   **Not built, by choice:** push notifications (v2, native) and mileage-based reminders
   that update themselves — without an odometer feed the reading moves when a service is
   logged, which is the honest v1.

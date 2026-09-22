@@ -5,10 +5,11 @@ import {
 	Car,
 	Check,
 	Clock,
-	Copy,
 	Cog,
+	Copy,
 	FileText,
 	Gauge,
+	Hash,
 	Palette,
 	Pencil,
 	Plus,
@@ -17,11 +18,21 @@ import {
 } from 'lucide-react';
 import { useId, useState, type ReactNode } from 'react';
 import { Link, useParams } from 'react-router';
-import { deleteNote, deleteRepair, getVehicle, keys, type Note, type Repair } from '../api';
+import {
+	deleteNote,
+	deleteRepair,
+	getVehicle,
+	keys,
+	type Note,
+	type Repair,
+	type Vehicle
+} from '../api';
 import { useCrumbs } from '../AppShell';
+import { assessExpirations, describeDeadline } from '@/lib/maintenance';
+import { DuePill } from '../components/DuePill';
 import { GalleryEditor } from '../components/GalleryEditor';
 import { ScheduleEditor } from '../components/ScheduleEditor';
-import { formatCost, formatMiles, formatNumericDate } from '../format';
+import { formatCost, formatDate, formatMiles, formatNumericDate } from '../format';
 
 /**
  * The vehicle detail screen, built to `docs/mocks/vehicle-single.webp`.
@@ -136,6 +147,47 @@ function SpecRow({ icon, label, value }: { icon: ReactNode; label: string; value
 			</span>
 			<span className="text-right text-[0.875rem] font-medium text-text">{value}</span>
 		</div>
+	);
+}
+
+/**
+ * The vehicle's dated renewals with the same verdict pills as its schedules. A car
+ * with no dates gets a nudge rather than an empty list — the dates are what turn the
+ * form's registration and insurance fields into reminders.
+ */
+function Renewals({ vehicle }: { vehicle: Vehicle }) {
+	const headingId = useId();
+	const renewals = assessExpirations(vehicle);
+
+	return (
+		<section aria-labelledby={headingId} className="mt-6 border-t border-border pt-5">
+			<h2 id={headingId} className="text-[0.75rem] tracking-[0.12em] text-text-faint uppercase">
+				Renewals
+			</h2>
+			{renewals.length === 0 ? (
+				<p className="mt-3 text-[0.8125rem] text-text-muted">
+					No renewal dates yet. Add registration, inspection and insurance dates when editing and
+					they join your reminders.
+				</p>
+			) : (
+				<ul className="mt-3 flex flex-col gap-3">
+					{renewals.map(({ expiration, expiresOn, assessment }) => (
+						<li key={expiration.kind} className="flex items-center justify-between gap-3">
+							<div className="min-w-0">
+								<p className="text-[0.875rem] text-text">{expiration.label}</p>
+								<p className="text-[0.75rem] text-text-faint">
+									{formatDate(expiresOn.toISOString())}
+									{expiration.kind === 'insurance' && vehicle.insuranceProvider
+										? ` · ${vehicle.insuranceProvider}`
+										: ''}
+								</p>
+							</div>
+							<DuePill assessment={assessment}>{describeDeadline(assessment)}</DuePill>
+						</li>
+					))}
+				</ul>
+			)}
+		</section>
 	);
 }
 
@@ -335,7 +387,18 @@ export function VehicleDetailPage() {
 								value={formatMiles(vehicle.currentMileage)}
 							/>
 						)}
+						{vehicle.licensePlate && (
+							<SpecRow
+								icon={<Hash className="size-4" />}
+								label="Plate"
+								value={[vehicle.licensePlate, vehicle.licensePlateState]
+									.filter(Boolean)
+									.join(' · ')}
+							/>
+						)}
 					</div>
+
+					<Renewals vehicle={vehicle} />
 
 					<Link
 						to={`/vehicles/${vehicle.id}/edit`}

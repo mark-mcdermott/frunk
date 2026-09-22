@@ -27,7 +27,10 @@ export const GET: APIRoute = (context) =>
 					userId: digest.userId,
 					email: digest.email,
 					items: digest.items.map((item) => ({
-						scheduleId: item.scheduleId,
+						kind: item.kind,
+						...(item.kind === 'schedule'
+							? { scheduleId: item.scheduleId }
+							: { expiration: item.expiration, expiresOn: item.expiresOn }),
 						name: item.name,
 						vehicleId: item.vehicleId,
 						state: item.assessment.state
