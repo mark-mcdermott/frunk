@@ -285,6 +285,14 @@ function CompleteForm({
 	);
 }
 
+/** Urgent first: what needs doing outranks what is fine, and the alphabet comes last. */
+const URGENCY: Record<Assessment['state'], number> = {
+	overdue: 0,
+	'due-soon': 1,
+	ok: 2,
+	unknown: 3
+};
+
 const PILL: Record<Assessment['state'], string> = {
 	overdue: 'bg-destructive-bg text-destructive',
 	'due-soon': 'bg-warning-bg text-warning',
@@ -442,6 +450,14 @@ export function ScheduleEditor({
 	const failure = add.error ?? edit.error ?? remove.error;
 	const now = new Date();
 
+	const assessed = schedules
+		.map((schedule) => ({ schedule, assessment: assess(schedule, currentMileage, now) }))
+		.sort(
+			(a, b) =>
+				URGENCY[a.assessment.state] - URGENCY[b.assessment.state] ||
+				a.schedule.name.localeCompare(b.schedule.name)
+		);
+
 	return (
 		<>
 			{open?.kind !== 'new' && (
@@ -496,7 +512,7 @@ export function ScheduleEditor({
 					</p>
 				</div>
 			) : (
-				schedules.map((schedule) => {
+				assessed.map(({ schedule, assessment }) => {
 					if (open?.kind === 'edit' && open.id === schedule.id) {
 						return (
 							<div key={schedule.id} className="py-4">
@@ -528,7 +544,7 @@ export function ScheduleEditor({
 						<ScheduleRow
 							key={schedule.id}
 							schedule={schedule}
-							assessment={assess(schedule, currentMileage, now)}
+							assessment={assessment}
 							onComplete={() => {
 								setErrors({});
 								setOpen({ kind: 'done', id: schedule.id });
