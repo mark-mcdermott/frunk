@@ -1125,6 +1125,28 @@ Playwright, chromium only, eight specs in ~20 s, wired into CI as its own job.
 
 ---
 
+## After the port
+
+The plan above is complete; what follows is product work, recorded here so this file
+stays the one place that says what frunk is.
+
+- **Maintenance reminders — shipped 2026-09-22.** The roadmap's core value proposition.
+  Schedules already existed as rows with intervals and a "last done"; what was missing
+  was any verdict. Now: `assess()` in `src/lib/maintenance.ts` decides overdue / due soon
+  (30 days or 500 miles) / on track / not started, the same function on both sides of
+  the wire; the garage badges each car with its counts; the detail panel shows a pill per
+  schedule and a **Mark done** form that moves "last done", moves the odometer forward
+  and logs the service as a repair that counts toward the schedule (`repairs.schedule_id`);
+  the repair form can link a repair to a schedule the same way, and linked repairs keep
+  the schedule in step through edit and delete; the add form starts from twelve common
+  services; and a daily digest (`/api/cron/maintenance-digest`, Resend) mails once per
+  due cycle (`reminder_sent_at`), only to verified non-demo addresses, with a
+  **Reminders** switch on the profile (`user.reminders_by_email`). The seed gives every
+  car one schedule in each state and an odometer reading, so the demo shows all of it.
+  **Not built, by choice:** push notifications (v2, native) and mileage-based reminders
+  that update themselves — without an odometer feed the reading moves when a service is
+  logged, which is the honest v1.
+
 ## Key files / patterns
 
 - **Reuse near-verbatim:** `src/lib/server/db/schema.ts`, `stripe.ts`, `printful.ts`,
