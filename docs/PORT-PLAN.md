@@ -1151,6 +1151,14 @@ stays the one place that says what frunk is.
   that update themselves — without an odometer feed the reading moves when a service is
   logged, which is the honest v1.
 
+- **Receipts on repairs — 2026-09-22.** The repair screen's mock had an Attachments panel
+  that was skipped because the store was not provisioned; it is now `repair_attachments`
+  behind `POST /api/repairs/:id/attachments` (after the usual upload) and
+  `DELETE /api/attachments/:id`, listed as **Receipts & documents** on the repair, counted
+  as a chip on every repair card, and cleaned from the store when the repair or the
+  vehicle goes — which also closed a gap where a repair-attached note's file outlived its
+  vehicle.
+
 ## Key files / patterns
 
 - **Reuse near-verbatim:** `src/lib/server/db/schema.ts`, `stripe.ts`, `printful.ts`,

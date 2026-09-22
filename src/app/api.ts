@@ -97,6 +97,19 @@ export interface Repair {
 	vendorName: string | null;
 	/** The maintenance schedule this counts toward, if any. */
 	scheduleId: string | null;
+	/** Receipts and documents on the repair — the count, for a chip; the files come with the detail. */
+	attachmentCount: number;
+}
+
+/** A receipt, invoice or photo on a repair. `url` is the private serving path. */
+export interface Attachment {
+	id: string;
+	repairId: string;
+	url: string;
+	name: string;
+	contentType: string;
+	size: number;
+	createdAt: string;
 }
 
 export interface Photo {
@@ -312,6 +325,7 @@ export interface RepairDetail {
 	repair: Repair & { vehicleId: string };
 	/** Notes attached to this repair — the only place they surface. */
 	notes: NoteDetail[];
+	attachments: Attachment[];
 }
 
 export const getRepair = (id: string) => request<RepairDetail>(`/api/repairs/${id}`);
@@ -330,6 +344,23 @@ export const updateRepair = (id: string, body: Omit<RepairInput, 'vehicleId'>) =
 
 export const deleteRepair = (id: string) =>
 	request<void>(`/api/repairs/${id}`, { method: 'DELETE' });
+
+export interface AttachmentInput {
+	url: string;
+	name: string;
+	contentType: string;
+	size: number;
+}
+
+/** After `uploadFile`: hangs the uploaded file on the repair. */
+export const addAttachment = (repairId: string, body: AttachmentInput) =>
+	request<{ attachment: Attachment }>(`/api/repairs/${repairId}/attachments`, {
+		method: 'POST',
+		body: JSON.stringify(body)
+	}).then((r) => r.attachment);
+
+export const deleteAttachment = (id: string) =>
+	request<void>(`/api/attachments/${id}`, { method: 'DELETE' });
 
 export const listNotes = () => request<{ notes: NoteRow[] }>('/api/notes').then((r) => r.notes);
 

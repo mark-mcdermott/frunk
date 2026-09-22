@@ -12,11 +12,22 @@ import {
 	Trash2,
 	Wrench
 } from 'lucide-react';
-import type { ReactNode } from 'react';
+import { useRef, type ReactNode } from 'react';
 import { Link, useParams } from 'react-router';
-import { deleteNote, getRepair, keys, listVehicles, listVendors, type NoteDetail } from '../api';
+import {
+	addAttachment,
+	deleteAttachment,
+	deleteNote,
+	getRepair,
+	keys,
+	listVehicles,
+	listVendors,
+	uploadFile,
+	type Attachment,
+	type NoteDetail
+} from '../api';
 import { useCrumbs } from '../AppShell';
-import { formatCost, formatDate, formatMiles } from '../format';
+import { formatBytes, formatCost, formatDate, formatMiles } from '../format';
 
 /**
  * The repair detail, built to `docs/mocks/repair-single.webp`.
@@ -30,9 +41,11 @@ import { formatCost, formatDate, formatMiles } from '../format';
  * endpoint returns the raw row, and both lists are already in the cache for anyone
  * arriving from inside the app.
  *
- * Two mock panels are absent: Attachments (a repair has no attachment model — its
- * attachments *are* its notes' files, shown on the note cards) and Repair History
- * (the vehicle's other repairs, which the vehicle screen already lists in full).
+ * The mock's Attachments panel is **Receipts & documents**: files hung straight on the
+ * repair, no note needed (a note is for words, and may still carry one file of its
+ * own). Each file is two requests — the upload, then the row — same as a gallery
+ * photo, with the same accepted orphan if the second never comes. The mock's Repair
+ * History panel is absent: the vehicle screen already lists the other repairs in full.
  */
 
 function SpecRow({
@@ -100,6 +113,140 @@ function NoteCard({ note, onDelete }: { note: NoteDetail; onDelete: () => void }
 				</a>
 			)}
 		</article>
+	);
+}
+
+const ACCEPT = 'image/jpeg,image/png,image/webp,image/gif,image/avif,application/pdf';
+
+function AttachmentRow({ attachment, onDelete }: { attachment: Attachment; onDelete: () => void }) {
+	const isImage = attachment.contentType.startsWith('image/');
+	return (
+		<li className="flex items-center gap-3 rounded-control border border-border bg-surface-raised p-3">
+			{isImage ? (
+				<img
+					src={attachment.url}
+					alt=""
+					className="size-12 shrink-0 rounded-[8px] border border-border object-cover"
+				/>
+			) : (
+				<span
+					aria-hidden
+					className="flex size-12 shrink-0 items-center justify-center rounded-[8px] border border-border text-accent-bright"
+				>
+					<FileText className="size-5" strokeWidth={1.5} />
+				</span>
+			)}
+			<div className="min-w-0 flex-1">
+				<a
+					href={attachment.url}
+					target="_blank"
+					rel="noreferrer"
+					className="block truncate text-[0.9375rem] text-text transition-opacity hover:opacity-80"
+				>
+					{attachment.name}
+				</a>
+				<p className="mt-0.5 text-[0.75rem] text-text-faint">
+					{formatBytes(attachment.size)} · {formatDate(attachment.createdAt)}
+				</p>
+			</div>
+			<button
+				type="button"
+				aria-label={`Delete ${attachment.name}`}
+				onClick={onDelete}
+				className="flex size-8 shrink-0 items-center justify-center rounded-full border border-destructive/40 text-destructive transition-colors hover:bg-destructive-bg"
+			>
+				<Trash2 className="size-3.5" strokeWidth={1.75} aria-hidden />
+			</button>
+		</li>
+	);
+}
+
+/**
+ * The receipts panel. Picking files uploads them one after another and hangs each on
+ * the repair; the list refreshes as each lands rather than at the end, so a slow
+ * second file never hides a finished first one.
+ */
+function Receipts({ repairId, attachments }: { repairId: string; attachments: Attachment[] }) {
+	const client = useQueryClient();
+	const input = useRef<HTMLInputElement>(null);
+	const refresh = () => {
+		client.invalidateQueries({ queryKey: keys.repair(repairId) });
+		client.invalidateQueries({ queryKey: keys.repairs });
+	};
+
+	const add = useMutation({
+		mutationFn: async (files: File[]) => {
+			for (const file of files) {
+				const uploaded = await uploadFile(file);
+				await addAttachment(repairId, {
+					url: uploaded.url,
+					name: file.name,
+					contentType: file.type,
+					size: file.size
+				});
+				refresh();
+			}
+		}
+	});
+	const remove = useMutation({ mutationFn: deleteAttachment, onSuccess: refresh });
+
+	return (
+		<section className="card p-6">
+			<div className="flex items-center justify-between gap-3">
+				<h2 className="display-sm flex items-center gap-3 text-xl">
+					<Paperclip className="size-5 text-text-muted" aria-hidden />
+					Receipts &amp; documents
+				</h2>
+				<button
+					type="button"
+					disabled={add.isPending}
+					onClick={() => input.current?.click()}
+					className="flex shrink-0 items-center gap-1.5 rounded-full border border-accent/50 px-3 py-1.5 text-[0.8125rem] text-text transition-colors hover:bg-accent/10 disabled:opacity-60"
+				>
+					<Plus className="size-3.5 text-accent-bright" strokeWidth={2} aria-hidden />
+					{add.isPending ? 'Uploading…' : 'Add file'}
+				</button>
+				<input
+					ref={input}
+					type="file"
+					multiple
+					accept={ACCEPT}
+					className="sr-only"
+					aria-label="Add file"
+					onChange={(event) => {
+						const files = Array.from(event.target.files ?? []);
+						if (files.length) add.mutate(files);
+						event.target.value = '';
+					}}
+				/>
+			</div>
+
+			<div className="mt-6">
+				{attachments.length === 0 ? (
+					<p className="py-6 text-center text-[0.875rem] text-text-muted">
+						Receipts, invoices and photos of the work. PDF, JPG, PNG, WebP or GIF up to 10 MB.
+					</p>
+				) : (
+					<ul className="flex flex-col gap-3">
+						{attachments.map((attachment) => (
+							<AttachmentRow
+								key={attachment.id}
+								attachment={attachment}
+								onDelete={() => remove.mutate(attachment.id)}
+							/>
+						))}
+					</ul>
+				)}
+
+				{(add.isError || remove.isError) && (
+					<p role="alert" className="mt-3 text-[0.8125rem] text-destructive">
+						{(add.error ?? remove.error) instanceof Error
+							? (add.error ?? remove.error)!.message
+							: 'Could not update the files.'}
+					</p>
+				)}
+			</div>
+		</section>
 	);
 }
 
@@ -234,7 +381,7 @@ export function RepairDetailPage() {
 					<div className="mt-6">
 						{data.notes.length === 0 ? (
 							<p className="py-6 text-center text-[0.875rem] text-text-muted">
-								Receipts and details for this repair live here.
+								Details worth remembering about this repair live here.
 							</p>
 						) : (
 							<div className="flex flex-col gap-4">
@@ -249,6 +396,10 @@ export function RepairDetailPage() {
 						)}
 					</div>
 				</section>
+
+				<div className="lg:col-span-2">
+					<Receipts repairId={repair.id} attachments={data.attachments} />
+				</div>
 			</div>
 		</>
 	);
