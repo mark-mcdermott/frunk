@@ -36,7 +36,8 @@ export function toSessionUser(user: Record<string, unknown>): SessionUser {
 		image: (user.image as string | null) ?? null,
 		roles: Array.isArray(user.roles) ? (user.roles as number[]) : [],
 		emailVerified: Boolean(user.emailVerified),
-		twoFactorEnabled: Boolean(user.twoFactorEnabled)
+		twoFactorEnabled: Boolean(user.twoFactorEnabled),
+		remindersByEmail: user.remindersByEmail !== false
 	};
 }
 
@@ -181,7 +182,11 @@ export async function signOut(): Promise<void> {
  * `PATCH /api/users/:id`, because this one refreshes the session store — the header
  * avatar updates the moment the save lands, with no reload and no manual cache poke.
  */
-export async function updateProfile(body: { name?: string; image?: string | null }): Promise<void> {
+export async function updateProfile(body: {
+	name?: string;
+	image?: string | null;
+	remindersByEmail?: boolean;
+}): Promise<void> {
 	const result = await authClient.updateUser(body);
 	if (result?.error) throw new AuthError(result.error.message ?? 'Could not save your profile.');
 }

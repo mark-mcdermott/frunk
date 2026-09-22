@@ -52,7 +52,8 @@ export async function resolveSession(context: APIContext): Promise<ResolvedSessi
 			 */
 			roles: Array.isArray(user.roles) ? (user.roles as number[]) : [],
 			emailVerified: Boolean(user.emailVerified),
-			twoFactorEnabled: Boolean(user.twoFactorEnabled)
+			twoFactorEnabled: Boolean(user.twoFactorEnabled),
+			remindersByEmail: user.remindersByEmail !== false
 		},
 		sessionId: session.id,
 		expiresAt: new Date(session.expiresAt)

@@ -20,13 +20,15 @@ export interface SessionUser {
 	emailVerified: boolean;
 	/** Whether a recovery factor is set up. Never widen this to the secret itself. */
 	twoFactorEnabled: boolean;
+	/** Whether the maintenance digest may write to this address. */
+	remindersByEmail: boolean;
 }
 
 /**
  * The label for an account in the nav. Prefers the name Better Auth now requires,
  * falling back to the address's local part when it is only a placeholder.
  */
-export function displayName(user: SessionUser): string {
+export function displayName(user: Pick<SessionUser, 'name' | 'email'>): string {
 	const name = user.name?.trim();
 	if (name) return name;
 
@@ -34,7 +36,7 @@ export function displayName(user: SessionUser): string {
 	return local || user.email;
 }
 
-export function initial(user: SessionUser): string {
+export function initial(user: Pick<SessionUser, 'name' | 'email'>): string {
 	return displayName(user).charAt(0).toUpperCase();
 }
 

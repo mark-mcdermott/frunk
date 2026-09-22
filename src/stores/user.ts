@@ -52,7 +52,8 @@ export function loadUser(): Promise<void> {
 				image: (user.image as string | null) ?? null,
 				roles: Array.isArray(user.roles) ? (user.roles as number[]) : [],
 				emailVerified: Boolean(user.emailVerified),
-				twoFactorEnabled: Boolean(user.twoFactorEnabled)
+				twoFactorEnabled: Boolean(user.twoFactorEnabled),
+				remindersByEmail: user.remindersByEmail !== false
 			});
 		})
 		.catch(() => setUser(null));
