@@ -1,5 +1,5 @@
 import type { APIRoute } from 'astro';
-import { desc, eq } from 'drizzle-orm';
+import { desc, eq, sql } from 'drizzle-orm';
 import { getDb } from '../../../lib/server/db';
 import * as table from '../../../lib/server/db/schema';
 import { resyncSchedule } from '../../../lib/server/maintenance';
@@ -30,6 +30,10 @@ export const GET: APIRoute = (context) =>
 				status: table.repairs.status,
 				scheduleId: table.repairs.scheduleId,
 				vendorName: table.vendors.name,
+				attachmentCount:
+					sql<number>`(select count(*) from ${table.repairAttachments} where ${table.repairAttachments.repairId} = ${table.repairs.id})`.mapWith(
+						Number
+					),
 				vehicleMake: table.vehicles.make,
 				vehicleModel: table.vehicles.model,
 				vehicleYear: table.vehicles.year

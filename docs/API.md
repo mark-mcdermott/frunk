@@ -134,9 +134,21 @@ alone. `tests/demo-conversion.test.ts` asserts both in Postgres.
 | -------- | ------------------ | --------------------------------------------------------------------------------------------------------------------------------------- |
 | `GET`    | `/api/repairs`     | Across every vehicle the caller owns, with vendor and vehicle names joined in.                                                          |
 | `POST`   | `/api/repairs`     | `vehicleId`, `description`, `date`. A `vendorId` must also be the caller's. A `scheduleId` must be on the same vehicle (400 otherwise). |
-| `GET`    | `/api/repairs/:id` | `{ repair, notes }`.                                                                                                                    |
+| `GET`    | `/api/repairs/:id` | `{ repair, notes, attachments }`.                                                                                                       |
 | `PATCH`  | `/api/repairs/:id` |                                                                                                                                         |
-| `DELETE` | `/api/repairs/:id` |                                                                                                                                         |
+| `DELETE` | `/api/repairs/:id` | Attachments and repair-attached notes cascade; their blobs are removed.                                                                 |
+
+Every repair row — in the list and on the vehicle — carries `attachmentCount`.
+
+### Attachments
+
+Receipts, invoices and photos hung straight on a repair. A note is for words and may
+still carry one file of its own; these are files with no words.
+
+| Method   | Path                           | Notes                                                                                                                                       |
+| -------- | ------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------- |
+| `POST`   | `/api/repairs/:id/attachments` | `url` (from `POST /api/uploads`), `name`, `contentType`, `size`. The URL must sit under the caller's own `/api/files/u/<id>/` prefix (400). |
+| `DELETE` | `/api/attachments/:id`         | Row, then blob.                                                                                                                             |
 
 ### Notes
 

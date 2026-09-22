@@ -82,6 +82,19 @@ export async function ownedPhoto(photoId: string, userId: string) {
 	return row.photo;
 }
 
+/** An attachment belongs to a repair, which belongs to a vehicle, which has the owner. */
+export async function ownedAttachment(attachmentId: string, userId: string) {
+	const [row] = await getDb()
+		.select({ attachment: table.repairAttachments })
+		.from(table.repairAttachments)
+		.innerJoin(table.repairs, eq(table.repairAttachments.repairId, table.repairs.id))
+		.innerJoin(table.vehicles, eq(table.repairs.vehicleId, table.vehicles.id))
+		.where(and(eq(table.repairAttachments.id, attachmentId), eq(table.vehicles.userId, userId)));
+
+	if (!row) throw new HttpError(notFound('Attachment not found'));
+	return row.attachment;
+}
+
 export async function ownedSchedule(scheduleId: string, userId: string) {
 	const [row] = await getDb()
 		.select({ schedule: table.maintenanceSchedules })

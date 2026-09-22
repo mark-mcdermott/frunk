@@ -63,7 +63,10 @@ body, 10 MB, images+PDF); serving goes through `GET /api/files/[...path]`, which
 the session and the `u/<userId>/` pathname prefix on every request (foreign file = 404,
 no existence oracle). `src/lib/server/files.ts` is the only module that touches
 `@vercel/blob`. Delete/replace endpoints clean their blobs; an upload abandoned before
-its form is saved leaves an orphan (accepted, see the plan). Read
+its form is saved leaves an orphan (accepted, see the plan). **Receipts live on the repair**
+(`repair_attachments`, 2026-09-22): `POST /api/repairs/:id/attachments` after the upload,
+shown on the repair screen and counted on its cards; deleting a repair or a vehicle removes
+their blobs along with the rows, repair-attached notes' files included. Read
 `docs/PORT-PLAN.md` before doing anything here; it records what is settled and what is
 outstanding.
 
