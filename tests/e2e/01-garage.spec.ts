@@ -61,6 +61,24 @@ test.describe('garage', () => {
 			)
 		).toBe(`<null>|Red|${ymd}`);
 
+		// The history downloads are real files, named for the car.
+		const pdf = page.waitForEvent('download');
+		await page.getByRole('link', { name: 'History (PDF)' }).click();
+		const report = await pdf;
+		expect(report.suggestedFilename()).toBe('1987-Toyota-MR2-history.pdf');
+		const stream = await report.createReadStream();
+		const head = await new Promise<string>((resolve) => {
+			stream.once('data', (chunk: Buffer) => {
+				resolve(chunk.subarray(0, 5).toString());
+				stream.destroy();
+			});
+		});
+		expect(head).toBe('%PDF-');
+
+		const csv = page.waitForEvent('download');
+		await page.getByRole('link', { name: 'Repairs (CSV)' }).click();
+		expect((await csv).suggestedFilename()).toBe('1987-Toyota-MR2-history.csv');
+
 		// Delete, through the two-step confirmation.
 		await page.getByRole('link', { name: 'Edit Vehicle' }).click();
 		await page.getByRole('button', { name: 'Delete Vehicle' }).click();

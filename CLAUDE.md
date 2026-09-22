@@ -51,6 +51,12 @@ Drizzle selects every declared column, so code that lands on Vercel ahead of the
 from the branch first, then merge. `rate_limit` was a new table and did not care;
 `repairs.schedule_id` did.
 
+**The history report** (2026-09-22) is `GET /api/vehicles/:id/report` (PDF, pdfkit with its
+built-in Helvetica — no font files to ship) and `/history.csv`, both from
+`src/lib/server/report.ts`; the vehicle screen links them as downloads. pdfkit reads its
+font metrics from disk at runtime, which Vercel's tracer knows about; if a deploy ever
+answers 500 on the report, that is the first place to look.
+
 **Query client rules** (`AppRoot.tsx`): `networkMode: 'always'` on queries _and_
 mutations — TanStack's default pauses fetches whenever `navigator.onLine` is false,
 which renders as an infinite "Loading…"/"Saving…", and that signal is unreliable in
