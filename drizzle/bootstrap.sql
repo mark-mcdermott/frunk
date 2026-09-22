@@ -8,7 +8,7 @@
 --
 -- GENERATED FILE — do not edit. Regenerate with:
 --   pnpm db:generate && pnpm db:bootstrap-sql
--- Source: 0000_sad_silver_surfer.sql, 0001_graceful_absorbing_man.sql, 0002_fuzzy_rockslide.sql
+-- Source: 0000_sad_silver_surfer.sql, 0001_graceful_absorbing_man.sql, 0002_fuzzy_rockslide.sql, 0003_bent_chameleon.sql
 
 CREATE TABLE IF NOT EXISTS "account" (
 	"id" text PRIMARY KEY NOT NULL,
@@ -279,6 +279,15 @@ ALTER TABLE "maintenance_schedules" ADD COLUMN IF NOT EXISTS "reminder_sent_at" 
 ALTER TABLE "repairs" ADD COLUMN IF NOT EXISTS "schedule_id" text;--> statement-breakpoint
 ALTER TABLE "user" ADD COLUMN IF NOT EXISTS "reminders_by_email" boolean DEFAULT true NOT NULL;--> statement-breakpoint
 DO $$ BEGIN ALTER TABLE "repairs" ADD CONSTRAINT "repairs_schedule_id_maintenance_schedules_id_fk" FOREIGN KEY ("schedule_id") REFERENCES "public"."maintenance_schedules"("id") ON DELETE set null ON UPDATE no action; EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+CREATE TABLE IF NOT EXISTS "expiration_reminders" (
+	"vehicle_id" text NOT NULL,
+	"kind" text NOT NULL,
+	"sent_for" timestamp with time zone NOT NULL,
+	"sent_at" timestamp with time zone DEFAULT now() NOT NULL,
+	CONSTRAINT "expiration_reminders_vehicle_id_kind_pk" PRIMARY KEY("vehicle_id","kind")
+);
+--> statement-breakpoint
+DO $$ BEGIN ALTER TABLE "expiration_reminders" ADD CONSTRAINT "expiration_reminders_vehicle_id_vehicles_id_fk" FOREIGN KEY ("vehicle_id") REFERENCES "public"."vehicles"("id") ON DELETE cascade ON UPDATE no action; EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
 --
 -- Roles. The ids are load-bearing: ROLE_IDS in src/lib/roles.ts is { DEMO: 1, USER: 2,
