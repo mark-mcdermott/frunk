@@ -57,3 +57,10 @@ export const toCents = (dollars: string) => Math.round(Number(dollars) * 100);
 
 /** Cents → the plain decimal a money input should show; no currency symbol. */
 export const fromCents = (cents: number) => (cents / 100).toFixed(2);
+
+/** "184 KB", "2.1 MB" — file sizes on the attachment list. */
+export function formatBytes(bytes: number) {
+	if (bytes < 1024) return `${bytes} B`;
+	if (bytes < 1024 * 1024) return `${Math.round(bytes / 1024)} KB`;
+	return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+}

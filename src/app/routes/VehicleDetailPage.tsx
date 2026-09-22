@@ -11,6 +11,7 @@ import {
 	Gauge,
 	Hash,
 	Palette,
+	Paperclip,
 	Pencil,
 	Plus,
 	Trash2,
@@ -275,6 +276,13 @@ function RepairCard({ repair, onDelete }: { repair: Repair; onDelete: () => void
 
 			{repair.vendorName && (
 				<p className="mt-2 text-[0.8125rem] text-text-muted">{repair.vendorName}</p>
+			)}
+
+			{repair.attachmentCount > 0 && (
+				<p className="mt-3 inline-flex items-center gap-1.5 rounded-full border border-border px-2.5 py-1 text-[0.75rem] text-text-muted">
+					<Paperclip className="size-3" strokeWidth={1.75} aria-hidden />
+					{repair.attachmentCount} {repair.attachmentCount === 1 ? 'receipt' : 'receipts'}
+				</p>
 			)}
 		</article>
 	);
