@@ -514,8 +514,11 @@ async function seed() {
 					vendorId: vendorId,
 					description: repair.description,
 					date: repairDate,
-					// A logged service cannot have happened past the odometer.
-					mileage: Math.min(getRandomMileage(vehicle.year), currentMileage),
+					// Somewhere in the last stretch of the odometer; a booked service is at the reading.
+					mileage:
+						repair.status === 'scheduled'
+							? currentMileage
+							: Math.max(0, currentMileage - Math.floor(Math.random() * 20000)),
 					cost: repair.cost,
 					status: repair.status
 				});
