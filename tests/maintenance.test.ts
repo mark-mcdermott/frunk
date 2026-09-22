@@ -1,5 +1,11 @@
 import { beforeAll, describe, expect, it } from 'vitest';
-import { addMonths, assess, describeDue } from '../src/lib/maintenance';
+import {
+	addMonths,
+	assess,
+	assessDeadline,
+	describeDeadline,
+	describeDue
+} from '../src/lib/maintenance';
 import { api, json, signUpAndSignIn, sql, startDemo, type TestUser } from './helpers';
 
 /**
@@ -72,6 +78,23 @@ describe('assess', () => {
 		);
 		expect(both.state).toBe('overdue');
 		expect(describeDue(both)).toBe('Overdue by 200 mi');
+	});
+});
+
+describe('assessDeadline', () => {
+	const now = new Date('2026-09-22T12:00:00Z');
+	const at = (date: string | null) => assessDeadline(date, now);
+
+	it('treats a renewal date like a schedule with no interval', () => {
+		expect(at(null)).toMatchObject({ state: 'unknown', daysLeft: null });
+		expect(describeDeadline(at(null))).toBe('No date');
+		expect(at('2027-03-01T00:00:00Z')).toMatchObject({ state: 'ok' });
+		expect(at('2026-10-10T00:00:00Z')).toMatchObject({ state: 'due-soon', daysLeft: 18 });
+		expect(describeDeadline(at('2026-10-10T00:00:00Z'))).toBe('Expires in 18 days');
+		// Dates are stored at midnight; by noon that day it is "today", not "in 1 day".
+		expect(describeDeadline(at('2026-09-22T00:00:00Z'))).toBe('Expires today');
+		expect(at('2026-09-19T00:00:00Z')).toMatchObject({ state: 'overdue', daysLeft: -3 });
+		expect(describeDeadline(at('2026-09-19T00:00:00Z'))).toBe('Expired 3 days ago');
 	});
 });
 
@@ -302,6 +325,30 @@ describe('GET /api/vehicles', () => {
 			dueSoon: 0
 		});
 	});
+
+	it('counts renewal dates alongside schedules', async () => {
+		const alice = await signUpAndSignIn();
+		const { vehicleId } = await garage(alice, 10000);
+
+		const patched = await api(`/api/vehicles/${vehicleId}`, {
+			method: 'PATCH',
+			body: {
+				registrationExpiration: iso(daysAgo(5)),
+				inspectionExpiration: iso(daysAgo(-10)),
+				insuranceExpiration: iso(daysAgo(-200))
+			},
+			cookie: alice.cookie
+		});
+		expect(patched.status).toBe(200);
+
+		const { vehicles } = await json<{
+			vehicles: { id: string; maintenance: { overdue: number; dueSoon: number } }[];
+		}>(await api('/api/vehicles', { cookie: alice.cookie }));
+		expect(vehicles.find((v) => v.id === vehicleId)?.maintenance).toEqual({
+			overdue: 1,
+			dueSoon: 1
+		});
+	});
 });
 
 describe('GET /api/cron/maintenance-digest', () => {
@@ -316,7 +363,16 @@ describe('GET /api/cron/maintenance-digest', () => {
 
 	interface DryRun {
 		dryRun: true;
-		digests: { userId: string; items: { scheduleId: string; state: string }[] }[];
+		digests: {
+			userId: string;
+			items: {
+				kind: 'schedule' | 'expiration';
+				scheduleId?: string;
+				expiration?: string;
+				vehicleId: string;
+				state: string;
+			}[];
+		}[];
 	}
 	const planFor = async (userId: string) =>
 		(await json<DryRun>(await digest('?dryRun=1'))).digests.find((d) => d.userId === userId);
@@ -381,6 +437,34 @@ describe('GET /api/cron/maintenance-digest', () => {
 			cookie: alice.cookie
 		});
 		expect(await planFor(alice.id)).toBeDefined();
+	});
+
+	it('mentions a renewal once per date, and again when the date moves', async () => {
+		const { vehicleId } = await garage(alice, 10000);
+		const renew = (registrationExpiration: string) =>
+			api(`/api/vehicles/${vehicleId}`, {
+				method: 'PATCH',
+				body: { registrationExpiration },
+				cookie: alice.cookie
+			});
+		const registration = async () =>
+			(await planFor(alice.id))?.items.find(
+				(item) => item.vehicleId === vehicleId && item.kind === 'expiration'
+			);
+
+		const expired = daysAgo(3);
+		expect((await renew(iso(expired))).status).toBe(200);
+		expect(await registration()).toMatchObject({ expiration: 'registration', state: 'overdue' });
+
+		// Told about this date already: quiet.
+		await sql(
+			`insert into expiration_reminders (vehicle_id, kind, sent_for) values ('${vehicleId}', 'registration', '${iso(expired)}')`
+		);
+		expect(await registration()).toBeUndefined();
+
+		// Renewed, and the new date is inside the window: that is a new cycle.
+		expect((await renew(iso(daysAgo(-10)))).status).toBe(200);
+		expect(await registration()).toMatchObject({ expiration: 'registration', state: 'due-soon' });
 	});
 
 	it('refuses to run for real without a mail provider', async () => {

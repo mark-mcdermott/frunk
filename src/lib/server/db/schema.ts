@@ -5,11 +5,12 @@
  * Postgres shape. Deviations are commented inline where they exist.
  */
 import {
-	pgTable,
 	bigint,
 	boolean,
 	integer,
 	jsonb,
+	pgTable,
+	primaryKey,
 	serial,
 	text,
 	timestamp
@@ -433,4 +434,24 @@ export const maintenanceSchedules = pgTable('maintenance_schedules', {
 });
 
 export type MaintenanceSchedule = typeof maintenanceSchedules.$inferSelect;
+
+/**
+ * Which renewal the digest last mailed about, per vehicle and kind, and for which
+ * date. A renewal has no "mark done": the date on the vehicle simply moves. So a row
+ * here whose `sent_for` still matches the vehicle's date means "already told"; once
+ * the date changes, the next due cycle earns its own email.
+ */
+export const expirationReminders = pgTable(
+	'expiration_reminders',
+	{
+		vehicleId: text('vehicle_id')
+			.notNull()
+			.references(() => vehicles.id, { onDelete: 'cascade' }),
+		/** registration | inspection | emissions | insurance — `EXPIRATIONS` in src/lib/maintenance.ts */
+		kind: text('kind').notNull(),
+		sentFor: timestamp('sent_for', { withTimezone: true, mode: 'date' }).notNull(),
+		sentAt: timestamp('sent_at', { withTimezone: true, mode: 'date' }).notNull().defaultNow()
+	},
+	(table) => [primaryKey({ columns: [table.vehicleId, table.kind] })]
+);
 export type NewMaintenanceSchedule = typeof maintenanceSchedules.$inferInsert;
