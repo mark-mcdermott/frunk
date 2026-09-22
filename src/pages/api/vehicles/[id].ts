@@ -1,8 +1,9 @@
 import type { APIRoute } from 'astro';
-import { desc, eq, inArray, sql } from 'drizzle-orm';
+import { desc, eq, inArray } from 'drizzle-orm';
 import { getDb } from '../../../lib/server/db';
 import * as table from '../../../lib/server/db/schema';
 import { deleteManagedFiles } from '../../../lib/server/files';
+import { attachmentCount } from '../../../lib/server/repairs';
 import { ownedVehicle, requireSession } from '../_lib/guard';
 import { handler, json, noContent, notFound, readJson } from '../_lib/http';
 import { updateVehicleSchema } from '../_lib/schemas';
@@ -162,9 +163,3 @@ export const DELETE: APIRoute = (context) =>
 
 		return noContent();
 	});
-
-/** How many receipts a repair carries, as a column — the card shows a chip, not the files. */
-const attachmentCount = (repairId: typeof table.repairs.id) =>
-	sql<number>`(select count(*) from ${table.repairAttachments} where ${table.repairAttachments.repairId} = ${repairId})`.mapWith(
-		Number
-	);
