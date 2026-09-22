@@ -110,13 +110,15 @@ alone. `tests/demo-conversion.test.ts` asserts both in Postgres.
 
 ### Vehicles
 
-| Method   | Path                | Notes                                                                                                                                                                                 |
-| -------- | ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `GET`    | `/api/vehicles`     | The caller's vehicles, newest first, each with `maintenance: { overdue, dueSoon }` counted from its schedules and its renewal dates (registration, inspection, emissions, insurance). |
-| `POST`   | `/api/vehicles`     | `make`, `model`, `year` required; all 46 optional columns accepted.                                                                                                                   |
-| `GET`    | `/api/vehicles/:id` | The whole detail screen: `{ vehicle, notes, repairs, vendors, galleries, schedules }`, galleries with their photos.                                                                   |
-| `PATCH`  | `/api/vehicles/:id` |                                                                                                                                                                                       |
-| `DELETE` | `/api/vehicles/:id` | Notes, repairs, galleries and schedules cascade.                                                                                                                                      |
+| Method   | Path                            | Notes                                                                                                                                                                                                                                                                |
+| -------- | ------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `GET`    | `/api/vehicles`                 | The caller's vehicles, newest first, each with `maintenance: { overdue, dueSoon }` counted from its schedules and its renewal dates (registration, inspection, emissions, insurance).                                                                                |
+| `POST`   | `/api/vehicles`                 | `make`, `model`, `year` required; all 46 optional columns accepted.                                                                                                                                                                                                  |
+| `GET`    | `/api/vehicles/:id`             | The whole detail screen: `{ vehicle, notes, repairs, vendors, galleries, schedules }`, galleries with their photos.                                                                                                                                                  |
+| `PATCH`  | `/api/vehicles/:id`             |                                                                                                                                                                                                                                                                      |
+| `DELETE` | `/api/vehicles/:id`             | Notes, repairs, galleries and schedules cascade.                                                                                                                                                                                                                     |
+| `GET`    | `/api/vehicles/:id/report`      | The maintenance history as a **PDF download** (`src/lib/server/report.ts`): the vehicle, its public renewals, its schedules with what is next, and every service oldest first with vendor, cost, receipts on file and a total. Insurance details and notes stay out. |
+| `GET`    | `/api/vehicles/:id/history.csv` | The service record as CSV — ISO dates, dollars, a `Receipts` count — for a spreadsheet.                                                                                                                                                                              |
 
 ### Vendors
 

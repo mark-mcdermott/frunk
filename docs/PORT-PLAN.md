@@ -1159,6 +1159,14 @@ stays the one place that says what frunk is.
   vehicle goes — which also closed a gap where a repair-attached note's file outlived its
   vehicle.
 
+- **Exports and reports — 2026-09-22.** `GET /api/vehicles/:id/report` renders the
+  maintenance history as a PDF (pdfkit, Helvetica, Letter): the vehicle's facts, its public
+  renewals, the schedules with what is next, and the service record oldest first with
+  vendor, cost, receipts on file and a total; `/history.csv` gives the same rows to a
+  spreadsheet. Insurance and notes stay out — it is the record of the car, not of its
+  owner. Two links on the vehicle screen. This is the resale story the premium tier was
+  going to be built on; it ships free for now, and a tier can gate it later.
+
 ## Key files / patterns
 
 - **Reuse near-verbatim:** `src/lib/server/db/schema.ts`, `stripe.ts`, `printful.ts`,
