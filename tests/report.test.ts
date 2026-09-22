@@ -64,10 +64,11 @@ function inflatedText(pdf: Buffer): string {
 		}
 	}
 	const runs: string[] = [];
-	for (const [, array] of parts.join('\n').matchAll(/\[([^\]]*)\]\s*TJ/g)) {
+	for (const match of parts.join('\n').matchAll(/\[([^\]]*)\]\s*TJ/g)) {
+		const array = match[1] ?? '';
 		runs.push(
 			[...array.matchAll(/<([0-9A-Fa-f]+)>/g)]
-				.map(([, hex]) => Buffer.from(hex, 'hex').toString('latin1'))
+				.map((glyphs) => Buffer.from(glyphs[1] ?? '', 'hex').toString('latin1'))
 				.join('')
 		);
 	}
