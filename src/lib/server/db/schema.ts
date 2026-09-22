@@ -360,6 +360,27 @@ export const repairs = pgTable('repairs', {
 export type Repair = typeof repairs.$inferSelect;
 export type NewRepair = typeof repairs.$inferInsert;
 
+/**
+ * Receipts, invoices and photos hung on a repair. A file with no commentary — a note
+ * is the place for words, and a note may still carry one file of its own. `url` is
+ * the app-relative serving path (`/api/files/u/<userId>/…`), never a blob URL, like
+ * every other file column here.
+ */
+export const repairAttachments = pgTable('repair_attachments', {
+	id: text('id').primaryKey(),
+	repairId: text('repair_id')
+		.notNull()
+		.references(() => repairs.id, { onDelete: 'cascade' }),
+	url: text('url').notNull(),
+	/** The filename as uploaded, for the list; the blob's own name carries a random suffix. */
+	name: text('name').notNull(),
+	contentType: text('content_type').notNull(),
+	size: integer('size').notNull(),
+	createdAt: timestamp('created_at', { withTimezone: true, mode: 'date' }).notNull().defaultNow()
+});
+
+export type RepairAttachment = typeof repairAttachments.$inferSelect;
+
 // Vehicle Galleries (groups of photos for vehicles)
 export const galleries = pgTable('galleries', {
 	id: text('id').primaryKey(),
