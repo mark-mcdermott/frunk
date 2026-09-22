@@ -69,7 +69,7 @@ function UserRow({ user }: { user: AdminUser }) {
 						aria-hidden
 						className="flex size-9 shrink-0 items-center justify-center rounded-full border border-border bg-surface-raised text-[0.8125rem] font-semibold text-text"
 					>
-						{initial({ ...user, emailVerified: false, twoFactorEnabled: false })}
+						{initial(user)}
 					</span>
 					<span className="min-w-0">
 						<Link

@@ -1,8 +1,9 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Car, Folder, Pencil, Plus, Trash2 } from 'lucide-react';
+import { AlertTriangle, Car, Clock, Folder, Pencil, Plus, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 import { Link } from 'react-router';
-import { deleteVehicle, keys, listVehicles, type Vehicle } from '../api';
+import type { Summary } from '@/lib/maintenance';
+import { deleteVehicle, keys, listVehicles, type VehicleListItem } from '../api';
 import { formatDate, formatTime } from '../format';
 
 /**
@@ -28,7 +29,38 @@ function Stamp({ label, iso }: { label: string; iso: string }) {
 	);
 }
 
-function VehicleRow({ vehicle, onDelete }: { vehicle: Vehicle; onDelete: (id: string) => void }) {
+/**
+ * The row's maintenance verdict, worst first: overdue outranks due soon, and a car
+ * with nothing due shows nothing rather than an "all good" that would be noise
+ * across a garage.
+ */
+function MaintenanceBadge({ maintenance }: { maintenance: Summary }) {
+	if (maintenance.overdue > 0) {
+		return (
+			<span className="inline-flex items-center gap-1.5 rounded-full bg-destructive-bg px-3 py-1 text-[0.75rem] font-medium text-destructive">
+				<AlertTriangle className="size-3.5" strokeWidth={2} aria-hidden />
+				{maintenance.overdue} overdue
+			</span>
+		);
+	}
+	if (maintenance.dueSoon > 0) {
+		return (
+			<span className="inline-flex items-center gap-1.5 rounded-full bg-warning-bg px-3 py-1 text-[0.75rem] font-medium text-warning">
+				<Clock className="size-3.5" strokeWidth={2} aria-hidden />
+				{maintenance.dueSoon} due soon
+			</span>
+		);
+	}
+	return null;
+}
+
+function VehicleRow({
+	vehicle,
+	onDelete
+}: {
+	vehicle: VehicleListItem;
+	onDelete: (id: string) => void;
+}) {
 	const title = `${vehicle.year} ${vehicle.make} ${vehicle.model}`;
 
 	return (
@@ -61,12 +93,15 @@ function VehicleRow({ vehicle, onDelete }: { vehicle: Vehicle; onDelete: (id: st
 					</p>
 				)}
 
-				{vehicle.currentMileage != null && (
-					<p className="mt-3 inline-flex items-center gap-2 rounded-full border border-border px-3 py-1 text-[0.75rem] text-text-muted">
-						<Folder className="size-3.5" strokeWidth={1.75} aria-hidden />
-						{vehicle.currentMileage.toLocaleString()} miles
-					</p>
-				)}
+				<div className="mt-3 flex flex-wrap items-center gap-2 empty:hidden">
+					{vehicle.currentMileage != null && (
+						<span className="inline-flex items-center gap-2 rounded-full border border-border px-3 py-1 text-[0.75rem] text-text-muted">
+							<Folder className="size-3.5" strokeWidth={1.75} aria-hidden />
+							{vehicle.currentMileage.toLocaleString()} miles
+						</span>
+					)}
+					<MaintenanceBadge maintenance={vehicle.maintenance} />
+				</div>
 			</div>
 
 			<Stamp label="Last updated" iso={vehicle.updatedAt} />

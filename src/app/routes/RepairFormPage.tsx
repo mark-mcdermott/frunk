@@ -6,6 +6,7 @@ import {
 	createRepair,
 	deleteRepair,
 	getRepair,
+	getVehicle,
 	keys,
 	listVehicles,
 	listVendors,
@@ -51,6 +52,7 @@ interface FormState {
 	cost: string;
 	vendorId: string | null;
 	status: RepairStatus;
+	scheduleId: string | null;
 }
 
 const today = () => toDateInput(new Date().toISOString());
@@ -62,7 +64,8 @@ const BLANK: FormState = {
 	mileage: '',
 	cost: '',
 	vendorId: null,
-	status: 'completed'
+	status: 'completed',
+	scheduleId: null
 };
 
 function toForm(
@@ -75,7 +78,8 @@ function toForm(
 		mileage: repair.mileage == null ? '' : String(repair.mileage),
 		cost: repair.cost == null ? '' : fromCents(repair.cost),
 		vendorId: repair.vendorId,
-		status: repair.status as RepairStatus
+		status: repair.status as RepairStatus,
+		scheduleId: repair.scheduleId
 	};
 }
 
@@ -153,6 +157,13 @@ function RepairForm({ existing }: { existing: ExistingRepair | undefined }) {
 	const vendors = useQuery({ queryKey: keys.vendors, queryFn: listVendors });
 
 	const vehicleId = form.vehicleId;
+	// The chosen vehicle's schedules, for "counts toward" — usually already cached
+	// from the detail screen this form was reached from.
+	const detail = useQuery({
+		queryKey: keys.vehicle(vehicleId ?? ''),
+		queryFn: () => getVehicle(vehicleId as string),
+		enabled: Boolean(vehicleId)
+	});
 	const vehicle = vehicles.data?.find((v) => v.id === vehicleId);
 	const vehicleLabel = vehicle
 		? vehicle.nickname || `${vehicle.year} ${vehicle.make} ${vehicle.model}`
@@ -214,7 +225,8 @@ function RepairForm({ existing }: { existing: ExistingRepair | undefined }) {
 			mileage: form.mileage.trim() ? Number(form.mileage) : null,
 			cost: form.cost.trim() ? toCents(form.cost) : null,
 			vendorId: form.vendorId,
-			status: form.status
+			status: form.status,
+			scheduleId: form.scheduleId
 		});
 	}
 
@@ -226,6 +238,10 @@ function RepairForm({ existing }: { existing: ExistingRepair | undefined }) {
 	const vendorOptions: Option[] = (vendors.data ?? []).map((v) => ({
 		value: v.id,
 		label: v.name
+	}));
+	const scheduleOptions: Option[] = (detail.data?.schedules ?? []).map((s) => ({
+		value: s.id,
+		label: s.name
 	}));
 
 	return (
@@ -268,7 +284,10 @@ function RepairForm({ existing }: { existing: ExistingRepair | undefined }) {
 							placeholder={vehicles.isPending ? 'Loading…' : 'Choose a vehicle'}
 							error={errors.vehicleId}
 							value={form.vehicleId}
-							onChange={(value) => setForm((prev) => ({ ...prev, vehicleId: value }))}
+							onChange={(value) =>
+								// A schedule belongs to one vehicle, so it cannot follow a change of car.
+								setForm((prev) => ({ ...prev, vehicleId: value, scheduleId: null }))
+							}
 						/>
 					)}
 
@@ -343,6 +362,19 @@ function RepairForm({ existing }: { existing: ExistingRepair | undefined }) {
 						value={form.vendorId}
 						onChange={(value) => setForm((prev) => ({ ...prev, vendorId: value }))}
 					/>
+
+					{vehicleId && scheduleOptions.length > 0 && (
+						<SelectField
+							id="scheduleId"
+							label="Counts toward"
+							optional
+							options={scheduleOptions}
+							placeholder="No maintenance schedule"
+							hint="A completed repair becomes that schedule's last done."
+							value={form.scheduleId}
+							onChange={(value) => setForm((prev) => ({ ...prev, scheduleId: value }))}
+						/>
+					)}
 				</div>
 
 				{(save.isError || remove.isError) && (

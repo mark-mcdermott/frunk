@@ -7,6 +7,8 @@
  * server.
  */
 
+import type { Summary } from '@/lib/maintenance';
+
 export class ApiError extends Error {
 	constructor(
 		readonly status: number,
@@ -84,6 +86,8 @@ export interface Repair {
 	status: string;
 	vendorId: string | null;
 	vendorName: string | null;
+	/** The maintenance schedule this counts toward, if any. */
+	scheduleId: string | null;
 }
 
 export interface Photo {
@@ -135,6 +139,7 @@ export interface RepairInput {
 	cost: number | null;
 	vendorId: string | null;
 	status: RepairStatus;
+	scheduleId?: string | null;
 }
 
 export interface NoteInput {
@@ -191,6 +196,11 @@ export interface UserListParams {
 export interface UserList extends UserListParams {
 	users: AdminUser[];
 	total: number;
+}
+
+/** `GET /api/vehicles` badges each row with its due counts; the detail does not. */
+export interface VehicleListItem extends Vehicle {
+	maintenance: Summary;
 }
 
 /** `GET /api/vehicles/:id` answers the whole detail screen in one request. */
@@ -250,7 +260,7 @@ export const keys = {
 };
 
 export const listVehicles = () =>
-	request<{ vehicles: Vehicle[] }>('/api/vehicles').then((r) => r.vehicles);
+	request<{ vehicles: VehicleListItem[] }>('/api/vehicles').then((r) => r.vehicles);
 
 export const getVehicle = (id: string) => request<VehicleDetail>(`/api/vehicles/${id}`);
 
@@ -361,6 +371,29 @@ export const updateSchedule = (id: string, body: ScheduleUpdate) =>
 
 export const deleteSchedule = (id: string) =>
 	request<void>(`/api/maintenance-schedules/${id}`, { method: 'DELETE' });
+
+export interface CompletionInput {
+	/** ISO 8601 with an offset. */
+	date: string;
+	mileage: number | null;
+	/** Cents. */
+	cost: number | null;
+	vendorId?: string | null;
+	/** Default true: the service is logged as a completed repair on the schedule. */
+	logRepair?: boolean;
+}
+
+export interface Completed {
+	schedule: Schedule;
+	repair: Repair | null;
+	currentMileage: number | null;
+}
+
+export const completeSchedule = (id: string, body: CompletionInput) =>
+	request<Completed>(`/api/maintenance-schedules/${id}/complete`, {
+		method: 'POST',
+		body: JSON.stringify(body)
+	});
 
 /**
  * Raw-body upload: one file per request, the browser's `File` object as the body and

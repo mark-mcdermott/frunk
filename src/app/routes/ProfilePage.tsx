@@ -292,6 +292,8 @@ function ProfileBody({
 					)}
 				</Section>
 
+				{!demo && <ReminderSettings user={user} />}
+
 				<Section title="Session">
 					<button
 						type="button"
@@ -350,6 +352,45 @@ function ProfileBody({
  * Because the placeholder a converted demo carries is never shown, "Add an email" and
  * "Change email" are the same form with different words.
  */
+/**
+ * The maintenance digest's opt-out. One switch, saved the moment it is flipped: an
+ * email that cannot be turned off from the account that receives it is not a
+ * reminder, it is spam.
+ */
+function ReminderSettings({ user }: { user: ReturnType<typeof toSessionUser> }) {
+	const [enabled, setEnabled] = useState(user.remindersByEmail);
+
+	const save = useMutation({
+		mutationFn: async (remindersByEmail: boolean) => {
+			await updateProfile({ remindersByEmail });
+			return remindersByEmail;
+		},
+		onSuccess: setEnabled
+	});
+
+	return (
+		<Section title="Reminders">
+			<label className="flex max-w-md items-start gap-3 text-[0.9375rem] text-text">
+				<input
+					type="checkbox"
+					checked={save.isPending ? save.variables : enabled}
+					disabled={save.isPending}
+					onChange={(event) => save.mutate(event.target.checked)}
+					className="mt-1 size-4 shrink-0 rounded accent-accent"
+				/>
+				<span>
+					Email me when maintenance is due
+					<span className="mt-1 block text-[0.8125rem] text-text-muted">
+						One message a day at most, only when something on a schedule is overdue or due within a
+						month, and once per item until it is marked done.
+					</span>
+				</span>
+			</label>
+			<Failure error={save.error} fallback="Could not save that." />
+		</Section>
+	);
+}
+
 function EmailSettings({
 	user,
 	placeholder

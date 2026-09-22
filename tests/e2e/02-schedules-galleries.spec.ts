@@ -17,15 +17,30 @@ test.describe('vehicle detail', () => {
 		return { owner, vehicleId };
 	}
 
-	test('adds, edits and deletes a maintenance schedule', async ({ page }) => {
+	test('adds, marks done, edits and deletes a maintenance schedule', async ({ page }) => {
 		const { vehicleId } = await gremlin();
 		await page.goto(`/vehicles/${vehicleId}`);
 
 		const panel = page.getByRole('region', { name: 'Maintenance Schedule' });
+
+		// The seed gives every car one schedule in each state; the pills are the verdicts.
+		await expect(panel.getByText(/^Overdue by/)).toBeVisible();
+		await expect(panel.getByText(/^Due (in|today)/)).toBeVisible();
+		await expect(panel.getByText(/^Next /)).toBeVisible();
+		await expect(panel.getByText(/^Not started/)).toBeVisible();
+
 		await panel.getByRole('button', { name: 'Add', exact: true }).click();
+
+		// A template prefills every field; nothing about it is locked.
+		await panel.getByRole('button', { name: 'Oil change', exact: true }).click();
+		await expect(panel.getByLabel('Name')).toHaveValue('Oil change');
+		await expect(panel.getByLabel('Every', { exact: true })).toHaveValue('5000');
+		await expect(panel.getByLabel('Or every')).toHaveValue('6');
 
 		// A schedule needs an interval; the form refuses before the server has to.
 		await panel.getByLabel('Name').fill('Journey oil change');
+		await panel.getByLabel('Every', { exact: true }).fill('');
+		await panel.getByLabel('Or every').fill('');
 		await panel.getByRole('button', { name: 'Add schedule' }).click();
 		await expect(
 			panel.getByRole('alert').filter({ hasText: 'Set a mileage interval' })
@@ -35,13 +50,36 @@ test.describe('vehicle detail', () => {
 		await panel.getByRole('button', { name: 'Add schedule' }).click();
 
 		await expect(panel.getByText('Journey oil change')).toBeVisible();
-		await expect(panel.getByText('Every 5,000 mi')).toBeVisible();
+		await expect(panel.getByText('Every 5,000 mi', { exact: true })).toBeVisible();
 		const where = `from maintenance_schedules where vehicle_id = '${vehicleId}' and name = 'Journey oil change'`;
 		expect(
 			await sql(
 				`select interval_miles || '|' || coalesce(interval_months::text, '<null>') ${where}`
 			)
 		).toBe('5000|<null>');
+		const scheduleId = await sql(`select id ${where}`);
+
+		// Mark done: last done moves, the odometer follows, and a repair is written.
+		await panel.getByRole('button', { name: 'Mark Journey oil change done' }).click();
+		const done = panel.getByRole('form', { name: 'Mark Journey oil change done' });
+		await expect(done.getByLabel('Mileage')).toHaveValue('84200');
+		await done.getByLabel('Mileage').fill('90000');
+		await done.getByLabel('Cost').fill('45');
+		await done.getByRole('button', { name: 'Save' }).click();
+
+		await expect(panel.getByText('Next at 95,000 mi')).toBeVisible();
+		await expect(panel.getByText('Last done', { exact: false })).toHaveCount(4);
+		expect(await sql(`select last_completed_mileage ${where}`)).toBe('90000');
+		expect(await sql(`select current_mileage from vehicles where id = '${vehicleId}'`)).toBe(
+			'90000'
+		);
+		const repairs = `from repairs where schedule_id = '${scheduleId}'`;
+		expect(
+			await sql(`select description || '|' || mileage || '|' || cost || '|' || status ${repairs}`)
+		).toBe('Journey oil change|90000|4500|completed');
+		await expect(
+			page.getByRole('region', { name: 'Repairs' }).getByText('Journey oil change')
+		).toBeVisible();
 
 		// Edit: months instead of miles — the cleared interval must reach NULL.
 		await panel.getByRole('button', { name: 'Edit Journey oil change' }).click();
@@ -49,16 +87,22 @@ test.describe('vehicle detail', () => {
 		await panel.getByLabel('Or every').fill('6');
 		await panel.getByRole('button', { name: 'Save changes' }).click();
 
-		await expect(panel.getByText('Every 6 months')).toBeVisible();
+		await expect(panel.getByText('Every 6 months', { exact: true })).toBeVisible();
 		expect(
 			await sql(
 				`select coalesce(interval_miles::text, '<null>') || '|' || interval_months ${where}`
 			)
 		).toBe('<null>|6');
 
+		// The schedule goes; the service it logged stays in the history, unlinked.
 		await panel.getByRole('button', { name: 'Delete Journey oil change' }).click();
 		await expect(panel.getByText('Journey oil change')).toBeHidden();
 		expect(await sql(`select count(*) ${where}`)).toBe('0');
+		expect(
+			await sql(
+				`select coalesce(schedule_id, '<null>') from repairs where vehicle_id = '${vehicleId}' and description = 'Journey oil change'`
+			)
+		).toBe('<null>');
 	});
 
 	test('creates a gallery, adds and removes photos, and deletes it', async ({ page }) => {

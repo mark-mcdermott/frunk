@@ -7,8 +7,10 @@ import {
 	repairs,
 	session,
 	galleries,
-	vehiclePhotos
+	vehiclePhotos,
+	maintenanceSchedules
 } from '../src/lib/server/db/schema';
+import { addMonths, TEMPLATES } from '../src/lib/maintenance';
 import { ROLE_IDS } from '../src/lib/roles';
 import { describeTarget, scriptDb } from './db';
 
@@ -197,6 +199,29 @@ function getRandomFutureDate(): Date {
 }
 
 // Get random mileage based on vehicle year
+/**
+ * Four schedules per vehicle, one in each state the screens can show — overdue, due
+ * soon, on track, and never done — so a demo garage has something to badge and the
+ * digest has something to say. Offsets are from the odometer reading and today.
+ */
+function schedulesFor(currentMileage: number, now: Date) {
+	const [oil, tires, brakes, airFilter] = TEMPLATES;
+	return [
+		{ ...oil!, lastCompletedDate: addMonths(now, -7), lastCompletedMileage: currentMileage - 5600 },
+		{
+			...tires!,
+			lastCompletedDate: addMonths(now, -5),
+			lastCompletedMileage: currentMileage - 5700
+		},
+		{
+			...brakes!,
+			lastCompletedDate: addMonths(now, -3),
+			lastCompletedMileage: currentMileage - 3000
+		},
+		{ ...airFilter!, lastCompletedDate: null, lastCompletedMileage: null }
+	];
+}
+
 function getRandomMileage(vehicleYear: number): number {
 	const currentYear = new Date().getFullYear();
 	const age = currentYear - vehicleYear;
@@ -431,8 +456,10 @@ async function seed() {
 		}
 
 		// Insert vehicles for this user
-		for (const vehicle of character.vehicles) {
+		for (const [vi, vehicle] of character.vehicles.entries()) {
 			const vehicleId = crypto.randomUUID();
+			// The demo garage is deterministic so the journeys can reason about it.
+			const currentMileage = isDemo ? [84200, 61500, 112300][vi]! : getRandomMileage(vehicle.year);
 			await db.insert(vehicles).values({
 				id: vehicleId,
 				userId: userUuid,
@@ -440,10 +467,18 @@ async function seed() {
 				model: vehicle.model,
 				year: vehicle.year,
 				vin: vehicle.vin,
+				currentMileage,
 				image: getVehicleImage(vehicle.make, vehicle.model, vehicle.year)
 			});
 
 			console.log(`  - Added vehicle: ${vehicle.year} ${vehicle.make} ${vehicle.model}`);
+
+			for (const schedule of schedulesFor(currentMileage, new Date())) {
+				await db
+					.insert(maintenanceSchedules)
+					.values({ id: crypto.randomUUID(), vehicleId, ...schedule });
+				console.log(`    ⏱ Added schedule: ${schedule.name}`);
+			}
 
 			// Add notes to this vehicle (demo user gets all, others get random)
 			const vehicleNotes = isDemo ? noteTemplates : getNotesForVehicle();
@@ -479,7 +514,11 @@ async function seed() {
 					vendorId: vendorId,
 					description: repair.description,
 					date: repairDate,
-					mileage: getRandomMileage(vehicle.year),
+					// Somewhere in the last stretch of the odometer; a booked service is at the reading.
+					mileage:
+						repair.status === 'scheduled'
+							? currentMileage
+							: Math.max(0, currentMileage - Math.floor(Math.random() * 20000)),
 					cost: repair.cost,
 					status: repair.status
 				});
