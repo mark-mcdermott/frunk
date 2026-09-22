@@ -14,6 +14,7 @@ import {
 import { useCrumbs } from '../AppShell';
 import { plainOptions, SelectField, TextField } from '../components/Field';
 import { FileField } from '../components/FileField';
+import { fromDateInput, toDateInput } from '../format';
 
 /**
  * Add and edit a vehicle, built to `docs/mocks/vehicle-edit.webp`.
@@ -64,6 +65,15 @@ interface FormState {
 	transmission: string;
 	currentMileage: string;
 	image: string | null;
+	licensePlate: string;
+	licensePlateState: string;
+	/** `YYYY-MM-DD` for the date inputs; empty when unknown. */
+	registrationExpiration: string;
+	inspectionExpiration: string;
+	emissionsExpiration: string;
+	insuranceProvider: string;
+	insurancePolicyNumber: string;
+	insuranceExpiration: string;
 }
 
 const BLANK: FormState = {
@@ -78,8 +88,18 @@ const BLANK: FormState = {
 	engineType: '',
 	transmission: '',
 	currentMileage: '',
-	image: null
+	image: null,
+	licensePlate: '',
+	licensePlateState: '',
+	registrationExpiration: '',
+	inspectionExpiration: '',
+	emissionsExpiration: '',
+	insuranceProvider: '',
+	insurancePolicyNumber: '',
+	insuranceExpiration: ''
 };
+
+const dateOrBlank = (iso: string | null) => (iso ? toDateInput(iso) : '');
 
 function toForm(vehicle: Vehicle): FormState {
 	return {
@@ -94,12 +114,22 @@ function toForm(vehicle: Vehicle): FormState {
 		engineType: vehicle.engineType ?? '',
 		transmission: vehicle.transmission ?? '',
 		currentMileage: vehicle.currentMileage == null ? '' : String(vehicle.currentMileage),
-		image: vehicle.image
+		image: vehicle.image,
+		licensePlate: vehicle.licensePlate ?? '',
+		licensePlateState: vehicle.licensePlateState ?? '',
+		registrationExpiration: dateOrBlank(vehicle.registrationExpiration),
+		inspectionExpiration: dateOrBlank(vehicle.inspectionExpiration),
+		emissionsExpiration: dateOrBlank(vehicle.emissionsExpiration),
+		insuranceProvider: vehicle.insuranceProvider ?? '',
+		insurancePolicyNumber: vehicle.insurancePolicyNumber ?? '',
+		insuranceExpiration: dateOrBlank(vehicle.insuranceExpiration)
 	};
 }
 
 /** An emptied optional field sends `null`, which is what clears the column; `''` would not. */
 const orNull = (value: string) => (value.trim() ? value.trim() : null);
+/* A date-only column: local midnight of the chosen day, or null to clear it. */
+const dateOrNull = (value: string) => (value ? fromDateInput(value) : null);
 
 function toPayload(form: FormState): VehicleInput {
 	return {
@@ -114,7 +144,15 @@ function toPayload(form: FormState): VehicleInput {
 		engineType: orNull(form.engineType),
 		transmission: orNull(form.transmission),
 		currentMileage: form.currentMileage.trim() ? Number(form.currentMileage) : null,
-		image: form.image
+		image: form.image,
+		licensePlate: orNull(form.licensePlate),
+		licensePlateState: orNull(form.licensePlateState),
+		registrationExpiration: dateOrNull(form.registrationExpiration),
+		inspectionExpiration: dateOrNull(form.inspectionExpiration),
+		emissionsExpiration: dateOrNull(form.emissionsExpiration),
+		insuranceProvider: orNull(form.insuranceProvider),
+		insurancePolicyNumber: orNull(form.insurancePolicyNumber),
+		insuranceExpiration: dateOrNull(form.insuranceExpiration)
 	};
 }
 
@@ -294,6 +332,69 @@ function VehicleForm({ loaded }: { loaded: Vehicle | undefined }) {
 						imagesOnly
 						value={form.image}
 						onChange={(image) => setForm((prev) => ({ ...prev, image }))}
+					/>
+
+					{/* Renewal dates feed the reminders (src/lib/maintenance.ts) the same way
+					    schedules do; the rest is what a glovebox usually has to hold. */}
+					<div className="mt-3 border-t border-border pt-6">
+						<h2 className="display-sm text-lg">Registration &amp; insurance</h2>
+						<p className="mt-1 text-[0.875rem] text-text-muted">
+							Expiry dates join your maintenance reminders.
+						</p>
+					</div>
+					<div className="grid gap-5 sm:grid-cols-[1fr_8rem]">
+						<TextField
+							id="licensePlate"
+							label="License plate"
+							optional
+							{...field('licensePlate')}
+						/>
+						<TextField
+							id="licensePlateState"
+							label="State"
+							optional
+							{...field('licensePlateState')}
+						/>
+					</div>
+					<TextField
+						id="registrationExpiration"
+						label="Registration expires"
+						optional
+						type="date"
+						{...field('registrationExpiration')}
+					/>
+					<TextField
+						id="inspectionExpiration"
+						label="Inspection expires"
+						optional
+						type="date"
+						{...field('inspectionExpiration')}
+					/>
+					<TextField
+						id="emissionsExpiration"
+						label="Emissions test expires"
+						optional
+						type="date"
+						{...field('emissionsExpiration')}
+					/>
+					<TextField
+						id="insuranceProvider"
+						label="Insurance provider"
+						optional
+						{...field('insuranceProvider')}
+					/>
+					<TextField
+						id="insurancePolicyNumber"
+						label="Policy number"
+						optional
+						{...field('insurancePolicyNumber')}
+					/>
+					<TextField
+						id="insuranceExpiration"
+						label="Insurance expires"
+						optional
+						type="date"
+						{...field('insuranceExpiration')}
 					/>
 				</div>
 

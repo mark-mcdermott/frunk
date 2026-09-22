@@ -38,7 +38,11 @@ delete (`resyncSchedule` in `src/lib/server/maintenance.ts`). The digest
 (`GET /api/cron/maintenance-digest`, daily, `src/lib/server/reminders.ts`) speaks once per
 due cycle — `reminder_sent_at` is stamped when mailed and cleared by any completion — and
 only to verified, non-demo addresses with `user.remindersByEmail` on (the profile's
-"Reminders" switch, via `updateUser`). `?dryRun=1` shows tomorrow's mail without sending.
+"Reminders" switch, via `updateUser`). `?dryRun=1` shows tomorrow's mail without sending. **Renewals ride the same rails**
+(2026-09-22): the vehicle's registration, inspection, emissions and insurance dates are
+assessed by `assessDeadline` with the same thresholds, counted in the garage badges, shown
+as pills on the detail's Renewals block, and mailed once per date via
+`expiration_reminders` (vehicle, kind, sent_for).
 
 **A new column needs the bootstrap on production before the deploy that reads it.**
 Drizzle selects every declared column, so code that lands on Vercel ahead of the column

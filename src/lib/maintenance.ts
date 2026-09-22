@@ -50,6 +50,18 @@ export function addMonths(date: Date, months: number): Date {
 	return next;
 }
 
+function stateFor(daysLeft: number | null, milesLeft: number | null): DueState {
+	if (daysLeft == null && milesLeft == null) return 'unknown';
+	const overdue = (daysLeft != null && daysLeft < 0) || (milesLeft != null && milesLeft < 0);
+	const soon =
+		(daysLeft != null && daysLeft <= DUE_SOON_DAYS) ||
+		(milesLeft != null && milesLeft <= DUE_SOON_MILES);
+	return overdue ? 'overdue' : soon ? 'due-soon' : 'ok';
+}
+
+const daysUntil = (date: Date | null, now: Date) =>
+	date ? Math.ceil((date.getTime() - now.getTime()) / DAY) : null;
+
 /**
  * Whether a schedule is due. Whichever of the two intervals runs out first decides;
  * a schedule that has never been completed has nothing to count from and is
@@ -69,20 +81,63 @@ export function assess(
 			? schedule.lastCompletedMileage + schedule.intervalMiles
 			: null;
 
-	const daysLeft = dueDate ? Math.ceil((dueDate.getTime() - now.getTime()) / DAY) : null;
+	const daysLeft = daysUntil(dueDate, now);
 	const milesLeft =
 		dueMileage != null && currentMileage != null ? dueMileage - currentMileage : null;
 
-	let state: DueState = 'unknown';
-	if (daysLeft != null || milesLeft != null) {
-		const overdue = (daysLeft != null && daysLeft < 0) || (milesLeft != null && milesLeft < 0);
-		const soon =
-			(daysLeft != null && daysLeft <= DUE_SOON_DAYS) ||
-			(milesLeft != null && milesLeft <= DUE_SOON_MILES);
-		state = overdue ? 'overdue' : soon ? 'due-soon' : 'ok';
-	}
+	return { state: stateFor(daysLeft, milesLeft), dueDate, dueMileage, daysLeft, milesLeft };
+}
 
-	return { state, dueDate, dueMileage, daysLeft, milesLeft };
+/**
+ * A renewal — registration, inspection, emissions, insurance — is a schedule with no
+ * interval and no "mark done": it has a date, and the date moves when it is renewed.
+ * The same thresholds apply, so a renewal and a service sit in the same list.
+ */
+export function assessDeadline(
+	date: string | Date | null | undefined,
+	now: Date = new Date()
+): Assessment {
+	const dueDate = date == null ? null : new Date(date);
+	const daysLeft = daysUntil(dueDate, now);
+	return { state: stateFor(daysLeft, null), dueDate, dueMileage: null, daysLeft, milesLeft: null };
+}
+
+export type ExpirationKind = 'registration' | 'inspection' | 'emissions' | 'insurance';
+export type ExpirationColumn = `${ExpirationKind}Expiration`;
+
+export interface Expiration {
+	kind: ExpirationKind;
+	label: string;
+	column: ExpirationColumn;
+}
+
+/** The dated renewals a vehicle carries; `column` names the vehicle field that holds each. */
+export const EXPIRATIONS: readonly Expiration[] = [
+	{ kind: 'registration', label: 'Registration', column: 'registrationExpiration' },
+	{ kind: 'inspection', label: 'Inspection', column: 'inspectionExpiration' },
+	{ kind: 'emissions', label: 'Emissions test', column: 'emissionsExpiration' },
+	{ kind: 'insurance', label: 'Insurance', column: 'insuranceExpiration' }
+];
+
+export type Expirations = Partial<Record<ExpirationColumn, string | Date | null>>;
+
+export interface AssessedExpiration {
+	expiration: Expiration;
+	expiresOn: Date;
+	assessment: Assessment;
+}
+
+/** Every renewal a vehicle has a date for, assessed; the undated ones are simply absent. */
+export function assessExpirations(
+	vehicle: Expirations,
+	now: Date = new Date()
+): AssessedExpiration[] {
+	return EXPIRATIONS.flatMap((expiration) => {
+		const date = vehicle[expiration.column];
+		if (date == null) return [];
+		const assessment = assessDeadline(date, now);
+		return [{ expiration, expiresOn: assessment.dueDate!, assessment }];
+	});
 }
 
 export function summarize(assessments: readonly Assessment[]): Summary {
@@ -126,6 +181,15 @@ export function describeDue(assessment: Assessment): string {
 		return `Due ${daysShare <= milesShare ? first : second}`;
 	}
 	return `Due ${first ?? second ?? ''}`.trim();
+}
+
+/** The renewal counterpart of `describeDue`: "Expired 3 days ago", "Expires in 12 days". */
+export function describeDeadline(assessment: Assessment): string {
+	const { daysLeft } = assessment;
+	if (daysLeft == null) return 'No date';
+	if (daysLeft < 0) return `Expired ${plural(-daysLeft, 'day')} ago`;
+	if (daysLeft === 0) return 'Expires today';
+	return `Expires in ${plural(daysLeft, 'day')}`;
 }
 
 export interface Template {

@@ -65,6 +65,15 @@ export interface Vehicle {
 	engineType: string | null;
 	engineSize: string | null;
 	currentMileage: number | null;
+	licensePlate: string | null;
+	licensePlateState: string | null;
+	/** Renewal dates — ISO, or null when unknown. `assessExpirations` reads these. */
+	registrationExpiration: string | null;
+	inspectionExpiration: string | null;
+	emissionsExpiration: string | null;
+	insuranceProvider: string | null;
+	insurancePolicyNumber: string | null;
+	insuranceExpiration: string | null;
 	createdAt: string;
 	updatedAt: string;
 }
@@ -233,7 +242,15 @@ export type VehicleInput = {
 		| 'transmission'
 		| 'engineType'
 		| 'engineSize'
-		| 'image',
+		| 'image'
+		| 'licensePlate'
+		| 'licensePlateState'
+		| 'registrationExpiration'
+		| 'inspectionExpiration'
+		| 'emissionsExpiration'
+		| 'insuranceProvider'
+		| 'insurancePolicyNumber'
+		| 'insuranceExpiration',
 		string | null
 	>
 > & { currentMileage?: number | null };

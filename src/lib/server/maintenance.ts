@@ -1,5 +1,12 @@
-import { and, desc, eq } from 'drizzle-orm';
-import { assess, summarize, type Assessment, type Summary } from '../maintenance';
+import { and, desc, eq, inArray } from 'drizzle-orm';
+import {
+	assess,
+	assessExpirations,
+	summarize,
+	type Assessment,
+	type Expirations,
+	type Summary
+} from '../maintenance';
 import { getDb } from './db';
 import * as table from './db/schema';
 
@@ -155,22 +162,36 @@ export async function completeSchedule(
 	return { schedule: updated, repair, currentMileage };
 }
 
-/** Overdue and due-soon counts per vehicle, for the garage list's badges. */
+export type VehicleDeadlines = { id: string } & Expirations;
+
+/**
+ * Overdue and due-soon counts per vehicle, for the garage list's badges: every
+ * schedule on the vehicle plus every renewal it carries a date for.
+ */
 export async function maintenanceSummaries(
-	userId: string,
+	vehicles: readonly VehicleDeadlines[],
 	now: Date = new Date()
 ): Promise<Map<string, Summary>> {
-	const rows = await getDb()
-		.select({ schedule: table.maintenanceSchedules, currentMileage: table.vehicles.currentMileage })
-		.from(table.maintenanceSchedules)
-		.innerJoin(table.vehicles, eq(table.maintenanceSchedules.vehicleId, table.vehicles.id))
-		.where(eq(table.vehicles.userId, userId));
+	const ids = vehicles.map((vehicle) => vehicle.id);
+	const rows = ids.length
+		? await getDb()
+				.select({
+					schedule: table.maintenanceSchedules,
+					currentMileage: table.vehicles.currentMileage
+				})
+				.from(table.maintenanceSchedules)
+				.innerJoin(table.vehicles, eq(table.maintenanceSchedules.vehicleId, table.vehicles.id))
+				.where(inArray(table.vehicles.id, ids))
+		: [];
 
-	const byVehicle = new Map<string, Assessment[]>();
+	const byVehicle = new Map<string, Assessment[]>(
+		vehicles.map((vehicle) => [
+			vehicle.id,
+			assessExpirations(vehicle, now).map((renewal) => renewal.assessment)
+		])
+	);
 	for (const { schedule, currentMileage } of rows) {
-		const list = byVehicle.get(schedule.vehicleId) ?? [];
-		list.push(assess(schedule, currentMileage, now));
-		byVehicle.set(schedule.vehicleId, list);
+		byVehicle.get(schedule.vehicleId)?.push(assess(schedule, currentMileage, now));
 	}
 
 	return new Map([...byVehicle].map(([vehicleId, list]) => [vehicleId, summarize(list)]));
