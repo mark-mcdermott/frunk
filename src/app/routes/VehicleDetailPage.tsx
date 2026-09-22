@@ -398,7 +398,11 @@ export function VehicleDetailPage() {
 			</div>
 
 			<Panel icon={<Clock className="size-5" />} title="Maintenance Schedule">
-				<ScheduleEditor vehicleId={vehicle.id} schedules={data.schedules} />
+				<ScheduleEditor
+					vehicleId={vehicle.id}
+					currentMileage={vehicle.currentMileage}
+					schedules={data.schedules}
+				/>
 			</Panel>
 
 			<Panel icon={<Camera className="size-5" />} title="Galleries">

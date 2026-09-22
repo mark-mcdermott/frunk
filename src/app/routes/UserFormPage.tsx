@@ -135,7 +135,7 @@ function UserForm({ user, editingSelf }: { user: LoadedUser; editingSelf: boolea
 						aria-hidden
 						className="flex size-14 shrink-0 items-center justify-center rounded-full border border-border bg-surface-raised text-lg font-semibold text-text"
 					>
-						{initial({ ...user, emailVerified: false, twoFactorEnabled: false })}
+						{initial(user)}
 					</span>
 					<div className="min-w-0">
 						<p className="truncate text-[0.9375rem] font-medium text-text">{user.email}</p>

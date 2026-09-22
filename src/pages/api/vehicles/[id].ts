@@ -41,6 +41,7 @@ export const GET: APIRoute = (context) =>
 					cost: table.repairs.cost,
 					status: table.repairs.status,
 					vendorId: table.repairs.vendorId,
+					scheduleId: table.repairs.scheduleId,
 					vendorName: table.vendors.name
 				})
 				.from(table.repairs)
