@@ -10,6 +10,7 @@ import {
 	updateSchedule,
 	type Schedule
 } from '../api';
+import { DuePill } from './DuePill';
 import { TextField } from './Field';
 import { formatDate, formatMiles, fromDateInput, toCents, toDateInput } from '../format';
 
@@ -293,13 +294,6 @@ const URGENCY: Record<Assessment['state'], number> = {
 	unknown: 3
 };
 
-const PILL: Record<Assessment['state'], string> = {
-	overdue: 'bg-destructive-bg text-destructive',
-	'due-soon': 'bg-warning-bg text-warning',
-	ok: 'bg-positive-bg text-positive',
-	unknown: 'border border-border text-text-muted'
-};
-
 /** On track reads as a date to plan around; anything else reads as the distance to it. */
 function dueLabel(assessment: Assessment): string {
 	if (assessment.state === 'ok') {
@@ -338,11 +332,7 @@ function ScheduleRow({
 			<div className="min-w-0">
 				<p className="truncate text-[0.9375rem] text-text">{schedule.name}</p>
 				<div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1">
-					<span
-						className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-[0.75rem] font-medium ${PILL[assessment.state]}`}
-					>
-						{dueLabel(assessment)}
-					</span>
+					<DuePill assessment={assessment}>{dueLabel(assessment)}</DuePill>
 					{last.length > 0 && (
 						<span className="text-[0.8125rem] text-text-faint">Last done {last.join(' at ')}</span>
 					)}

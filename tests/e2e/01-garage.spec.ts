@@ -40,18 +40,26 @@ test.describe('garage', () => {
 		await expect(page).toHaveURL(/\/vehicles\/[0-9a-f-]{36}$/);
 		await expect(page.getByRole('heading', { name: 'Journey MR2' })).toBeVisible();
 
-		// Edit: clear the nickname, set a colour — the cleared field must reach NULL.
+		// A car with no dates is nudged rather than shown an empty list.
+		await expect(page.getByText('No renewal dates yet')).toBeVisible();
+
+		// Edit: clear the nickname, set a colour — the cleared field must reach NULL —
+		// and give the registration a date ten days out, which makes it a reminder.
+		const inTenDays = new Date(Date.now() + 10 * 24 * 60 * 60 * 1000);
+		const ymd = `${inTenDays.getFullYear()}-${String(inTenDays.getMonth() + 1).padStart(2, '0')}-${String(inTenDays.getDate()).padStart(2, '0')}`;
 		await page.getByRole('link', { name: 'Edit Vehicle' }).click();
 		await page.getByLabel('Nickname').fill('');
 		await page.getByLabel('Color').fill('Red');
+		await page.getByLabel('Registration expires').fill(ymd);
 		await page.getByRole('button', { name: 'Save Changes' }).click();
 
 		await expect(page.getByRole('heading', { name: '1987 Toyota MR2' })).toBeVisible();
+		await expect(page.getByText('Expires in 10 days')).toBeVisible();
 		expect(
 			await sql(
-				`select coalesce(nickname, '<null>') || '|' || color from vehicles where make = 'Toyota' and user_id = '${owner}'`
+				`select coalesce(nickname, '<null>') || '|' || color || '|' || registration_expiration::date from vehicles where make = 'Toyota' and user_id = '${owner}'`
 			)
-		).toBe('<null>|Red');
+		).toBe(`<null>|Red|${ymd}`);
 
 		// Delete, through the two-step confirmation.
 		await page.getByRole('link', { name: 'Edit Vehicle' }).click();

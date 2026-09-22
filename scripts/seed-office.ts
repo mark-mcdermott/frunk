@@ -222,6 +222,9 @@ function schedulesFor(currentMileage: number, now: Date) {
 	];
 }
 
+const addDays = (date: Date, days: number) => new Date(date.getTime() + days * 24 * 60 * 60 * 1000);
+const now = new Date();
+
 function getRandomMileage(vehicleYear: number): number {
 	const currentYear = new Date().getFullYear();
 	const age = currentYear - vehicleYear;
@@ -468,12 +471,17 @@ async function seed() {
 				year: vehicle.year,
 				vin: vehicle.vin,
 				currentMileage,
+				// Registration inside the due-soon window, the rest comfortably ahead.
+				registrationExpiration: addDays(now, 12),
+				inspectionExpiration: addMonths(now, 8),
+				insuranceProvider: 'State Farm',
+				insuranceExpiration: addMonths(now, 3),
 				image: getVehicleImage(vehicle.make, vehicle.model, vehicle.year)
 			});
 
 			console.log(`  - Added vehicle: ${vehicle.year} ${vehicle.make} ${vehicle.model}`);
 
-			for (const schedule of schedulesFor(currentMileage, new Date())) {
+			for (const schedule of schedulesFor(currentMileage, now)) {
 				await db
 					.insert(maintenanceSchedules)
 					.values({ id: crypto.randomUUID(), vehicleId, ...schedule });

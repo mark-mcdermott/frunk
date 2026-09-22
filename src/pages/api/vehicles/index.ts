@@ -13,17 +13,15 @@ export const GET: APIRoute = (context) =>
 	handler(async () => {
 		const { user } = await requireSession(context);
 
-		const [rows, summaries] = await Promise.all([
-			getDb()
-				.select()
-				.from(table.vehicles)
-				.where(eq(table.vehicles.userId, user.id))
-				.orderBy(desc(table.vehicles.createdAt)),
-			maintenanceSummaries(user.id)
-		]);
+		const rows = await getDb()
+			.select()
+			.from(table.vehicles)
+			.where(eq(table.vehicles.userId, user.id))
+			.orderBy(desc(table.vehicles.createdAt));
 
-		// Each row carries its due counts, so the garage can badge a car without
-		// fetching every schedule behind it.
+		// Each row carries its due counts — schedules and renewal dates — so the garage
+		// can badge a car without fetching every schedule behind it.
+		const summaries = await maintenanceSummaries(rows);
 		const vehicles = rows.map((vehicle) => ({
 			...vehicle,
 			maintenance: summaries.get(vehicle.id) ?? { overdue: 0, dueSoon: 0 }
