@@ -29,10 +29,16 @@ const db = scriptDb();
 
 // Office characters with their vehicles
 // Avatar images stored on R2
-const AVATAR_BASE = 'https://pub-8578b5b18a5e41269fa51ae28e78a0a8.r2.dev/headshots';
-const VEHICLE_BASE = 'https://pub-8578b5b18a5e41269fa51ae28e78a0a8.r2.dev/vehicles';
+/*
+ * Sample imagery ships with the site, under `public/samples/`, and is referenced by
+ * app-relative path. It lived in a public Cloudflare R2 bucket until 2026-09-21, when
+ * the bucket went with the Cloudflare account and every seeded photo broke at once;
+ * files in the repo cannot be retired out from under the database.
+ */
+const AVATAR_BASE = '/samples/headshots';
+const VEHICLE_BASE = '/samples/vehicles';
 const DOC_BASE = '/documents/samples';
-const GALLERY_BASE = 'https://pub-8578b5b18a5e41269fa51ae28e78a0a8.r2.dev/gallery';
+const GALLERY_BASE = '/samples/gallery';
 
 // Helper to generate vehicle image filename
 function getVehicleImage(make: string, model: string, year: number): string {
