@@ -117,13 +117,27 @@ export async function cloneDemoAccount(userId: string): Promise<string> {
 
 	const repairIds = new Map(templateRepairs.map((r) => [r.id, crypto.randomUUID()]));
 	const galleryIds = new Map(templateGalleries.map((g) => [g.id, crypto.randomUUID()]));
+	const scheduleIds = new Map(templateSchedules.map((s) => [s.id, crypto.randomUUID()]));
+
+	// Schedules go before repairs: a repair may count toward one (`scheduleId`).
+	if (templateSchedules.length) {
+		await db.insert(table.maintenanceSchedules).values(
+			templateSchedules.map((schedule) => ({
+				...reidentify(schedule, scheduleIds.get(schedule.id)!, now),
+				vehicleId: vehicleIds.get(schedule.vehicleId)!,
+				// A clone has never been mailed about, whatever the template was.
+				reminderSentAt: null
+			}))
+		);
+	}
 
 	if (templateRepairs.length) {
 		await db.insert(table.repairs).values(
 			templateRepairs.map((repair) => ({
 				...reidentify(repair, repairIds.get(repair.id)!, now),
 				vehicleId: vehicleIds.get(repair.vehicleId)!,
-				vendorId: remap(vendorIds, repair.vendorId)
+				vendorId: remap(vendorIds, repair.vendorId),
+				scheduleId: remap(scheduleIds, repair.scheduleId)
 			}))
 		);
 	}
@@ -133,15 +147,6 @@ export async function cloneDemoAccount(userId: string): Promise<string> {
 			templateGalleries.map((gallery) => ({
 				...reidentify(gallery, galleryIds.get(gallery.id)!, now),
 				vehicleId: vehicleIds.get(gallery.vehicleId)!
-			}))
-		);
-	}
-
-	if (templateSchedules.length) {
-		await db.insert(table.maintenanceSchedules).values(
-			templateSchedules.map((schedule) => ({
-				...reidentify(schedule, crypto.randomUUID(), now),
-				vehicleId: vehicleIds.get(schedule.vehicleId)!
 			}))
 		);
 	}

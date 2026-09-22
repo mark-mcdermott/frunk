@@ -121,7 +121,9 @@ export const createRepairSchema = z.object({
 	mileage: optionalInt,
 	cost: optionalInt,
 	vendorId: optionalText,
-	status: z.enum(['completed', 'scheduled', 'in_progress']).default('completed')
+	status: z.enum(['completed', 'scheduled', 'in_progress']).default('completed'),
+	/** The maintenance schedule this counts toward; must belong to the same vehicle. */
+	scheduleId: optionalText
 });
 
 export const updateRepairSchema = createRepairSchema.omit({ vehicleId: true }).partial();
@@ -188,6 +190,19 @@ export const createScheduleSchema = z
 		message: 'Set a mileage interval, a month interval, or both',
 		path: ['intervalMiles']
 	});
+
+/**
+ * `POST /api/maintenance-schedules/:id/complete`. `logRepair` defaults on: the
+ * service becomes a completed repair that counts toward the schedule, so the history
+ * the resale story depends on is written without a second form.
+ */
+export const completeScheduleSchema = z.object({
+	date: isoDate,
+	mileage: optionalInt,
+	cost: optionalInt,
+	vendorId: optionalText,
+	logRepair: z.boolean().default(true)
+});
 
 export const updateScheduleSchema = z.object({
 	name: nonEmpty.max(200).optional(),

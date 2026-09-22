@@ -97,7 +97,9 @@ function build(rp: { id: string; origin: string }) {
 			additionalFields: {
 				roles: { type: 'number[]', defaultValue: [], input: false },
 				age: { type: 'number', required: false },
-				cookieConsent: { type: 'string', required: false, input: false }
+				cookieConsent: { type: 'string', required: false, input: false },
+				/** Editable from the profile; the maintenance digest honours it. */
+				remindersByEmail: { type: 'boolean', required: false, defaultValue: true }
 			},
 			/**
 			 * The account-settings pass (Decision 5's loose end). A demo account carries a

@@ -15,6 +15,13 @@
       "when": 1790009050912,
       "tag": "0001_graceful_absorbing_man",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1790099451485,
+      "tag": "0002_fuzzy_rockslide",
+      "breakpoints": true
     }
   ]
 }

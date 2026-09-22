@@ -112,7 +112,7 @@ alone. `tests/demo-conversion.test.ts` asserts both in Postgres.
 
 | Method   | Path                | Notes                                                                                                               |
 | -------- | ------------------- | ------------------------------------------------------------------------------------------------------------------- |
-| `GET`    | `/api/vehicles`     | The caller's vehicles, newest first.                                                                                |
+| `GET`    | `/api/vehicles`     | The caller's vehicles, newest first, each with `maintenance: { overdue, dueSoon }` counted from its schedules.      |
 | `POST`   | `/api/vehicles`     | `make`, `model`, `year` required; all 46 optional columns accepted.                                                 |
 | `GET`    | `/api/vehicles/:id` | The whole detail screen: `{ vehicle, notes, repairs, vendors, galleries, schedules }`, galleries with their photos. |
 | `PATCH`  | `/api/vehicles/:id` |                                                                                                                     |
@@ -130,13 +130,13 @@ alone. `tests/demo-conversion.test.ts` asserts both in Postgres.
 
 ### Repairs
 
-| Method   | Path               | Notes                                                                          |
-| -------- | ------------------ | ------------------------------------------------------------------------------ |
-| `GET`    | `/api/repairs`     | Across every vehicle the caller owns, with vendor and vehicle names joined in. |
-| `POST`   | `/api/repairs`     | `vehicleId`, `description`, `date`. A `vendorId` must also be the caller's.    |
-| `GET`    | `/api/repairs/:id` | `{ repair, notes }`.                                                           |
-| `PATCH`  | `/api/repairs/:id` |                                                                                |
-| `DELETE` | `/api/repairs/:id` |                                                                                |
+| Method   | Path               | Notes                                                                                                                                   |
+| -------- | ------------------ | --------------------------------------------------------------------------------------------------------------------------------------- |
+| `GET`    | `/api/repairs`     | Across every vehicle the caller owns, with vendor and vehicle names joined in.                                                          |
+| `POST`   | `/api/repairs`     | `vehicleId`, `description`, `date`. A `vendorId` must also be the caller's. A `scheduleId` must be on the same vehicle (400 otherwise). |
+| `GET`    | `/api/repairs/:id` | `{ repair, notes }`.                                                                                                                    |
+| `PATCH`  | `/api/repairs/:id` |                                                                                                                                         |
+| `DELETE` | `/api/repairs/:id` |                                                                                                                                         |
 
 ### Notes
 
@@ -168,11 +168,21 @@ account removes the blobs with the rows.
 
 ### Maintenance schedules
 
-| Method   | Path                             | Notes                                                                          |
-| -------- | -------------------------------- | ------------------------------------------------------------------------------ |
-| `POST`   | `/api/maintenance-schedules`     | `vehicleId`, `name`, and at least one of `intervalMiles` / `intervalMonths`.   |
-| `PATCH`  | `/api/maintenance-schedules/:id` | Marking one done is this, with `lastCompletedDate` and `lastCompletedMileage`. |
-| `DELETE` | `/api/maintenance-schedules/:id` |                                                                                |
+| Method   | Path                                      | Notes                                                                                                                                                                                                                                                                                                |
+| -------- | ----------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `POST`   | `/api/maintenance-schedules`              | `vehicleId`, `name`, and at least one of `intervalMiles` / `intervalMonths`.                                                                                                                                                                                                                         |
+| `PATCH`  | `/api/maintenance-schedules/:id`          | Intervals and name; `lastCompletedDate` / `lastCompletedMileage` are accepted for a bare edit of "last done".                                                                                                                                                                                        |
+| `POST`   | `/api/maintenance-schedules/:id/complete` | **Mark done.** `date`, optional `mileage`, `cost`, `vendorId`, `logRepair` (default true). Moves "last done" (never backwards), moves the vehicle's `currentMileage` forward if higher, and logs a completed repair that counts toward the schedule. Answers `{ schedule, repair, currentMileage }`. |
+| `DELETE` | `/api/maintenance-schedules/:id`          | Repairs that counted toward it survive with `schedule_id` null.                                                                                                                                                                                                                                      |
+
+**Whether a schedule is due** is `assess()` in `src/lib/maintenance.ts`, shared by the
+API, the applet and the digest: from "last done" plus the intervals it derives a due date
+and a due mileage, and whichever runs out first decides — `overdue`, `due-soon` (within
+30 days or 500 miles), `ok`, or `unknown` when nothing has been completed yet. **A repair
+that counts toward a schedule keeps "last done" true** (`src/lib/server/maintenance.ts`):
+a completed repair moves it forward, and when the repair that was the last completion is
+deleted, un-linked or marked not done, the next latest takes over. A completion entered
+by hand is never overtaken by an older repair.
 
 ### Files
 
@@ -224,13 +234,15 @@ attempt neither keeps the demo nor holds the address for the reaper to find.
 
 ### Cron
 
-| Method | Path                   | Notes                                                                                                                                                                                                                         |
-| ------ | ---------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `GET`  | `/api/cron/reap-demos` | **Vercel cron only** — `Authorization: Bearer <CRON_SECRET>`; 401 otherwise, 503 with no secret configured. Deletes demo accounts older than 7 days that never attached a passkey, uploads included. Answers `{ reaped: n }`. |
+| Method | Path                           | Notes                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
+| ------ | ------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `GET`  | `/api/cron/reap-demos`         | **Vercel cron only** — `Authorization: Bearer <CRON_SECRET>`; 401 otherwise, 503 with no secret configured. Deletes demo accounts older than 7 days that never attached a passkey, uploads included. Answers `{ reaped: n }`.                                                                                                                                                                                                                                                                                       |
+| `GET`  | `/api/cron/maintenance-digest` | Same guard. Mails everyone with a schedule overdue or due soon that has not been mailed about since it was last done — one message per person per run, only to verified, non-demo addresses with reminders left on (`user.remindersByEmail`, editable from the profile through Better Auth's `update-user`). Stamps `reminder_sent_at` on each schedule it mentions; a failed send stamps nothing. 503 without `RESEND_API_KEY`. `?dryRun=1` answers `{ dryRun, digests }` — what would go out — and sends nothing. |
 
-Scheduled daily at 04:00 UTC in `vercel.json`. Crons run against the production deployment
-only, so `CRON_SECRET` is a production variable. `vercel crons run /api/cron/reap-demos`
-fires it by hand; the predicate lives in `src/lib/server/reaper.ts`.
+Scheduled daily in `vercel.json` (reaper 04:00 UTC, digest 13:00 UTC). Crons run against
+the production deployment only, so `CRON_SECRET` is a production variable.
+`vercel crons run /api/cron/reap-demos` fires one by hand; the predicates live in
+`src/lib/server/reaper.ts` and `src/lib/server/reminders.ts`.
 
 ## Verifying against a deploy
 

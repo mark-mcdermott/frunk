@@ -27,6 +27,26 @@ without a reload. The applet's sign-out, account deletion, TOTP recovery setup
 (`RecoverySetup`, finally reachable again) and the demo→real passkey conversion all
 live on `/profile`.
 
+**Maintenance reminders** (2026-09-22): a schedule's verdict — overdue, due soon, on
+track, not started — is `assess()` in `src/lib/maintenance.ts`, framework-free and shared
+by the garage badges (`GET /api/vehicles` carries `maintenance` counts per row), the
+detail panel and the digest email. **Mark done** is
+`POST /api/maintenance-schedules/:id/complete`: it moves "last done", nudges the vehicle's
+odometer forward and logs a completed repair with `schedule_id`, so history is written
+once. A repair that counts toward a schedule keeps it in step through create, edit and
+delete (`resyncSchedule` in `src/lib/server/maintenance.ts`). The digest
+(`GET /api/cron/maintenance-digest`, daily, `src/lib/server/reminders.ts`) speaks once per
+due cycle — `reminder_sent_at` is stamped when mailed and cleared by any completion — and
+only to verified, non-demo addresses with `user.remindersByEmail` on (the profile's
+"Reminders" switch, via `updateUser`). `?dryRun=1` shows tomorrow's mail without sending.
+
+**A new column needs the bootstrap on production before the deploy that reads it.**
+Drizzle selects every declared column, so code that lands on Vercel ahead of the column
+500s on that table. `drizzle/bootstrap.sql` guards `ADD COLUMN` with `IF NOT EXISTS`
+(the generator rewrites it), so the order is: dispatch `db-migrate.yml` → `bootstrap`
+from the branch first, then merge. `rate_limit` was a new table and did not care;
+`repairs.schedule_id` did.
+
 **Query client rules** (`AppRoot.tsx`): `networkMode: 'always'` on queries _and_
 mutations — TanStack's default pauses fetches whenever `navigator.onLine` is false,
 which renders as an infinite "Loading…"/"Saving…", and that signal is unreliable in

@@ -48,6 +48,8 @@
 		--positive-bg: rgb(52 211 153 / 0.14);
 		--destructive: #f87171;
 		--destructive-bg: rgb(248 113 113 / 0.12);
+		--warning: #fbbf24;
+		--warning-bg: rgb(251 191 36 / 0.14);
 		color-scheme: dark;
 	}
 
@@ -69,6 +71,8 @@
 		--positive-bg: rgb(4 120 87 / 0.1);
 		--destructive: #b91c1c;
 		--destructive-bg: rgb(185 28 28 / 0.1);
+		--warning: #b45309;
+		--warning-bg: rgb(180 83 9 / 0.1);
 		color-scheme: light;
 	}
 }
@@ -89,6 +93,8 @@
 	--color-positive-bg: var(--positive-bg);
 	--color-destructive: var(--destructive);
 	--color-destructive-bg: var(--destructive-bg);
+	--color-warning: var(--warning);
+	--color-warning-bg: var(--warning-bg);
 
 	/* Radii — DESIGN.md §4: ~16px containers, ~10px inputs and small controls */
 	--radius-card: 16px;

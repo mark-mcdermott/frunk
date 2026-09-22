@@ -2,6 +2,7 @@ import type { APIRoute } from 'astro';
 import { desc, eq } from 'drizzle-orm';
 import { getDb } from '../../../lib/server/db';
 import * as table from '../../../lib/server/db/schema';
+import { maintenanceSummaries } from '../../../lib/server/maintenance';
 import { requireSession } from '../_lib/guard';
 import { handler, json, readJson } from '../_lib/http';
 import { createVehicleSchema } from '../_lib/schemas';
@@ -12,11 +13,21 @@ export const GET: APIRoute = (context) =>
 	handler(async () => {
 		const { user } = await requireSession(context);
 
-		const vehicles = await getDb()
-			.select()
-			.from(table.vehicles)
-			.where(eq(table.vehicles.userId, user.id))
-			.orderBy(desc(table.vehicles.createdAt));
+		const [rows, summaries] = await Promise.all([
+			getDb()
+				.select()
+				.from(table.vehicles)
+				.where(eq(table.vehicles.userId, user.id))
+				.orderBy(desc(table.vehicles.createdAt)),
+			maintenanceSummaries(user.id)
+		]);
+
+		// Each row carries its due counts, so the garage can badge a car without
+		// fetching every schedule behind it.
+		const vehicles = rows.map((vehicle) => ({
+			...vehicle,
+			maintenance: summaries.get(vehicle.id) ?? { overdue: 0, dueSoon: 0 }
+		}));
 
 		return json({ vehicles });
 	});
