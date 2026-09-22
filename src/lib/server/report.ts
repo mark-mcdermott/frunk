@@ -136,7 +136,7 @@ function tableHeader(doc: Doc, columns: Column[]) {
 	doc.font('Helvetica-Bold').fontSize(8).fillColor(MUTED);
 	for (const column of columns) {
 		doc.text(column.title.toUpperCase(), x, y, {
-			width: column.width,
+			width: column.width - 8,
 			align: column.align ?? 'left',
 			characterSpacing: 0.6
 		});
@@ -320,10 +320,14 @@ export function renderReport(history: History, now: Date = new Date()): Promise<
 			);
 	}
 
-	// Footer on every page
+	// Footer on every page. It sits inside the bottom margin, and pdfkit treats any
+	// text placed there as overflow and opens a new page — unless the margin is
+	// zeroed for the duration of the write.
 	const pages = doc.bufferedPageRange();
 	for (let i = 0; i < pages.count; i += 1) {
 		doc.switchToPage(i);
+		const bottom = doc.page.margins.bottom;
+		doc.page.margins.bottom = 0;
 		doc
 			.font('Helvetica')
 			.fontSize(8)
@@ -331,13 +335,10 @@ export function renderReport(history: History, now: Date = new Date()): Promise<
 			.text(
 				`${title} · frunk.cloud · page ${i + 1} of ${pages.count}`,
 				MARGIN,
-				doc.page.height - 40,
-				{
-					width: WIDTH,
-					align: 'center',
-					lineBreak: false
-				}
+				doc.page.height - 36,
+				{ width: WIDTH, align: 'center', lineBreak: false }
 			);
+		doc.page.margins.bottom = bottom;
 	}
 
 	doc.end();
