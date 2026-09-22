@@ -1,5 +1,5 @@
 import type { APIRoute } from 'astro';
-import { desc, eq, inArray } from 'drizzle-orm';
+import { desc, eq, inArray, sql } from 'drizzle-orm';
 import { getDb } from '../../../lib/server/db';
 import * as table from '../../../lib/server/db/schema';
 import { deleteManagedFiles } from '../../../lib/server/files';
@@ -42,7 +42,8 @@ export const GET: APIRoute = (context) =>
 					status: table.repairs.status,
 					vendorId: table.repairs.vendorId,
 					scheduleId: table.repairs.scheduleId,
-					vendorName: table.vendors.name
+					vendorName: table.vendors.name,
+					attachmentCount: attachmentCount(table.repairs.id)
 				})
 				.from(table.repairs)
 				.leftJoin(table.vendors, eq(table.repairs.vendorId, table.vendors.id))
@@ -125,9 +126,10 @@ export const DELETE: APIRoute = (context) =>
 		/*
 		 * Notes, repairs, galleries and schedules cascade from the FK — which erases
 		 * every row naming a blob, so the pathnames are collected first: the cover
-		 * image, every gallery photo, every note attachment.
+		 * image, every gallery photo, every note attachment (on the vehicle or on one
+		 * of its repairs), every receipt on a repair.
 		 */
-		const [photos, vehicleNotes] = await Promise.all([
+		const [photos, vehicleNotes, repairNotes, attachments] = await Promise.all([
 			db
 				.select({ imageUrl: table.vehiclePhotos.imageUrl })
 				.from(table.vehiclePhotos)
@@ -136,15 +138,33 @@ export const DELETE: APIRoute = (context) =>
 			db
 				.select({ imageUrl: table.notes.imageUrl })
 				.from(table.notes)
-				.where(eq(table.notes.vehicleId, id))
+				.where(eq(table.notes.vehicleId, id)),
+			db
+				.select({ imageUrl: table.notes.imageUrl })
+				.from(table.notes)
+				.innerJoin(table.repairs, eq(table.notes.repairId, table.repairs.id))
+				.where(eq(table.repairs.vehicleId, id)),
+			db
+				.select({ url: table.repairAttachments.url })
+				.from(table.repairAttachments)
+				.innerJoin(table.repairs, eq(table.repairAttachments.repairId, table.repairs.id))
+				.where(eq(table.repairs.vehicleId, id))
 		]);
 
 		await db.delete(table.vehicles).where(eq(table.vehicles.id, id));
 		await deleteManagedFiles([
 			vehicle.image,
 			...photos.map((p) => p.imageUrl),
-			...vehicleNotes.map((n) => n.imageUrl)
+			...vehicleNotes.map((n) => n.imageUrl),
+			...repairNotes.map((n) => n.imageUrl),
+			...attachments.map((a) => a.url)
 		]);
 
 		return noContent();
 	});
+
+/** How many receipts a repair carries, as a column — the card shows a chip, not the files. */
+const attachmentCount = (repairId: typeof table.repairs.id) =>
+	sql<number>`(select count(*) from ${table.repairAttachments} where ${table.repairAttachments.repairId} = ${repairId})`.mapWith(
+		Number
+	);

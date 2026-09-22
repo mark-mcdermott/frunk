@@ -166,6 +166,17 @@ export const updateGallerySchema = z.object({
 	photoOrder: z.array(z.string()).optional()
 });
 
+/**
+ * `POST /api/repairs/:id/attachments`. The URL is the serving path `POST /api/uploads`
+ * answered with; the handler checks it sits under the caller's own prefix.
+ */
+export const createAttachmentSchema = z.object({
+	url: nonEmpty,
+	name: nonEmpty.max(200),
+	contentType: nonEmpty.max(100),
+	size: z.number().int().nonnegative()
+});
+
 export const createPhotoSchema = z.object({
 	galleryId: nonEmpty,
 	imageUrl: nonEmpty,

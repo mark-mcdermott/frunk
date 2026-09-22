@@ -8,7 +8,7 @@
 --
 -- GENERATED FILE — do not edit. Regenerate with:
 --   pnpm db:generate && pnpm db:bootstrap-sql
--- Source: 0000_sad_silver_surfer.sql, 0001_graceful_absorbing_man.sql, 0002_fuzzy_rockslide.sql, 0003_bent_chameleon.sql
+-- Source: 0000_sad_silver_surfer.sql, 0001_graceful_absorbing_man.sql, 0002_fuzzy_rockslide.sql, 0003_bent_chameleon.sql, 0004_stiff_newton_destine.sql
 
 CREATE TABLE IF NOT EXISTS "account" (
 	"id" text PRIMARY KEY NOT NULL,
@@ -288,6 +288,17 @@ CREATE TABLE IF NOT EXISTS "expiration_reminders" (
 );
 --> statement-breakpoint
 DO $$ BEGIN ALTER TABLE "expiration_reminders" ADD CONSTRAINT "expiration_reminders_vehicle_id_vehicles_id_fk" FOREIGN KEY ("vehicle_id") REFERENCES "public"."vehicles"("id") ON DELETE cascade ON UPDATE no action; EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+CREATE TABLE IF NOT EXISTS "repair_attachments" (
+	"id" text PRIMARY KEY NOT NULL,
+	"repair_id" text NOT NULL,
+	"url" text NOT NULL,
+	"name" text NOT NULL,
+	"content_type" text NOT NULL,
+	"size" integer NOT NULL,
+	"created_at" timestamp with time zone DEFAULT now() NOT NULL
+);
+--> statement-breakpoint
+DO $$ BEGIN ALTER TABLE "repair_attachments" ADD CONSTRAINT "repair_attachments_repair_id_repairs_id_fk" FOREIGN KEY ("repair_id") REFERENCES "public"."repairs"("id") ON DELETE cascade ON UPDATE no action; EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
 --
 -- Roles. The ids are load-bearing: ROLE_IDS in src/lib/roles.ts is { DEMO: 1, USER: 2,

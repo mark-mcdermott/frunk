@@ -2,6 +2,7 @@ import type { APIRoute } from 'astro';
 import { eq } from 'drizzle-orm';
 import { getDb } from '../../../lib/server/db';
 import * as table from '../../../lib/server/db/schema';
+import { deleteManagedFiles } from '../../../lib/server/files';
 import { resyncSchedule } from '../../../lib/server/maintenance';
 import { ownedRepair, ownedVendor, requireSession } from '../_lib/guard';
 import { handler, json, noContent, notFound, readJson } from '../_lib/http';
@@ -17,9 +18,17 @@ export const GET: APIRoute = (context) =>
 		if (!id) return notFound('Repair not found');
 
 		const repair = await ownedRepair(id, user.id);
-		const notes = await getDb().select().from(table.notes).where(eq(table.notes.repairId, id));
+		const db = getDb();
+		const [notes, attachments] = await Promise.all([
+			db.select().from(table.notes).where(eq(table.notes.repairId, id)),
+			db
+				.select()
+				.from(table.repairAttachments)
+				.where(eq(table.repairAttachments.repairId, id))
+				.orderBy(table.repairAttachments.createdAt)
+		]);
 
-		return json({ repair, notes });
+		return json({ repair, notes, attachments });
 	});
 
 export const PATCH: APIRoute = (context) =>
@@ -64,7 +73,26 @@ export const DELETE: APIRoute = (context) =>
 		if (!id) return notFound('Repair not found');
 
 		const repair = await ownedRepair(id, user.id);
-		await getDb().delete(table.repairs).where(eq(table.repairs.id, id));
+		const db = getDb();
+
+		// Attachments and repair-attached notes cascade with the row; their blobs do not,
+		// so the pathnames are collected first.
+		const [attachments, repairNotes] = await Promise.all([
+			db
+				.select({ url: table.repairAttachments.url })
+				.from(table.repairAttachments)
+				.where(eq(table.repairAttachments.repairId, id)),
+			db
+				.select({ imageUrl: table.notes.imageUrl })
+				.from(table.notes)
+				.where(eq(table.notes.repairId, id))
+		]);
+
+		await db.delete(table.repairs).where(eq(table.repairs.id, id));
+		await deleteManagedFiles([
+			...attachments.map((a) => a.url),
+			...repairNotes.map((n) => n.imageUrl)
+		]);
 
 		if (repair.scheduleId) {
 			await resyncSchedule(
