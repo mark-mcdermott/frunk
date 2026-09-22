@@ -13,12 +13,13 @@ replaced was kept in `legacy/` as the reference for the port until 2026-09-21, w
 Cloudflare Pages project was retired and the directory deleted; it is in the history up to
 commit `5f2364c` (`git show 5f2364c:legacy/src/...`) if anything needs consulting.
 
-**Phases 0–3 are done. Phase 4's build-out is complete** — every screen family is
+**Phases 0–5 are done and Phase 6 is closed.** The applet is complete — every screen family is
 built (vehicles, repairs, notes, vendors, maintenance schedules, galleries, user admin,
 profile, and the repair/note detail screens), uploads are live on **Vercel Blob**
 (store `frunk-uploads`, **private**), and **every applet route is code-split**
 (`page()` in `AppRoot.tsx` — the shell paints from the entry chunk, screens load on
-first visit). What remains of Phase 4 is its checkpoint: the component/e2e test layer.
+first visit). **Every phase is closed** (Phase 6's checkpoint met 2026-09-21); what
+follows is product work, not port work.
 
 **Profile edits go through Better Auth's `updateUser`**, not `PATCH /api/users/:id` —
 that endpoint refreshes the client session store, so the header avatar and name update
