@@ -1064,7 +1064,7 @@ Playwright, chromium only, eight specs in ~20 s, wired into CI as its own job.
   Screen" — no store submission, so App Store guideline 4.2 (minimum functionality) does
   not apply yet. The iOS App Store is a v2 goal; before it, drop the developer-mode suffix
   from the entitlement, bundle the applet instead of loading it, and add native features
-  worth reviewing. Android waits for a Java runtime on the development Mac.
+  worth reviewing. Android's shell is built and verified (above); it waits on the same v2 decision.
 - Desktop is out of scope (Decision 7) — no Tauri step.
 - ~~Resolve the DNS/email trade in Decision 1 before switching nameservers.~~ **Moot.** The
   nameservers already left Cloudflare — `frunk.cloud` now answers from Namecheap BasicDNS
@@ -1118,8 +1118,10 @@ Playwright, chromium only, eight specs in ~20 s, wired into CI as its own job.
   **Met 2026-09-21** on iOS: password, code and passkey sign-in and the demo conversion are
   verified on production, in the browser and inside the app, and the email path is verified
   live the same day — a real sign-up on frunk.cloud, with the verification mail delivered to
-  a hey.com inbox. Still open: the Android build
-  (Java), and the Cloudflare project retirement that makes the origin truly singular.
+  a hey.com inbox. The two items still open that day closed the same day: the
+  Android shell (Java runtime installed; the passkey sheet opens inside the app, above) and
+  the Cloudflare project retirement that made the origin truly singular. **Nothing in this
+  phase remains open** (2026-09-22).
 
 ---
 
