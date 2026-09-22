@@ -7,6 +7,7 @@ import {
 	Clock,
 	Cog,
 	Copy,
+	FileDown,
 	FileText,
 	Gauge,
 	Hash,
@@ -14,6 +15,7 @@ import {
 	Paperclip,
 	Pencil,
 	Plus,
+	Table2,
 	Trash2,
 	Wrench
 } from 'lucide-react';
@@ -415,6 +417,27 @@ export function VehicleDetailPage() {
 						<Pencil className="size-4 text-accent-bright" strokeWidth={1.75} aria-hidden />
 						Edit Vehicle
 					</Link>
+
+					{/* Plain links, not router links: the endpoints answer with a file, and the
+					    session cookie travels with a same-origin download like any request. */}
+					<div className="mt-3 grid grid-cols-2 gap-3">
+						<a
+							href={`/api/vehicles/${vehicle.id}/report`}
+							download
+							className="flex items-center justify-center gap-2 rounded-control border border-border py-2.5 text-[0.8125rem] text-text-muted transition-colors hover:border-border-strong hover:text-text"
+						>
+							<FileDown className="size-4" strokeWidth={1.75} aria-hidden />
+							History (PDF)
+						</a>
+						<a
+							href={`/api/vehicles/${vehicle.id}/history.csv`}
+							download
+							className="flex items-center justify-center gap-2 rounded-control border border-border py-2.5 text-[0.8125rem] text-text-muted transition-colors hover:border-border-strong hover:text-text"
+						>
+							<Table2 className="size-4" strokeWidth={1.75} aria-hidden />
+							Repairs (CSV)
+						</a>
+					</div>
 				</section>
 
 				<Panel
