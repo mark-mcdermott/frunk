@@ -1,4 +1,4 @@
-import { inArray } from 'drizzle-orm';
+import { inArray, like } from 'drizzle-orm';
 import {
 	user,
 	vehicles,
@@ -30,14 +30,24 @@ import { describeTarget, scriptDb } from './db';
 const db = scriptDb();
 
 // Office characters with their vehicles
-// Avatar images stored on R2
 /*
  * Sample imagery ships with the site, under `public/samples/`, and is referenced by
  * app-relative path. It lived in a public Cloudflare R2 bucket until 2026-09-21, when
  * the bucket went with the Cloudflare account and every seeded photo broke at once;
  * files in the repo cannot be retired out from under the database.
  */
-const AVATAR_BASE = '/samples/headshots';
+/*
+ * Three renders of Frunk's own figure, shared round the cast. They replaced seventeen
+ * headshots on 2026-10-01 that carried no licence; accounts created before then still
+ * name those files, and `retireHeadshots` moves them over.
+ */
+const AVATAR_BASE = '/samples/avatars';
+const RETIRED_AVATAR_BASE = '/samples/headshots';
+const AVATARS = {
+	violet: `${AVATAR_BASE}/violet.webp`,
+	silver: `${AVATAR_BASE}/silver.webp`,
+	light: `${AVATAR_BASE}/light.webp`
+};
 const VEHICLE_BASE = '/samples/vehicles';
 const DOC_BASE = '/documents/samples';
 const GALLERY_BASE = '/samples/gallery';
@@ -254,7 +264,7 @@ const officeCharacters = [
 		username: 'michael.scott@dundermifflin.com',
 		age: 46,
 		roles: [ROLE_IDS.ADMIN, ROLE_IDS.USER],
-		avatar: `${AVATAR_BASE}/michael-scott.png`,
+		avatar: AVATARS.violet,
 		vehicles: [
 			{ make: 'Chrysler', model: 'Sebring', year: 2004, vin: '1C3EL65R04N123456' },
 			{ make: 'Porsche', model: 'Boxster', year: 2008, vin: 'WP0CA29848S654321' }
@@ -264,7 +274,7 @@ const officeCharacters = [
 		username: 'dwight.schrute@dundermifflin.com',
 		age: 42,
 		roles: [ROLE_IDS.USER],
-		avatar: `${AVATAR_BASE}/dwight-schrute.png`,
+		avatar: AVATARS.silver,
 		vehicles: [
 			{ make: 'Pontiac', model: 'Trans Am', year: 1987, vin: '1G2FW87H9HL234567' },
 			{ make: 'Ford', model: 'Taurus', year: 2001, vin: '1FAFP53U41A987654' }
@@ -274,7 +284,7 @@ const officeCharacters = [
 		username: 'jim.halpert@dundermifflin.com',
 		age: 34,
 		roles: [ROLE_IDS.USER],
-		avatar: `${AVATAR_BASE}/jim-halpert.png`,
+		avatar: AVATARS.light,
 		vehicles: [
 			{ make: 'Subaru', model: 'Outback', year: 2010, vin: '4S4BRBCC8A3456789' },
 			{ make: 'Saab', model: '9-3', year: 2006, vin: 'YS3FB49S661234567' }
@@ -284,14 +294,14 @@ const officeCharacters = [
 		username: 'pam.beesly@dundermifflin.com',
 		age: 33,
 		roles: [ROLE_IDS.USER],
-		avatar: `${AVATAR_BASE}/pam-beesly.png`,
+		avatar: AVATARS.violet,
 		vehicles: [{ make: 'Toyota', model: 'Yaris', year: 2007, vin: 'JTDBT923071234567' }]
 	},
 	{
 		username: 'andy.bernard@dundermifflin.com',
 		age: 38,
 		roles: [ROLE_IDS.USER],
-		avatar: `${AVATAR_BASE}/andy-bernard.png`,
+		avatar: AVATARS.silver,
 		vehicles: [
 			{ make: 'Toyota', model: 'Prius', year: 2009, vin: 'JTDKN3DU9A0123456' },
 			{ make: 'Nissan', model: 'Xterra', year: 2006, vin: '5N1AN08W26C654321' }
@@ -301,28 +311,28 @@ const officeCharacters = [
 		username: 'angela.martin@dundermifflin.com',
 		age: 40,
 		roles: [ROLE_IDS.USER],
-		avatar: `${AVATAR_BASE}/angela-martin.png`,
+		avatar: AVATARS.light,
 		vehicles: [{ make: 'Volkswagen', model: 'Jetta', year: 2005, vin: '3VWSE69M55M123456' }]
 	},
 	{
 		username: 'kevin.malone@dundermifflin.com',
 		age: 44,
 		roles: [ROLE_IDS.USER],
-		avatar: `${AVATAR_BASE}/kevin-malone.png`,
+		avatar: AVATARS.violet,
 		vehicles: [{ make: 'Chevrolet', model: 'Monte Carlo', year: 1999, vin: '2G1WX12K7Y9234567' }]
 	},
 	{
 		username: 'oscar.martinez@dundermifflin.com',
 		age: 41,
 		roles: [ROLE_IDS.USER],
-		avatar: `${AVATAR_BASE}/oscar-martinez.png`,
+		avatar: AVATARS.silver,
 		vehicles: [{ make: 'Honda', model: 'Accord', year: 2008, vin: '1HGCP26878A123456' }]
 	},
 	{
 		username: 'stanley.hudson@dundermifflin.com',
 		age: 54,
 		roles: [ROLE_IDS.USER],
-		avatar: `${AVATAR_BASE}/stanley-hudson.png`,
+		avatar: AVATARS.light,
 		vehicles: [
 			{ make: 'Chrysler', model: '300', year: 2006, vin: '2C3KA53G66H789012' },
 			{ make: 'Lincoln', model: 'Town Car', year: 2003, vin: '1LNHM82W93Y456789' }
@@ -332,21 +342,21 @@ const officeCharacters = [
 		username: 'phyllis.vance@dundermifflin.com',
 		age: 52,
 		roles: [ROLE_IDS.USER],
-		avatar: `${AVATAR_BASE}/phyllis-vance.png`,
+		avatar: AVATARS.violet,
 		vehicles: [{ make: 'Buick', model: 'LaCrosse', year: 2010, vin: '1G4GC5GC3AF123456' }]
 	},
 	{
 		username: 'meredith.palmer@dundermifflin.com',
 		age: 48,
 		roles: [ROLE_IDS.USER],
-		avatar: `${AVATAR_BASE}/meredith-palmer.png`,
+		avatar: AVATARS.silver,
 		vehicles: [{ make: 'Dodge', model: 'Neon', year: 2002, vin: '1B3ES56C42D654321' }]
 	},
 	{
 		username: 'creed.bratton@dundermifflin.com',
 		age: 65,
 		roles: [ROLE_IDS.DEMO],
-		avatar: `${AVATAR_BASE}/creed-bratton.png`,
+		avatar: AVATARS.violet,
 		isDemo: true, // Flag to give this user full data for demo purposes
 		vehicles: [
 			{ make: 'AMC', model: 'Gremlin', year: 1974, vin: 'A4A158A123456' },
@@ -358,35 +368,35 @@ const officeCharacters = [
 		username: 'toby.flenderson@dundermifflin.com',
 		age: 44,
 		roles: [ROLE_IDS.USER],
-		avatar: `${AVATAR_BASE}/toby-flenderson.png`,
+		avatar: AVATARS.violet,
 		vehicles: [{ make: 'Honda', model: 'Civic', year: 2005, vin: '2HGES16505H567890' }]
 	},
 	{
 		username: 'kelly.kapoor@dundermifflin.com',
 		age: 29,
 		roles: [ROLE_IDS.USER],
-		avatar: `${AVATAR_BASE}/kelly-kapoor.png`,
+		avatar: AVATARS.silver,
 		vehicles: [{ make: 'Volkswagen', model: 'Beetle', year: 2008, vin: '3VWRG3AG3AM123456' }]
 	},
 	{
 		username: 'ryan.howard@dundermifflin.com',
 		age: 30,
 		roles: [ROLE_IDS.USER],
-		avatar: `${AVATAR_BASE}/ryan-howard.png`,
+		avatar: AVATARS.light,
 		vehicles: [{ make: 'BMW', model: '3 Series', year: 2009, vin: 'WBAPH5C55BA654321' }]
 	},
 	{
 		username: 'darryl.philbin@dundermifflin.com',
 		age: 38,
 		roles: [ROLE_IDS.USER],
-		avatar: `${AVATAR_BASE}/darryl-philbin.png`,
+		avatar: AVATARS.violet,
 		vehicles: [{ make: 'Ford', model: 'F-150', year: 2007, vin: '1FTPW14V87KD12345' }]
 	},
 	{
 		username: 'erin.hannon@dundermifflin.com',
 		age: 26,
 		roles: [ROLE_IDS.USER],
-		avatar: `${AVATAR_BASE}/erin-hannon.png`,
+		avatar: AVATARS.silver,
 		vehicles: [{ make: 'Kia', model: 'Rio', year: 2010, vin: 'KNADN4A39A6123456' }]
 	}
 ];
@@ -562,9 +572,26 @@ async function seed() {
 		}
 	}
 
+	await retireHeadshots();
+
 	console.log('\nSeeding complete.');
 	console.log('These accounts have no passkey, so none of them can be signed into —');
 	console.log('they are fixtures. Creed is the template POST /api/demo clones.');
+}
+
+/**
+ * A demo keeps the avatar it was cloned with, so every demo opened before the swap — and
+ * any that was kept — still points at a file that no longer exists.
+ */
+async function retireHeadshots() {
+	const moved = await db
+		.update(user)
+		.set({ image: AVATARS.violet })
+		.where(like(user.image, `${RETIRED_AVATAR_BASE}/%`))
+		.returning({ id: user.id });
+	if (moved.length > 0) {
+		console.log(`\nMoved ${moved.length} account(s) off the retired headshots.`);
+	}
 }
 
 seed().catch((cause) => {
