@@ -8,6 +8,7 @@ import {
 	IconButton,
 	ListCard,
 	ListEmpty,
+	ListRow,
 	ListState,
 	SearchInput,
 	type Filter
@@ -72,62 +73,55 @@ function RepairRowItem({ repair, onDelete }: { repair: RepairRow; onDelete: () =
 	const vehicle = `${repair.vehicleYear} ${repair.vehicleMake} ${repair.vehicleModel}`;
 
 	return (
-		<article className="flex items-center gap-5 border-b border-border px-6 py-5 last:border-b-0">
-			<span
-				aria-hidden
-				className="flex size-14 shrink-0 items-center justify-center rounded-[12px] border border-border bg-surface-raised"
-			>
-				<Wrench className="size-5 text-accent-bright" strokeWidth={1.5} />
-			</span>
+		<ListRow
+			icon={<Wrench className="size-5" strokeWidth={1.5} />}
+			aside={<StatusBadge status={repair.status} />}
+			actions={
+				<>
+					<IconButton
+						label={`Edit ${repair.description}`}
+						onClick={() => navigate(`/repairs/${repair.id}/edit`)}
+					>
+						<Pencil className="size-4" strokeWidth={1.75} aria-hidden />
+					</IconButton>
+					<IconButton label={`Delete ${repair.description}`} tone="destructive" onClick={onDelete}>
+						<Trash2 className="size-4" strokeWidth={1.75} aria-hidden />
+					</IconButton>
+				</>
+			}
+		>
+			<h2 className="display-sm text-lg sm:truncate">
+				<Link to={`/repairs/${repair.id}`} className="transition-opacity hover:opacity-80">
+					{repair.description}
+				</Link>
+			</h2>
 
-			<div className="min-w-0 flex-1">
-				<h2 className="display-sm truncate text-lg">
-					<Link to={`/repairs/${repair.id}`} className="transition-opacity hover:opacity-80">
-						{repair.description}
-					</Link>
-				</h2>
+			<p className="mt-1 truncate text-[0.875rem] text-text-muted">
+				<Link to={`/vehicles/${repair.vehicleId}`} className="hover:text-text">
+					{vehicle}
+				</Link>
+			</p>
 
-				<p className="mt-1 truncate text-[0.875rem] text-text-muted">
-					<Link to={`/vehicles/${repair.vehicleId}`} className="hover:text-text">
-						{vehicle}
-					</Link>
-				</p>
-
-				<div className="mt-2 flex flex-wrap items-center gap-x-5 gap-y-1 text-[0.8125rem] text-text-muted">
-					<span className="flex items-center gap-1.5">
-						<Calendar className="size-3.5" strokeWidth={1.75} aria-hidden />
-						{formatDate(repair.date)}
+			<div className="mt-2 flex flex-wrap items-center gap-x-5 gap-y-1 text-[0.8125rem] text-text-muted">
+				<span className="flex items-center gap-1.5">
+					<Calendar className="size-3.5" strokeWidth={1.75} aria-hidden />
+					{formatDate(repair.date)}
+				</span>
+				{repair.mileage != null && <span>{formatMiles(repair.mileage)}</span>}
+				{repair.cost != null && (
+					<span className="flex items-center gap-1 text-positive">
+						<DollarSign className="size-3.5" strokeWidth={1.75} aria-hidden />
+						{formatCost(repair.cost)}
 					</span>
-					{repair.mileage != null && <span>{formatMiles(repair.mileage)}</span>}
-					{repair.cost != null && (
-						<span className="flex items-center gap-1 text-positive">
-							<DollarSign className="size-3.5" strokeWidth={1.75} aria-hidden />
-							{formatCost(repair.cost)}
-						</span>
-					)}
-					{repair.vendorName && (
-						<span className="flex items-center gap-1.5">
-							<Store className="size-3.5" strokeWidth={1.75} aria-hidden />
-							{repair.vendorName}
-						</span>
-					)}
-				</div>
+				)}
+				{repair.vendorName && (
+					<span className="flex items-center gap-1.5">
+						<Store className="size-3.5" strokeWidth={1.75} aria-hidden />
+						{repair.vendorName}
+					</span>
+				)}
 			</div>
-
-			<StatusBadge status={repair.status} />
-
-			<div className="flex shrink-0 items-center gap-2">
-				<IconButton
-					label={`Edit ${repair.description}`}
-					onClick={() => navigate(`/repairs/${repair.id}/edit`)}
-				>
-					<Pencil className="size-4" strokeWidth={1.75} aria-hidden />
-				</IconButton>
-				<IconButton label={`Delete ${repair.description}`} tone="destructive" onClick={onDelete}>
-					<Trash2 className="size-4" strokeWidth={1.75} aria-hidden />
-				</IconButton>
-			</div>
-		</article>
+		</ListRow>
 	);
 }
 
