@@ -82,21 +82,25 @@ export async function pushEnabled(): Promise<boolean> {
 }
 
 /**
- * Turns notifications on for this phone. False means the system said no — permission
- * was declined, now or earlier, which only the Settings app can undo.
+ * What turning the switch on came to. `denied` is the system saying no — now or earlier,
+ * which only the Settings app can undo. `unreachable` is permission granted and no
+ * token to show for it: Apple did not answer in time, or the API could not be told.
+ * The two need different words, because only one of them is the user's to fix.
  */
-export async function enablePush(): Promise<boolean> {
-	if (!pushAvailable()) return false;
+export type PushOutcome = 'on' | 'denied' | 'unreachable';
+
+export async function enablePush(): Promise<PushOutcome> {
+	if (!pushAvailable()) return 'denied';
 
 	const { push } = await plugin();
 	const permission = await push.requestPermissions();
-	if (permission.receive !== 'granted') return false;
+	if (permission.receive !== 'granted') return 'denied';
 
 	const token = await deviceToken();
-	if (!token || !(await tell('POST', token))) return false;
+	if (!token || !(await tell('POST', token).catch(() => false))) return 'unreachable';
 
 	await remember(token);
-	return true;
+	return 'on';
 }
 
 export async function disablePush(): Promise<void> {
