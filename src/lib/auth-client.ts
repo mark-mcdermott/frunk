@@ -215,7 +215,8 @@ export async function resendVerification(email: string): Promise<void> {
 
 export async function signOut(): Promise<void> {
 	// While the session still exists: this phone stops being an address for the account.
-	await disablePush();
+	// Never at the cost of the sign-out itself — a token nobody claims is harmless.
+	await disablePush().catch(() => {});
 	await endSession();
 	await clearToken();
 }
