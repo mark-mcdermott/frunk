@@ -131,6 +131,16 @@ export function AppShell({ children }: { children: ReactNode }) {
 	const [trail, setTrail] = useState<Crumb[]>([]);
 	const set = useMemo(() => (crumbs: Crumb[]) => setTrail(crumbs), []);
 
+	/*
+	 * A new screen starts at its top. The router swaps the content and leaves the
+	 * window where it was, so a tab tapped from half-way down a long page opened the
+	 * next one half-way down too.
+	 */
+	const { pathname } = useLocation();
+	useEffect(() => {
+		window.scrollTo(0, 0);
+	}, [pathname]);
+
 	return (
 		<div className="surface-dark flex min-h-screen flex-col pb-[env(safe-area-inset-bottom,0px)]">
 			<header className="border-b border-border">
