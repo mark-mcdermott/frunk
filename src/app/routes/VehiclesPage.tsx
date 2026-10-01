@@ -5,6 +5,7 @@ import { Link } from 'react-router';
 import type { Summary } from '@/lib/maintenance';
 import { deleteVehicle, keys, listVehicles, type VehicleListItem } from '../api';
 import { formatDate, formatTime } from '../format';
+import { FileImage } from '../files';
 
 /**
  * The garage, built to `docs/mocks/vehicles-index.webp`.
@@ -66,7 +67,7 @@ function VehicleRow({
 	return (
 		<article className="flex items-center gap-6 border-b border-border px-6 py-5 last:border-b-0">
 			{vehicle.image ? (
-				<img
+				<FileImage
 					src={vehicle.image}
 					alt=""
 					className="size-20 shrink-0 rounded-[12px] border border-border object-cover"

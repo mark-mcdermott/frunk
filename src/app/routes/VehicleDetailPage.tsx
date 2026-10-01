@@ -36,6 +36,7 @@ import { DuePill } from '../components/DuePill';
 import { GalleryEditor } from '../components/GalleryEditor';
 import { ScheduleEditor } from '../components/ScheduleEditor';
 import { formatCost, formatDate, formatMiles, formatNumericDate } from '../format';
+import { FileImage, FileLink } from '../files';
 
 /**
  * The vehicle detail screen, built to `docs/mocks/vehicle-single.webp`.
@@ -339,7 +340,7 @@ export function VehicleDetailPage() {
 			<div className="grid gap-6 lg:grid-cols-3">
 				<section className="card p-6">
 					{vehicle.image ? (
-						<img
+						<FileImage
 							src={vehicle.image}
 							alt=""
 							className="h-48 w-full rounded-control border border-border object-cover"
@@ -421,22 +422,22 @@ export function VehicleDetailPage() {
 					{/* Plain links, not router links: the endpoints answer with a file, and the
 					    session cookie travels with a same-origin download like any request. */}
 					<div className="mt-3 grid grid-cols-2 gap-3">
-						<a
+						<FileLink
 							href={`/api/vehicles/${vehicle.id}/report`}
 							download
 							className="flex items-center justify-center gap-2 rounded-control border border-border py-2.5 text-[0.8125rem] text-text-muted transition-colors hover:border-border-strong hover:text-text"
 						>
 							<FileDown className="size-4" strokeWidth={1.75} aria-hidden />
 							History (PDF)
-						</a>
-						<a
+						</FileLink>
+						<FileLink
 							href={`/api/vehicles/${vehicle.id}/history.csv`}
 							download
 							className="flex items-center justify-center gap-2 rounded-control border border-border py-2.5 text-[0.8125rem] text-text-muted transition-colors hover:border-border-strong hover:text-text"
 						>
 							<Table2 className="size-4" strokeWidth={1.75} aria-hidden />
 							Repairs (CSV)
-						</a>
+						</FileLink>
 					</div>
 				</section>
 
