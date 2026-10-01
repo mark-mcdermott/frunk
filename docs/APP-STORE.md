@@ -58,7 +58,12 @@ server itself sends, are steps 1 and 3 below.
    _Associated Domains_ enabled. Xcode's automatic signing does this the first time the
    project is opened with your account selected (`pnpm cap:ios`, then Signing &
    Capabilities).
-3. **A run on a real phone.** Plug in an iPhone, select it in Xcode, Run. Check: the demo
+3. **A run on a real phone.** Plug in an iPhone, select it in Xcode, Run — or from a
+   terminal, `pnpm cap:sync`, then `xcodebuild -project ios/App/App.xcodeproj -scheme App
+-configuration Release -destination "id=<device udid>" -allowProvisioningUpdates build`
+   and `xcrun devicectl device install app --device <device> <path to App.app>`, which is
+   how the first one went on (iPhone 13 Pro Max, 2026-10-01; Xcode's automatic signing
+   produced a team profile carrying both entitlements). Check: the demo
    starts; "Add a passkey and keep it" raises the Face ID sheet; Profile → Reminders →
    "Notify me on this phone" asks for permission and stays on; a receipt can be added
    from the camera; History (PDF) opens the share sheet.
