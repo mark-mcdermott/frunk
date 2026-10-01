@@ -329,6 +329,16 @@ HTML before React owns it, and anything typed before hydration is wiped when the
 inputs sync. Give it a `slot="fallback"` skeleton (`.skeleton` in `global.css`,
 `AuthCardSkeleton.astro` as the model) so the page still paints instantly.
 
+**The bundled native app is a different origin**, and three things exist only for it:
+CORS and the cross-site form check in `src/middleware.ts` (Astro's `checkOrigin` is off
+and restated there, with native origins exempt), bearer sessions (`set-auth-token` out,
+`Authorization: Bearer` in — the `bearer` plugin), and a cookie relay for Better Auth's
+challenge cookies on `/api/auth/*` (`src/lib/server/relay.ts`, header `x-frunk-relay`).
+The origins are in `src/lib/server/origins.ts`; `NATIVE_ORIGINS_EXTRA` adds one for a
+rehearsal. Two traps met on the way: the middleware must import `origins.ts` lazily,
+because the module is also loaded while pages prerender and `astro:env/server` fails the
+build there; and Vite's dev server answers preflights itself unless `server.cors` is off.
+
 **Auth boundary is drawn at the API, not the page.** Astro serves the same static HTML to
 everyone; the applet decides what to render; every API handler checks the session itself.
 

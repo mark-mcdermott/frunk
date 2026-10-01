@@ -50,12 +50,27 @@ export default defineConfig({
 				context: 'server',
 				access: 'secret',
 				optional: true
-			})
+			}),
+			// Extra origins treated like the native app's, comma-separated. Unset in
+			// production; the journeys set it to serve the native bundle from a second port.
+			NATIVE_ORIGINS_EXTRA: envField.string({ context: 'server', access: 'secret', optional: true })
 		}
 	},
+	/*
+	 * Astro's cross-site form check is restated in `src/middleware.ts`, which is the
+	 * same rule with one exemption: the bundled native app's origin.
+	 */
+	security: { checkOrigin: false },
 	adapter: vercel(),
 	integrations: [react()],
 	vite: {
-		plugins: [tailwindcss()]
+		plugins: [tailwindcss()],
+		/*
+		 * Vite's dev server answers CORS preflights itself, before the app's middleware,
+		 * and only for localhost origins — so in dev a preflight from the native app's
+		 * origin got a 204 with no headers. Off, dev behaves like the deployed function,
+		 * where `src/middleware.ts` is the only thing that speaks CORS.
+		 */
+		server: { cors: false }
 	}
 });
