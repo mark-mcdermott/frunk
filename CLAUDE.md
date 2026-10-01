@@ -393,9 +393,14 @@ the semantic green and red).
   go stale: on PR #34 it stayed pinned to the first commit through two further pushes, and
   merging took 1 of 3 commits while reporting success. `gh pr view <n> --json headRefOid`
   against `git rev-parse origin/<branch>` catches it in one command.
-- Branch protection is unavailable on this repo (private, free plan), so there are no
-  required status checks and GitHub's own auto-merge would merge _immediately_ rather than
-  waiting for CI. Wait for green, then merge.
+- **The repository is public** (2026-10-01) and `main` is protected: `check`, `test` and
+  `e2e` are required, force pushes and deletion are off, and administrators are not held
+  to it, so the owner can still push directly in an emergency. `gh pr merge --auto --merge`
+  now waits for green by itself — the head-SHA check above still comes first. Secret
+  scanning and push protection are on. Everything committed, every PR body and every
+  Actions log is world-readable: no credentials, connection strings or database dumps in
+  any of them, and never as a workflow artifact. The backup repository is private and
+  stays that way.
 - Strict TypeScript — no `any` (enforced by lint). Prefer extracting a shared helper over
   repeating a cast.
 - `pnpm format` before committing; CI rejects unformatted files.
