@@ -25,6 +25,16 @@ test('signs in to a demo, works the garage and signs out, all cross-origin', asy
 	await expect(page.getByRole('heading', { name: 'Welcome back' })).toBeVisible();
 	await expect(page.getByRole('link', { name: 'Back to the home page' })).toHaveCount(0);
 
+	// On a phone the bundle is on the device, so the screen is there with no network at
+	// all — and it says so plainly when asked to do something that needs one, rather
+	// than repeating the engine's "Load failed".
+	await page.context().setOffline(true);
+	await page.getByLabel('Email address').fill('nobody@example.com');
+	await page.getByLabel('Password').fill('not-a-real-password');
+	await page.getByRole('button', { name: 'Sign in', exact: true }).click();
+	await expect(page.getByRole('alert').filter({ hasText: 'Could not reach Frunk' })).toBeVisible();
+	await page.context().setOffline(false);
+
 	await page.getByRole('button', { name: 'Explore the demo' }).click();
 	await expect(page).toHaveURL(`${NATIVE}/vehicles`);
 	await expect(page.getByRole('heading', { name: '1974 AMC Gremlin' })).toBeVisible();
