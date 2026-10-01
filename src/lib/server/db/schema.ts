@@ -381,6 +381,26 @@ export const repairAttachments = pgTable('repair_attachments', {
 
 export type RepairAttachment = typeof repairAttachments.$inferSelect;
 
+/**
+ * The phones a person has asked to be notified on. A token is the address Apple or
+ * Google delivers to, and it names one installation: when someone else signs in on
+ * that phone the same token arrives under their account and moves to it, which is why
+ * the token is unique and the owner is not.
+ */
+export const deviceTokens = pgTable('device_tokens', {
+	id: text('id').primaryKey(),
+	userId: text('user_id')
+		.notNull()
+		.references(() => user.id, { onDelete: 'cascade' }),
+	/** ios | android */
+	platform: text('platform').notNull(),
+	token: text('token').notNull().unique(),
+	createdAt: timestamp('created_at', { withTimezone: true, mode: 'date' }).notNull().defaultNow(),
+	updatedAt: timestamp('updated_at', { withTimezone: true, mode: 'date' }).notNull().defaultNow()
+});
+
+export type DeviceToken = typeof deviceTokens.$inferSelect;
+
 // Vehicle Galleries (groups of photos for vehicles)
 export const galleries = pgTable('galleries', {
 	id: text('id').primaryKey(),
