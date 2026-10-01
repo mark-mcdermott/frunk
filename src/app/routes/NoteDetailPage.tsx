@@ -14,6 +14,7 @@ import { Link, useNavigate, useParams } from 'react-router';
 import { deleteNote, getNote, keys, listVehicles } from '../api';
 import { useCrumbs } from '../AppShell';
 import { formatDate } from '../format';
+import { FileImage, FileLink } from '../files';
 
 /**
  * The note detail, built to `docs/mocks/note-single.webp`.
@@ -197,23 +198,21 @@ export function NoteDetailPage() {
 					<div className="mt-6">
 						<p className="text-[0.75rem] tracking-[0.12em] text-text-faint uppercase">Attachment</p>
 						{isPdf ? (
-							<a
+							<FileLink
 								href={note.imageUrl}
-								target="_blank"
-								rel="noreferrer"
 								className="mt-3 inline-flex items-center gap-2 rounded-control border border-border bg-surface-raised px-4 py-3 text-[0.875rem] text-text transition-colors hover:border-border-strong"
 							>
 								<FileText className="size-4 text-accent-bright" strokeWidth={1.75} aria-hidden />
 								Open the PDF
-							</a>
+							</FileLink>
 						) : (
-							<a href={note.imageUrl} target="_blank" rel="noreferrer" className="mt-3 block">
-								<img
+							<FileLink href={note.imageUrl} className="mt-3 block">
+								<FileImage
 									src={note.imageUrl}
 									alt={note.title}
 									className="max-h-[28rem] rounded-control border border-border object-contain"
 								/>
-							</a>
+							</FileLink>
 						)}
 					</div>
 				)}

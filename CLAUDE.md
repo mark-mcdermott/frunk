@@ -91,22 +91,31 @@ outstanding.
   Better Auth rework lands, verification mail. Both behind one `src/lib/server/email.ts`.
   Supersedes AWS SES, which was never wired into this app
 - **Capacitor** (iOS/Android) — the shells live at the repo root (`ios/`, `android/`,
-  `capacitor.config.ts`) and **load the deployed origin** rather than bundling; `pnpm
-cap:sync` after a dependency change, `CAP_SERVER_URL=http://localhost:<port>` to point a
-  build at a dev server. **WKWebView refuses WebAuthn unless the app is associated with
-  the site**: `public/.well-known/apple-app-site-association` names the app and
-  `ios/App/App/App.entitlements` carries `webcredentials:frunk.cloud` — with both, a demo
-  converted and signed back in with a passkey inside the app (simulator, against
-  production, 2026-09-21). The entitlement's `?mode=developer` suffix is for Xcode builds;
-  drop it for a store build. **Android is the same shape** (2026-09-21):
-  `public/.well-known/assetlinks.json` names `com.frunk.app` and its signing certificate,
-  and `android/app/src/main/java/com/frunk/app/WebAuthnSupport.java` opts the WebView in
-  at plugin-load time — from `MainActivity.onCreate` the setting arrives after the first
-  page load and the page reports "WebAuthn is not supported". The WebView must be 134 or
-  so: the Android 15 emulator image's WebView 124 does not advertise the feature at all,
-  the Android 16 image's does, and there Credential Manager's passkey sheet opens inside
-  the app. Storing the passkey needs Google Password Manager, so a signed-in Google
-  account (a real phone, or the emulator's Play Store). Email + password works there too.
+  `capacitor.config.ts`) and **bundle the applet** (2026-09-30): `pnpm build:native` is a
+  plain Vite build of `native/` (entry `main.tsx`, root `NativeRoot.tsx`) into
+  `dist-native`, stamped by `.env.native` with `PUBLIC_NATIVE=1` and the production
+  `PUBLIC_API_BASE`; `pnpm cap:sync` builds it and syncs both shells. Bundled is what
+  makes them apps — they launch with no network — and it is the answer to Apple's
+  Guideline 4.2. The price is that the applet is a different origin from the API
+  ("Native clients" in `docs/API.md`), and four files carry that difference so no screen
+  has to: `src/lib/platform.ts` (`NATIVE`, `API_BASE`), `src/lib/session-token.ts` (the
+  bearer token and the cookie relay), `src/app/api.ts` / `src/lib/auth-client.ts` (both
+  send them), and `src/app/files.tsx` — **an `<img>` or `<a>` cannot send a token**, so
+  anything under `/api/` goes through `FileImage` / `FileLink`, which are a plain tag on
+  the web and a fetched blob (or the share sheet) in the app. Routing is still the path:
+  Capacitor serves `index.html` for any extensionless path, so `/signin`, `/signup` and
+  the applet's routes work unchanged and `NativeRoot` only decides which screen a path
+  means. **Tailwind needs `@source '../src'`** in `native/native.css`: it scans the Vite
+  root, which here is three files, and without it the bundle rendered with the tokens and
+  no utilities. **Passkeys** go through `@capgo/capacitor-passkey`, which routes
+  `navigator.credentials` to the system APIs for the associated domain
+  (`public/.well-known/apple-app-site-association`, `assetlinks.json`); the iOS
+  entitlement is `webcredentials:frunk.cloud` with no developer-mode suffix, so it is
+  store-ready. `CAP_SERVER_URL=http://localhost:<port>` still points a shell at a dev
+  server for live reload. The journeys rehearse the bundle from a second port
+  (`tests/e2e/07-native-bundle.spec.ts`), which makes it genuinely cross-origin; what a
+  browser cannot stand in for — the passkey sheet, the share sheet, the preferences
+  store — is checked in the simulator.
 
 Dropped for now: the merch store (Stripe + Printful), Tauri desktop, Skeleton UI.
 

@@ -4,7 +4,7 @@
 <dict>
 	<key>com.apple.developer.associated-domains</key>
 	<array>
-		<string>webcredentials:frunk.cloud?mode=developer</string>
+		<string>webcredentials:frunk.cloud</string>
 	</array>
 </dict>
 </plist>
