@@ -8,7 +8,7 @@
 --
 -- GENERATED FILE — do not edit. Regenerate with:
 --   pnpm db:generate && pnpm db:bootstrap-sql
--- Source: 0000_sad_silver_surfer.sql, 0001_graceful_absorbing_man.sql, 0002_fuzzy_rockslide.sql, 0003_bent_chameleon.sql, 0004_stiff_newton_destine.sql
+-- Source: 0000_sad_silver_surfer.sql, 0001_graceful_absorbing_man.sql, 0002_fuzzy_rockslide.sql, 0003_bent_chameleon.sql, 0004_stiff_newton_destine.sql, 0005_graceful_rhodey.sql
 
 CREATE TABLE IF NOT EXISTS "account" (
 	"id" text PRIMARY KEY NOT NULL,
@@ -299,6 +299,17 @@ CREATE TABLE IF NOT EXISTS "repair_attachments" (
 );
 --> statement-breakpoint
 DO $$ BEGIN ALTER TABLE "repair_attachments" ADD CONSTRAINT "repair_attachments_repair_id_repairs_id_fk" FOREIGN KEY ("repair_id") REFERENCES "public"."repairs"("id") ON DELETE cascade ON UPDATE no action; EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+CREATE TABLE IF NOT EXISTS "device_tokens" (
+	"id" text PRIMARY KEY NOT NULL,
+	"user_id" text NOT NULL,
+	"platform" text NOT NULL,
+	"token" text NOT NULL,
+	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
+	"updated_at" timestamp with time zone DEFAULT now() NOT NULL,
+	CONSTRAINT "device_tokens_token_unique" UNIQUE("token")
+);
+--> statement-breakpoint
+DO $$ BEGIN ALTER TABLE "device_tokens" ADD CONSTRAINT "device_tokens_user_id_user_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."user"("id") ON DELETE cascade ON UPDATE no action; EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
 --
 -- Roles. The ids are load-bearing: ROLE_IDS in src/lib/roles.ts is { DEMO: 1, USER: 2,
