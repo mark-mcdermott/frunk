@@ -45,7 +45,30 @@ function AuthScreen({ children }: { children: ReactNode }) {
 	);
 }
 
+/**
+ * A backdrop for the status bar. The page runs edge to edge and pads itself out of the
+ * notch, but it also scrolls — and without this, whatever scrolls up passes behind the
+ * clock and the battery, legible through both. Fixed, the height of the inset, in the
+ * colour of the screen beneath it.
+ */
+function StatusBarBackdrop({ light }: { light: boolean }) {
+	return (
+		<div
+			aria-hidden
+			className={`${light ? 'surface-light' : 'surface-dark'} pointer-events-none fixed inset-x-0 top-0 z-50 h-[env(safe-area-inset-top,0px)] bg-bg`}
+		/>
+	);
+}
+
 export function NativeRoot({ screen }: { screen: Screen }) {
-	if (screen === 'app') return <AppRoot />;
-	return <AuthScreen>{screen === 'signup' ? <SignUpForm /> : <SignInForm />}</AuthScreen>;
+	return (
+		<>
+			<StatusBarBackdrop light={screen !== 'app'} />
+			{screen === 'app' ? (
+				<AppRoot />
+			) : (
+				<AuthScreen>{screen === 'signup' ? <SignUpForm /> : <SignInForm />}</AuthScreen>
+			)}
+		</>
+	);
 }
