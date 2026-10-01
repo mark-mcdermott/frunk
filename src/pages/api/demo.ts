@@ -2,7 +2,7 @@ import type { APIContext, APIRoute } from 'astro';
 import { isDemo } from '../../lib/roles';
 import { getAuth } from '../../lib/server/auth/config';
 import { checkRateLimit } from '../../lib/server/auth/rate-limit';
-import { cloneDemoAccount, DemoTemplateMissing } from '../../lib/server/demo';
+import { cloneDemoAccount, DemoTemplateMissing, discardDemoAccount } from '../../lib/server/demo';
 import { fail, handler, json, tooManyRequests } from './_lib/http';
 import { resolveSession } from './_lib/session';
 
@@ -52,6 +52,7 @@ export const POST: APIRoute = (context) =>
 		try {
 			await cloneDemoAccount(user.id);
 		} catch (cause) {
+			await discardDemoAccount(user.id);
 			if (cause instanceof DemoTemplateMissing) {
 				console.error(cause);
 				return fail(503, 'The demo is not available right now.');
