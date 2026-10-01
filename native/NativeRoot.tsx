@@ -2,6 +2,7 @@ import type { ReactNode } from 'react';
 import { AppRoot } from '@/app/AppRoot';
 import { SignInForm } from '@/components/auth/SignInForm';
 import { SignUpForm } from '@/components/auth/SignUpForm';
+import { siteUrl } from '@/lib/platform';
 
 /**
  * The bundled app's root. There are no public pages here — the marketing site stays
@@ -27,6 +28,9 @@ export function screenFor(location: Location, signedIn: boolean): Screen {
 	return 'app';
 }
 
+const LEGAL_LINK =
+	'underline decoration-dotted underline-offset-4 transition-colors hover:text-text';
+
 /** The sign-in page's ground and glow, without the marketing header above it. */
 function AuthScreen({ children }: { children: ReactNode }) {
 	return (
@@ -39,6 +43,17 @@ function AuthScreen({ children }: { children: ReactNode }) {
 				<div className="relative flex w-full flex-col items-center gap-8">
 					<span className="wordmark text-xl">FRUNK</span>
 					{children}
+					{/* The site's footer carries these; the app has no footer, and they must
+					    be reachable before an account exists. */}
+					<p className="text-[0.8125rem] text-text-muted">
+						<a href={siteUrl('/privacy')} target="_blank" rel="noreferrer" className={LEGAL_LINK}>
+							Privacy
+						</a>
+						<span aria-hidden> · </span>
+						<a href={siteUrl('/terms')} target="_blank" rel="noreferrer" className={LEGAL_LINK}>
+							Terms
+						</a>
+					</p>
 				</div>
 			</main>
 		</div>
