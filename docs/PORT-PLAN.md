@@ -263,7 +263,8 @@ talks to the app island."
    avoids a migration later.
 7. **Tauri — DECIDED: dropped for now.** No wolfpack precedent to copy, and desktop is the
    least-used shell. Get web and mobile right, then re-add Tauri against a stable app.
-   Mobile (Capacitor) stays in scope.
+   Mobile (Capacitor) stays in scope. _(2026-10-01: back on the roadmap, after a week of
+   dogfooding — "Next, in this order" under "After the port".)_
 8. **`/blocks` and `/charts` — DONE (#25).** `/blocks` was the old About page, renamed
    rather than deleted; `/charts` was a Skeleton kitchen-sink demo. Both were live and
    unlinked. Removed ahead of the port.
@@ -1190,8 +1191,33 @@ stays the one place that says what frunk is.
   simply been hidden with nothing in their place. Native passkeys go through
   `@capgo/capacitor-passkey`, so the passkey-first design survives the move off the
   origin. The iOS project gained its camera and photo usage strings, the
-  export-compliance flag and a store-ready entitlement. Still to come: push
-  notifications for the reminders, and the store listing itself.
+  export-compliance flag and a store-ready entitlement. Push notifications for the
+  reminders followed the same week (`device_tokens`, APNs with no SDK, an opt-in switch on
+  the profile), and a simulator pass against production on 2026-10-01 walked the demo,
+  passkey conversion and sign-in, the share sheet, a tapped notification and account
+  deletion. The listing and the submission are in `docs/APP-STORE.md`; they wait on the
+  item below.
+
+### Next, in this order
+
+1. **Dogfooding — from 2026-10-01.** Nobody has lived in frunk yet: it has been exercised
+   by tests, demos and a simulator. Mark opens a real production account and keeps his own
+   car in it, on the web and in the iPhone app installed straight from Xcode, for a week at
+   the least. Nothing is submitted to a store before that. From the first sign-up
+   production holds real data, so a schema change or a re-seed is no longer free. What the
+   week turns up outranks anything new.
+2. **App Store submission.** `docs/APP-STORE.md`, with TestFlight as the dress rehearsal.
+3. **A desktop app (Tauri) — after the dogfooding week.** Decision 7 dropped Tauri until
+   there was a stable app to add it to, and the App Store build is most of what it was
+   waiting for: the bundle in `dist-native` is what a Tauri window would load, and the API
+   already serves a client on another origin. What it still needs: Tauri's origins in
+   `src/lib/server/origins.ts` (`tauri://localhost` on macOS and Linux,
+   `http://tauri.localhost` on Windows); a passkey path, because the window is not
+   `frunk.cloud` and WebAuthn will not answer for it — email and password work as they
+   are; a save dialog behind `FileLink`, which on a phone is the share sheet; and signing
+   — notarization on macOS, a certificate on Windows. The week also decides what desktop
+   is _for_. Until then the site is the desktop product, and its manifest
+   (`display: standalone`) already installs it as a window of its own.
 
 ## Key files / patterns
 
