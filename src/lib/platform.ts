@@ -18,3 +18,9 @@ export const NATIVE: boolean = import.meta.env.PUBLIC_NATIVE === '1';
 export const API_BASE: string = import.meta.env.PUBLIC_API_BASE ?? '';
 
 export const apiUrl = (path: string) => `${API_BASE}${path}`;
+
+/**
+ * A page of the website — the privacy policy, the terms. The native bundle does not
+ * carry the site, so these are absolute there and open in the system browser.
+ */
+export const siteUrl = apiUrl;
