@@ -9,6 +9,7 @@ import * as schema from '../db/schema';
 import { sendEmail } from '../email';
 import { isDemo, ROLE_IDS } from '../../roles';
 import { relyingParty, RP_NAME } from './relying-party';
+import { nativeOrigins } from '../origins';
 
 /**
  * Better Auth, built per request origin (Decision 2).
@@ -54,6 +55,8 @@ function build(rp: { id: string; origin: string }) {
 	return betterAuth({
 		appName: RP_NAME,
 		baseURL: rp.origin,
+		/** The bundled native app signs in from its own origin — see `origins.ts`. */
+		trustedOrigins: nativeOrigins(),
 		secret: BETTER_AUTH_SECRET,
 
 		database: drizzleAdapter(getDb(), { provider: 'pg', schema }),
