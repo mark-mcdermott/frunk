@@ -4,6 +4,10 @@ Where the iOS app stands, and the steps left that only an Apple Developer accoun
 take. The engineering is in `docs/PORT-PLAN.md` ("After the port") and `CLAUDE.md`; this
 file is the checklist.
 
+**Not yet.** Submission waits on a week of real use ("Next, in this order" in the plan).
+Steps 1–3 below are also how the app gets onto a phone for that week; steps 4–8 come
+after it.
+
 ## What is already true of the build
 
 - **It is an app, not a wrapper.** The applet is bundled (`pnpm build:native`), launches
