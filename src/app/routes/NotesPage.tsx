@@ -8,6 +8,7 @@ import {
 	IconButton,
 	ListCard,
 	ListEmpty,
+	ListRow,
 	ListState,
 	SearchInput,
 	type Filter
@@ -32,59 +33,54 @@ function NoteRowItem({ note, onDelete }: { note: NoteRow; onDelete: () => void }
 	const { vehicleYear, vehicleMake, vehicleModel } = note.vehicle;
 
 	return (
-		<article className="flex items-center gap-5 border-b border-border px-6 py-5 last:border-b-0">
-			<span
-				aria-hidden
-				className="flex size-14 shrink-0 items-center justify-center rounded-[12px] border border-border bg-surface-raised"
-			>
-				<FileText className="size-5 text-accent-bright" strokeWidth={1.5} />
-			</span>
+		<ListRow
+			icon={<FileText className="size-5" strokeWidth={1.5} />}
+			aside={
+				<p className="flex shrink-0 items-center gap-1.5 text-[0.8125rem] text-text-muted">
+					<Calendar className="size-3.5" strokeWidth={1.75} aria-hidden />
+					{formatDate(note.createdAt)}
+				</p>
+			}
+			actions={
+				<>
+					<IconButton
+						label={`Edit ${note.title}`}
+						onClick={() => navigate(`/notes/${note.uuid}/edit`)}
+					>
+						<Pencil className="size-4" strokeWidth={1.75} aria-hidden />
+					</IconButton>
+					<IconButton label={`Delete ${note.title}`} tone="destructive" onClick={onDelete}>
+						<Trash2 className="size-4" strokeWidth={1.75} aria-hidden />
+					</IconButton>
+				</>
+			}
+		>
+			<h2 className="display-sm text-lg sm:truncate">
+				<Link to={`/notes/${note.uuid}`} className="transition-opacity hover:opacity-80">
+					{note.title}
+				</Link>
+			</h2>
 
-			<div className="min-w-0 flex-1">
-				<h2 className="display-sm truncate text-lg">
-					<Link to={`/notes/${note.uuid}`} className="transition-opacity hover:opacity-80">
-						{note.title}
+			{note.body && <p className="mt-1 truncate text-[0.875rem] text-text-muted">{note.body}</p>}
+
+			<div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-[0.8125rem] text-text-muted">
+				{note.vehicleId && (
+					<Link
+						to={`/vehicles/${note.vehicleId}`}
+						className="flex items-center gap-1.5 hover:text-text"
+					>
+						<Car className="size-3.5" strokeWidth={1.75} aria-hidden />
+						{vehicleYear} {vehicleMake} {vehicleModel}
 					</Link>
-				</h2>
-
-				{note.body && <p className="mt-1 truncate text-[0.875rem] text-text-muted">{note.body}</p>}
-
-				<div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-[0.8125rem] text-text-muted">
-					{note.vehicleId && (
-						<Link
-							to={`/vehicles/${note.vehicleId}`}
-							className="flex items-center gap-1.5 hover:text-text"
-						>
-							<Car className="size-3.5" strokeWidth={1.75} aria-hidden />
-							{vehicleYear} {vehicleMake} {vehicleModel}
-						</Link>
-					)}
-					{note.imageUrl && (
-						<span className="flex items-center gap-1.5">
-							<Paperclip className="size-3.5" strokeWidth={1.75} aria-hidden />
-							Has attachment
-						</span>
-					)}
-				</div>
+				)}
+				{note.imageUrl && (
+					<span className="flex items-center gap-1.5">
+						<Paperclip className="size-3.5" strokeWidth={1.75} aria-hidden />
+						Has attachment
+					</span>
+				)}
 			</div>
-
-			<p className="hidden shrink-0 items-center gap-1.5 text-[0.8125rem] text-text-muted sm:flex">
-				<Calendar className="size-3.5" strokeWidth={1.75} aria-hidden />
-				{formatDate(note.createdAt)}
-			</p>
-
-			<div className="flex shrink-0 items-center gap-2">
-				<IconButton
-					label={`Edit ${note.title}`}
-					onClick={() => navigate(`/notes/${note.uuid}/edit`)}
-				>
-					<Pencil className="size-4" strokeWidth={1.75} aria-hidden />
-				</IconButton>
-				<IconButton label={`Delete ${note.title}`} tone="destructive" onClick={onDelete}>
-					<Trash2 className="size-4" strokeWidth={1.75} aria-hidden />
-				</IconButton>
-			</div>
-		</article>
+		</ListRow>
 	);
 }
 

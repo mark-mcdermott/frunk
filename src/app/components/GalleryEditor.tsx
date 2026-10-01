@@ -46,7 +46,7 @@ function AddPhotoButton({ galleryId, vehicleId }: { galleryId: string; vehicleId
 				type="button"
 				disabled={add.isPending}
 				onClick={() => input.current?.click()}
-				className="flex h-28 w-44 flex-col items-center justify-center gap-2 rounded-control border border-dashed border-border-strong text-[0.8125rem] text-text-muted transition-colors hover:border-accent-bright/60 hover:text-text disabled:opacity-60"
+				className="flex h-28 w-full flex-col items-center justify-center gap-2 rounded-control border border-dashed border-border-strong text-[0.8125rem] text-text-muted transition-colors hover:border-accent-bright/60 hover:text-text disabled:opacity-60"
 			>
 				<ImagePlus className="size-5 text-accent-bright" strokeWidth={1.5} aria-hidden />
 				{add.isPending ? 'Uploading…' : 'Add photo'}
@@ -64,7 +64,7 @@ function AddPhotoButton({ galleryId, vehicleId }: { galleryId: string; vehicleId
 				}}
 			/>
 			{add.isError && (
-				<p role="alert" className="self-center text-[0.8125rem] text-destructive">
+				<p role="alert" className="col-span-full self-center text-[0.8125rem] text-destructive">
 					{add.error instanceof Error ? add.error.message : 'Could not add that photo.'}
 				</p>
 			)}
@@ -125,9 +125,9 @@ function GalleryBlock({ gallery, vehicleId }: { gallery: Gallery; vehicleId: str
 				)}
 			</div>
 
-			<div className="mt-4 flex flex-wrap gap-4">
+			<div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-[repeat(auto-fill,11rem)] sm:gap-4">
 				{gallery.photos.map((photo) => (
-					<figure key={photo.id} className="group relative w-44 overflow-hidden rounded-control">
+					<figure key={photo.id} className="group relative overflow-hidden rounded-control">
 						<FileImage
 							src={photo.imageUrl}
 							alt={photo.caption ?? ''}
@@ -142,7 +142,7 @@ function GalleryBlock({ gallery, vehicleId }: { gallery: Gallery; vehicleId: str
 							type="button"
 							aria-label={`Delete photo${photo.caption ? ` ${photo.caption}` : ''}`}
 							onClick={() => removePhoto.mutate(photo.id)}
-							className="absolute top-2 right-2 flex size-7 items-center justify-center rounded-full bg-black/60 text-white opacity-0 transition-opacity group-hover:opacity-100 focus-visible:opacity-100"
+							className="absolute top-2 right-2 flex size-7 items-center justify-center rounded-full bg-black/60 text-white opacity-0 transition-opacity group-hover:opacity-100 focus-visible:opacity-100 [@media(hover:none)]:opacity-100"
 						>
 							<X className="size-3.5" strokeWidth={2} aria-hidden />
 						</button>
