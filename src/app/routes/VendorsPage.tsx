@@ -3,7 +3,14 @@ import { Globe, MapPin, Pencil, Phone, Plus, Store, Trash2 } from 'lucide-react'
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router';
 import { deleteVendor, keys, listVendors, type Vendor } from '../api';
-import { IconButton, ListCard, ListEmpty, ListState, SearchInput } from '../components/List';
+import {
+	IconButton,
+	ListCard,
+	ListEmpty,
+	ListRow,
+	ListState,
+	SearchInput
+} from '../components/List';
 
 /**
  * Vendors, built to `docs/mocks/vendor-index.webp`.
@@ -22,60 +29,54 @@ function VendorRow({ vendor, onDelete }: { vendor: Vendor; onDelete: () => void 
 	const navigate = useNavigate();
 
 	return (
-		<article className="flex items-center gap-5 border-b border-border px-6 py-5 last:border-b-0">
-			<span
-				aria-hidden
-				className="flex size-14 shrink-0 items-center justify-center rounded-[12px] border border-border bg-surface-raised"
-			>
-				<Store className="size-5 text-accent-bright" strokeWidth={1.5} />
-			</span>
+		<ListRow
+			icon={<Store className="size-5" strokeWidth={1.5} />}
+			actions={
+				<>
+					<IconButton
+						label={`Edit ${vendor.name}`}
+						onClick={() => navigate(`/vendors/${vendor.id}/edit`)}
+					>
+						<Pencil className="size-4" strokeWidth={1.75} aria-hidden />
+					</IconButton>
+					<IconButton label={`Delete ${vendor.name}`} tone="destructive" onClick={onDelete}>
+						<Trash2 className="size-4" strokeWidth={1.75} aria-hidden />
+					</IconButton>
+				</>
+			}
+		>
+			<h2 className="display-sm text-lg sm:truncate">
+				<Link to={`/vendors/${vendor.id}/edit`} className="transition-opacity hover:opacity-80">
+					{vendor.name}
+				</Link>
+			</h2>
 
-			<div className="min-w-0 flex-1">
-				<h2 className="display-sm truncate text-lg">
-					<Link to={`/vendors/${vendor.id}/edit`} className="transition-opacity hover:opacity-80">
-						{vendor.name}
-					</Link>
-				</h2>
-
-				<div className="mt-2 flex flex-wrap items-center gap-x-5 gap-y-1 text-[0.8125rem] text-text-muted">
-					{vendor.phone && (
-						<a href={`tel:${vendor.phone}`} className="flex items-center gap-1.5 hover:text-text">
-							<Phone className="size-3.5" strokeWidth={1.75} aria-hidden />
-							{vendor.phone}
-						</a>
-					)}
-					{vendor.address && (
-						<span className="flex items-center gap-1.5">
-							<MapPin className="size-3.5" strokeWidth={1.75} aria-hidden />
-							{vendor.address}
-						</span>
-					)}
-					{vendor.website && (
-						<a
-							href={vendor.website}
-							target="_blank"
-							rel="noreferrer noopener"
-							className="flex items-center gap-1.5 text-accent-bright hover:opacity-80"
-						>
-							<Globe className="size-3.5" strokeWidth={1.75} aria-hidden />
-							Website
-						</a>
-					)}
-				</div>
+			<div className="mt-2 flex flex-wrap items-center gap-x-5 gap-y-1 text-[0.8125rem] text-text-muted">
+				{vendor.phone && (
+					<a href={`tel:${vendor.phone}`} className="flex items-center gap-1.5 hover:text-text">
+						<Phone className="size-3.5" strokeWidth={1.75} aria-hidden />
+						{vendor.phone}
+					</a>
+				)}
+				{vendor.address && (
+					<span className="flex items-center gap-1.5">
+						<MapPin className="size-3.5" strokeWidth={1.75} aria-hidden />
+						{vendor.address}
+					</span>
+				)}
+				{vendor.website && (
+					<a
+						href={vendor.website}
+						target="_blank"
+						rel="noreferrer noopener"
+						className="flex items-center gap-1.5 text-accent-bright hover:opacity-80"
+					>
+						<Globe className="size-3.5" strokeWidth={1.75} aria-hidden />
+						Website
+					</a>
+				)}
 			</div>
-
-			<div className="flex shrink-0 items-center gap-2">
-				<IconButton
-					label={`Edit ${vendor.name}`}
-					onClick={() => navigate(`/vendors/${vendor.id}/edit`)}
-				>
-					<Pencil className="size-4" strokeWidth={1.75} aria-hidden />
-				</IconButton>
-				<IconButton label={`Delete ${vendor.name}`} tone="destructive" onClick={onDelete}>
-					<Trash2 className="size-4" strokeWidth={1.75} aria-hidden />
-				</IconButton>
-			</div>
-		</article>
+		</ListRow>
 	);
 }
 

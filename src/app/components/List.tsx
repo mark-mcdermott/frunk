@@ -102,6 +102,43 @@ export function ListCard({ children }: { children: ReactNode }) {
 	return <div className="card mt-6 overflow-hidden">{children}</div>;
 }
 
+/**
+ * One row of an index card: a glyph tile, the text, then the row's badge and actions.
+ * From `sm` up they share a line. A phone has no room for that — the title was
+ * truncating to a single letter — so there the badge and actions drop to a line of
+ * their own, under the text and aligned with it.
+ */
+export function ListRow({
+	icon,
+	aside,
+	actions,
+	children
+}: {
+	icon: ReactNode;
+	/** The status badge or date that sits between the text and the actions. */
+	aside?: ReactNode;
+	actions: ReactNode;
+	children: ReactNode;
+}) {
+	return (
+		<article className="flex flex-wrap items-center gap-x-4 gap-y-3 border-b border-border px-4 py-5 last:border-b-0 sm:flex-nowrap sm:gap-x-5 sm:px-6">
+			<span
+				aria-hidden
+				className="flex size-12 shrink-0 items-center justify-center rounded-[12px] border border-border bg-surface-raised text-accent-bright sm:size-14"
+			>
+				{icon}
+			</span>
+
+			<div className="min-w-0 flex-1">{children}</div>
+
+			<div className="flex w-full items-center gap-5 pl-16 sm:w-auto sm:shrink-0 sm:pl-0">
+				{aside}
+				<div className="ml-auto flex items-center gap-2">{actions}</div>
+			</div>
+		</article>
+	);
+}
+
 export function ListEmpty({ icon, title, line }: { icon: ReactNode; title: string; line: string }) {
 	return (
 		<div className="flex flex-col items-center gap-3 px-6 py-16 text-center">
