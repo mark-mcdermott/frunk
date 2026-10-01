@@ -2,7 +2,12 @@
 <html lang="en" data-theme="dark">
 	<head>
 		<meta charset="utf-8" />
-		<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+		<!-- No pinch or focus zoom: iOS enlarges the page whenever an input under 16px takes
+		     focus, which in an app reads as the layout breaking. -->
+		<meta
+			name="viewport"
+			content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover"
+		/>
 		<title>Frunk</title>
 		<meta name="theme-color" content="#03060f" />
 		<link rel="icon" href="/favicon.svg" type="image/svg+xml" />
