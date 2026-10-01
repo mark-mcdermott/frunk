@@ -7,6 +7,7 @@ import {
 import { passkeyClient } from '@better-auth/passkey/client';
 import { disablePush } from './native-push';
 import { API_BASE, apiUrl, NATIVE } from './platform';
+import { OFFLINE_MESSAGE } from './offline';
 import type { Auth } from './server/auth/config';
 import {
 	absorbRelay,
@@ -283,6 +284,8 @@ function placeholderAddress(): string {
 
 export function authErrorMessage(cause: unknown): string {
 	if (cause instanceof AuthError) return cause.message;
+	// A `fetch` that never got an answer rejects with a TypeError, on every engine.
+	if (cause instanceof TypeError) return OFFLINE_MESSAGE;
 	if (cause instanceof Error && cause.name === 'NotAllowedError') {
 		return 'That was cancelled or timed out. Try again.';
 	}
