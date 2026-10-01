@@ -20,7 +20,13 @@ import { isDemo } from '../../lib/roles';
 import { displayName, hasPlaceholderEmail, initial } from '../../lib/user';
 import { formatDate } from '../format';
 import { FileImage } from '../files';
-import { disablePush, enablePush, pushAvailable, pushEnabled } from '../../lib/native-push';
+import {
+	disablePush,
+	enablePush,
+	pushAvailable,
+	pushEnabled,
+	type PushOutcome
+} from '../../lib/native-push';
 import { NATIVE, siteUrl } from '../../lib/platform';
 
 /**
@@ -421,9 +427,10 @@ function ReminderSettings({
 		enabled: pushAvailable()
 	});
 	const notify = useMutation({
-		mutationFn: async (on: boolean) => {
-			if (!on) return disablePush().then(() => true);
-			return enablePush();
+		mutationFn: async (on: boolean): Promise<PushOutcome | 'off'> => {
+			if (on) return enablePush();
+			await disablePush();
+			return 'off';
 		},
 		onSuccess: () => client.invalidateQueries({ queryKey: ['push-enabled'] })
 	});
@@ -449,10 +456,16 @@ function ReminderSettings({
 						</span>
 					</label>
 				)}
-				{notify.isSuccess && notify.variables && notify.data === false && (
+				{notify.data === 'denied' && (
 					<p role="alert" className="text-[0.8125rem] text-destructive">
 						Notifications are turned off for Frunk. Allow them in Settings, then switch this on
 						again.
+					</p>
+				)}
+				{notify.data === 'unreachable' && (
+					<p role="alert" className="text-[0.8125rem] text-destructive">
+						This phone could not be registered for notifications just now. Check the connection and
+						switch this on again.
 					</p>
 				)}
 

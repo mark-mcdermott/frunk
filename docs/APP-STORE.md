@@ -28,6 +28,21 @@ file is the checklist.
   `aps-environment` for push. Xcode switches the latter to `production` in an archive
   signed for distribution.
 
+## What the simulator has and has not shown
+
+Run against production in the iPhone 17 Pro simulator, 2026-10-01: the demo starts; a
+demo is kept with a passkey through the system sheet; signing out and back in with that
+passkey opens a session for the same account (confirmed from the server, not the
+screen); the history PDF reaches the share sheet; "Notify me on this phone" raises the
+permission prompt; and a notification delivered with `xcrun simctl push` opens the
+vehicle it names when tapped.
+
+**Not shown: a real device token.** The simulator gets one from Apple's sandbox push
+service, and from the machine this was run on that service could not be reached (`apsd`
+logs "Connected on 0 interfaces"). The switch then says the phone could not be
+registered, which is the truth. The first real token, and the first notification the
+server itself sends, are steps 1 and 3 below.
+
 ## What needs your Apple account
 
 1. **Push key.** developer.apple.com → Certificates, Identifiers & Profiles → Keys → add
