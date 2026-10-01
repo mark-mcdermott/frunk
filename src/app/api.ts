@@ -8,6 +8,7 @@
  */
 
 import type { Summary } from '@/lib/maintenance';
+import { OFFLINE_MESSAGE } from '@/lib/offline';
 import { apiUrl } from '@/lib/platform';
 import { authHeaders, clearToken } from '@/lib/session-token';
 
@@ -31,6 +32,11 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
 			...authHeaders(),
 			...init?.headers
 		}
+	}).catch(() => {
+		// `fetch` rejects only when no answer came back at all. The browser's own wording
+		// for that ("Load failed", "Failed to fetch") tells a person nothing; a phone in
+		// a tunnel deserves to be told what actually happened.
+		throw new ApiError(0, OFFLINE_MESSAGE);
 	});
 
 	if (response.status === 401) {
