@@ -48,7 +48,7 @@ jobs:
     environment: database
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       # The db:* scripts belong to the Astro app. A ref without it (an old SvelteKit-era
       # branch) would apply the wrong schema from the wrong config.
@@ -59,9 +59,9 @@ jobs:
             exit 1
           fi
 
-      - uses: pnpm/action-setup@v4
+      - uses: pnpm/action-setup@v6
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
           node-version: 22
           cache: pnpm
