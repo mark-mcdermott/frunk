@@ -15,10 +15,18 @@ export interface ApiOptions {
 	cookie?: string;
 	/** A forwarded client address, which is what Better Auth's limiter keys on. */
 	ip?: string;
+	/** The `Origin` to claim; the site's own by default. `null` sends none. */
+	origin?: string | null;
+	/** Anything else — a bearer token, the native app's cookie relay. */
+	headers?: Record<string, string>;
 }
 
-export async function api(path: string, { method = 'GET', body, cookie, ip }: ApiOptions = {}) {
-	const headers: Record<string, string> = { Origin: BASE };
+export async function api(
+	path: string,
+	{ method = 'GET', body, cookie, ip, origin = BASE, headers: extra }: ApiOptions = {}
+) {
+	const headers: Record<string, string> = { ...extra };
+	if (origin !== null) headers.Origin = origin;
 	if (body !== undefined) headers['content-type'] = 'application/json';
 	if (cookie) headers.cookie = cookie;
 	if (ip) headers['x-forwarded-for'] = ip;

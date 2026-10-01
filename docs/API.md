@@ -258,6 +258,30 @@ the production deployment only, so `CRON_SECRET` is a production variable.
 `vercel crons run /api/cron/reap-demos` fires one by hand; the predicates live in
 `src/lib/server/reaper.ts` and `src/lib/server/reminders.ts`.
 
+## Native clients
+
+The bundled iOS and Android apps run the applet from `capacitor://localhost` and
+`https://localhost`, so every call they make is cross-origin (`src/lib/server/origins.ts`).
+Three things exist for them and for no one else:
+
+- **CORS**, in `src/middleware.ts`: preflights from a native origin are answered, and
+  responses expose `set-auth-token`, `x-frunk-relay`, `content-disposition` and
+  `retry-after`. Credential-less: no `Access-Control-Allow-Credentials`.
+- **A bearer session.** Any response that opens a session — sign-in, sign-up, passkey
+  sign-in, `POST /api/demo` — carries `set-auth-token`; the app stores it and sends
+  `Authorization: Bearer <token>` instead of a cookie. Better Auth's `bearer` plugin turns
+  it back into the session, so no endpoint knows the difference.
+- **A cookie relay**, in `src/lib/server/relay.ts`, on `/api/auth/*` only. The passkey
+  ceremony, a recovery-enrolled sign-in and "trust this device" each park state in a
+  cookie between two requests, and a webview cannot hold cookies for another origin. For
+  a native origin those cookies go out as `name=value` pairs in `x-frunk-relay` and the
+  app sends back what it holds in the same header.
+
+**The cross-site form check is this app's own.** Astro's `security.checkOrigin` is off;
+the middleware restates it — a mutating request that is form-encoded or has no content
+type is a 403 unless its `Origin` is the site's — with one exemption, a native origin.
+`tests/native-origin.test.ts` asserts all of it over HTTP.
+
 ## Verifying against a deploy
 
 ```bash
