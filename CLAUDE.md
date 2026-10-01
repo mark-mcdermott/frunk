@@ -302,7 +302,11 @@ Five things about it are easy to get wrong:
   authoritative for gating. `POST /api/demo` needs `pnpm db:seed-office`. **Unconverted
   demos are reaped after seven days** by `GET /api/cron/reap-demos` — a Vercel cron
   (`vercel.json`, production only) presenting `CRON_SECRET`; the predicate is DEMO role,
-  no passkey, older than the window, and the account's blobs go with its rows.
+  no passkey, older than the window, and the account's blobs go with its rows. **The template
+  account is excluded by name**: it is itself a demo-role account with no passkey, and on
+  2026-09-30 the reaper was found to have deleted it a week after the last seed, which
+  took the live demo down (`DemoTemplateMissing`, 503). A failed clone now also deletes
+  the anonymous account it had just opened.
 - **TOTP is recovery in intent and a second factor in mechanism.** Better Auth's plugin
   does not know the difference: once a code is enrolled, `sign-in/email` answers
   `{ twoFactorRedirect: true }` plus a challenge cookie instead of a session, and only

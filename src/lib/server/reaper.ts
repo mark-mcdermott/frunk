@@ -1,6 +1,7 @@
-import { and, arrayContains, eq, lt, notExists } from 'drizzle-orm';
+import { and, arrayContains, eq, lt, ne, notExists, or } from 'drizzle-orm';
 import { ROLE_IDS } from '../roles';
 import { getDb } from './db';
+import { DEMO_TEMPLATE_EMAIL } from './demo';
 import * as table from './db/schema';
 import { deleteUserFiles } from './files';
 
@@ -14,6 +15,15 @@ import { deleteUserFiles } from './files';
  * row is older than the window. Conversion flips the role and attaches a passkey, so
  * a converted account fails two of the three; the no-passkey clause is the belt to
  * that brace.
+ *
+ * **And never the template.** The account every demo is cloned from is a demo-role
+ * account with no passkey, so those three clauses describe it exactly. It survived for
+ * as long as production was re-seeded every few days; the first quiet week, the reaper
+ * deleted it and every demo answered 503 until someone looked (found 2026-09-30). It
+ * is excluded by name.
+ *
+ * An anonymous account with no role at all is the other thing swept up: what was left
+ * when a demo's clone failed halfway, before the endpoint learned to undo that itself.
  */
 
 /**
@@ -36,7 +46,8 @@ export async function reapDemoAccounts(now = new Date()): Promise<string[]> {
 		.delete(table.user)
 		.where(
 			and(
-				arrayContains(table.user.roles, [ROLE_IDS.DEMO]),
+				or(arrayContains(table.user.roles, [ROLE_IDS.DEMO]), eq(table.user.isAnonymous, true)),
+				ne(table.user.email, DEMO_TEMPLATE_EMAIL),
 				lt(table.user.createdAt, cutoff),
 				notExists(hasPasskey)
 			)
