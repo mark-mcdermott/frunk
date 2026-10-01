@@ -56,6 +56,14 @@ DATABASE_URL="${TEST_DATABASE_URL:-postgresql://localhost/${DB}}" npx tsx script
 # Exported rather than passed, so the reaper test can present the same secret.
 export CRON_SECRET="test-only-cron-secret"
 
+# Push: a throwaway signing key and a stand-in for Apple. `tests/push.test.ts` listens
+# on this port and reads the same key to check the signature it is sent.
+export APNS_HOST="http://localhost:${TEST_APNS_PORT:-4488}"
+export APNS_KEY_ID="TESTKEY123"
+export APNS_TEAM_ID="TESTTEAM12"
+APNS_KEY="$(openssl ecparam -name prime256v1 -genkey -noout | openssl pkcs8 -topk8 -nocrypt)"
+export APNS_KEY
+
 # Built before the dev server starts, so nothing else runs a bundler while it is up.
 if [ "$RUNNER" = "playwright" ]; then
   PUBLIC_API_BASE="$BASE" node_modules/.bin/vite build --config vite.native.config.ts --mode native >/dev/null
