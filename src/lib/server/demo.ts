@@ -16,12 +16,17 @@ import * as table from './db/schema';
  * the trial still theirs — see `api/auth/register/options.ts`.
  */
 
-const TEMPLATE_EMAIL = 'creed.bratton@dundermifflin.com';
+/**
+ * The account every demo is cloned from. It is itself a demo-role account with no
+ * passkey, which is the reaper's own description of something to delete — so the
+ * reaper names it as the one account it must never touch (`reaper.ts`).
+ */
+export const DEMO_TEMPLATE_EMAIL = 'creed.bratton@dundermifflin.com';
 
 /** The seed has not been run — `scripts/seed-office.ts` creates the template. */
 export class DemoTemplateMissing extends Error {
 	constructor() {
-		super(`No demo template user (${TEMPLATE_EMAIL}). Run pnpm db:seed-office.`);
+		super(`No demo template user (${DEMO_TEMPLATE_EMAIL}). Run pnpm db:seed-office.`);
 	}
 }
 
@@ -58,7 +63,10 @@ export async function cloneDemoAccount(userId: string): Promise<string> {
 	const db = getDb();
 	const now = new Date();
 
-	const [template] = await db.select().from(table.user).where(eq(table.user.email, TEMPLATE_EMAIL));
+	const [template] = await db
+		.select()
+		.from(table.user)
+		.where(eq(table.user.email, DEMO_TEMPLATE_EMAIL));
 
 	if (!template) throw new DemoTemplateMissing();
 
@@ -198,4 +206,13 @@ export async function cloneDemoAccount(userId: string): Promise<string> {
 	}
 
 	return userId;
+}
+
+/**
+ * Undoes a demo that could not be set up. The anonymous account is created before the
+ * garage is cloned into it, so a failed clone leaves a signed-in account with nothing
+ * in it and no demo role — not a demo, and nothing the visitor asked for.
+ */
+export async function discardDemoAccount(userId: string): Promise<void> {
+	await getDb().delete(table.user).where(eq(table.user.id, userId));
 }

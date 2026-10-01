@@ -23,6 +23,8 @@ import {
 const SECRET = process.env.CRON_SECRET ?? '';
 const REAP = '/api/cron/reap-demos';
 
+const TEMPLATE = 'creed.bratton@dundermifflin.com';
+
 const reap = (authorization?: string) =>
 	fetch(`${process.env.TEST_BASE}${REAP}`, {
 		headers: authorization === undefined ? {} : { authorization }
@@ -49,6 +51,12 @@ describe(REAP, () => {
 		demo = await startFreshDemo();
 		real = await signUpAndSignIn();
 		await backdate(real.id, 30);
+		// The template is a demo-role account with no passkey, and in production it is
+		// as old as the last seed. Every reap in this file runs with it long past the
+		// window, because that is the state in which it was once deleted.
+		await sql(
+			`update "user" set created_at = now() - interval '30 days' where email = '${TEMPLATE}'`
+		);
 	});
 
 	it('refuses a request without the secret', async () => {
@@ -87,5 +95,24 @@ describe(REAP, () => {
 		expect((await api('/api/vehicles', { cookie: demo.cookie })).status).toBe(401);
 
 		expect(await userExists(real.id)).toBe(true);
+	});
+
+	it('never reaps the template every demo is cloned from', async () => {
+		expect(await sql(`select count(*) from "user" where email = '${TEMPLATE}'`)).toBe('1');
+
+		// And so a demo can still be started after any number of reaps.
+		await sql(`delete from auth_rate_limits where key like 'demo:%'`);
+		const again = await startFreshDemo();
+		expect(await sql(`select count(*) from vehicles where user_id = '${again.id}'`)).toBe('3');
+	});
+
+	it('sweeps up an anonymous account whose demo was never finished', async () => {
+		await sql(
+			`insert into "user" (id, name, email, email_verified, roles, is_anonymous, created_at, updated_at)
+			 values ('leftover-anon', 'Anonymous', 'leftover@anonymous.placeholder.invalid', false, '{}', true, now() - interval '30 days', now())`
+		);
+
+		expect(await reapCount()).toBe(1);
+		expect(await userExists('leftover-anon')).toBe(false);
 	});
 });

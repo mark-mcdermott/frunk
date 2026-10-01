@@ -1167,6 +1167,17 @@ stays the one place that says what frunk is.
   owner. Two links on the vehicle screen. This is the resale story the premium tier was
   going to be built on; it ships free for now, and a tier can gate it later.
 
+- **The reaper ate the demo template — found and fixed 2026-09-30.** The template account
+  is a demo-role account with no passkey, which is exactly the reaper's predicate. While
+  production was being re-seeded every few days it never reached seven days old; after
+  the last seed on 2026-09-22 it did, the cron deleted it, and `POST /api/demo` answered
+  503 for about a day before the native-app work happened to call it. Production was
+  re-seeded the same hour. The reaper now excludes the template by name
+  (`DEMO_TEMPLATE_EMAIL`), sweeps up role-less anonymous accounts, and the demo endpoint
+  deletes the anonymous account it opened when the clone fails; `tests/reaper.test.ts`
+  runs every reap with the template long past the window. The lesson is the usual one:
+  the test backdated a demo, never the fixture the demo depends on.
+
 ## Key files / patterns
 
 - **Reuse near-verbatim:** `src/lib/server/db/schema.ts`, `stripe.ts`, `printful.ts`,
