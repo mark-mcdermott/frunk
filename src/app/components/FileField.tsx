@@ -2,6 +2,7 @@ import { useMutation } from '@tanstack/react-query';
 import { FileText, Trash2, Upload } from 'lucide-react';
 import { useId, useRef } from 'react';
 import { uploadFile } from '../api';
+import { FileImage, FileLink } from '../files';
 
 /**
  * Upload one file and hand its serving URL to the parent form, built to the
@@ -50,17 +51,15 @@ export function FileField({
 			<div className="flex flex-wrap items-center gap-4">
 				{value &&
 					(isPdf ? (
-						<a
+						<FileLink
 							href={value}
-							target="_blank"
-							rel="noreferrer"
 							className="flex items-center gap-2 rounded-control border border-border bg-surface-raised px-4 py-3 text-[0.875rem] text-text transition-colors hover:border-border-strong"
 						>
 							<FileText className="size-4 text-accent-bright" strokeWidth={1.75} aria-hidden />
 							View attachment
-						</a>
+						</FileLink>
 					) : (
-						<img
+						<FileImage
 							src={value}
 							alt=""
 							className="h-24 w-36 rounded-control border border-border object-cover"

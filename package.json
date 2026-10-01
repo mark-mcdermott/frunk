@@ -22,9 +22,10 @@
 		"db:seed-roles": "tsx scripts/seed-roles.ts",
 		"db:seed-office": "tsx scripts/seed-office.ts",
 		"db:bootstrap-sql": "node scripts/build-bootstrap-sql.mjs",
-		"cap:sync": "cap sync",
+		"cap:sync": "pnpm build:native && cap sync",
 		"cap:ios": "cap open ios",
-		"cap:android": "cap open android"
+		"cap:android": "cap open android",
+		"build:native": "vite build --config vite.native.config.ts --mode native"
 	},
 	"dependencies": {
 		"@astrojs/react": "^6.0.5",
@@ -32,6 +33,10 @@
 		"@base-ui/react": "^1.8.0",
 		"@better-auth/passkey": "^1.7.5",
 		"@capacitor/core": "^8.5.2",
+		"@capacitor/filesystem": "^8.1.3",
+		"@capacitor/preferences": "^8.0.1",
+		"@capacitor/share": "^8.0.2",
+		"@capgo/capacitor-passkey": "^8.5.2",
 		"@fontsource-variable/playfair-display": "^5.3.0",
 		"@fontsource-variable/plus-jakarta-sans": "^5.3.0",
 		"@nanostores/react": "^2.0.1",
@@ -71,6 +76,7 @@
 		"@types/pg": "^8.23.1",
 		"@types/react": "^19.2.0",
 		"@types/react-dom": "^19.2.0",
+		"@vitejs/plugin-react": "^6.1.1",
 		"dotenv": "^17.4.2",
 		"drizzle-kit": "^0.31.10",
 		"eslint": "^10.11.0",
@@ -87,6 +93,7 @@
 		"tsx": "^4.23.13",
 		"typescript": "^5.9.3",
 		"typescript-eslint": "^8.70.0",
+		"vite": "^8.2.2",
 		"vitest": "^5.0.1"
 	},
 	"packageManager": "pnpm@10.28.2"

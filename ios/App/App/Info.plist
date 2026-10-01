@@ -22,15 +22,23 @@
 	<string>$(MARKETING_VERSION)</string>
 	<key>CFBundleVersion</key>
 	<string>$(CURRENT_PROJECT_VERSION)</string>
+	<key>ITSAppUsesNonExemptEncryption</key>
+	<false/>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
+	<key>NSCameraUsageDescription</key>
+	<string>Take a photo of a receipt, a document or your vehicle to attach it to your records.</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>Save a photo or document from your Frunk records to your library.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Choose a photo of a receipt, a document or your vehicle to attach it to your records.</string>
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>
 	<key>UIMainStoryboardFile</key>
 	<string>Main</string>
 	<key>UIRequiredDeviceCapabilities</key>
 	<array>
-		<string>armv7</string>
+		<string>arm64</string>
 	</array>
 	<key>UISupportedInterfaceOrientations</key>
 	<array>

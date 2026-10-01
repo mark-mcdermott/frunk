@@ -11,6 +11,7 @@ import {
 	type Gallery
 } from '../api';
 import { TextField } from './Field';
+import { FileImage } from '../files';
 
 /**
  * Galleries on the vehicle detail panel: create and delete galleries, add and remove
@@ -127,7 +128,7 @@ function GalleryBlock({ gallery, vehicleId }: { gallery: Gallery; vehicleId: str
 			<div className="mt-4 flex flex-wrap gap-4">
 				{gallery.photos.map((photo) => (
 					<figure key={photo.id} className="group relative w-44 overflow-hidden rounded-control">
-						<img
+						<FileImage
 							src={photo.imageUrl}
 							alt={photo.caption ?? ''}
 							className="h-28 w-full object-cover"

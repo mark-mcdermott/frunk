@@ -1,0 +1,8 @@
+/*
+ * The site's stylesheet, plus one instruction the native build needs. Tailwind looks
+ * for class names under the Vite root, which for this bundle is `native/` — three
+ * files — so without this line the applet's utilities were never generated and the
+ * app rendered with the design tokens and nothing else.
+ */
+@import '../src/styles/global.css';
+@source '../src';

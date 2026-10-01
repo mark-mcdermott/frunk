@@ -8,6 +8,7 @@ import { RecoverySetup } from '../../components/auth/RecoverySetup';
 import {
 	authErrorMessage,
 	changeEmailAddress,
+	forgetSession,
 	keepDemoAccount,
 	registerPasskey,
 	signOut,
@@ -18,6 +19,8 @@ import {
 import { isDemo } from '../../lib/roles';
 import { displayName, hasPlaceholderEmail, initial } from '../../lib/user';
 import { formatDate } from '../format';
+import { FileImage } from '../files';
+import { NATIVE, siteUrl } from '../../lib/platform';
 
 /**
  * The account screen, built to `docs/mocks/profile.webp` — collapsed from its
@@ -148,8 +151,8 @@ function ProfileBody({
 	const removeAccount = useMutation({
 		mutationFn: () => deleteUser(user.id),
 		onSuccess: () => {
-			// The server already ended the session; land on the marketing page signed out.
-			window.location.assign('/');
+			// The server already ended the session; forget it here and land signed out.
+			void forgetSession().then(() => window.location.assign('/'));
 		}
 	});
 
@@ -176,7 +179,7 @@ function ProfileBody({
 				<div className="flex items-center gap-5">
 					<div className="relative">
 						{user.image ? (
-							<img
+							<FileImage
 								src={user.image}
 								alt=""
 								className="size-20 rounded-full border border-border object-cover"
@@ -304,6 +307,40 @@ function ProfileBody({
 						Sign out
 					</button>
 				</Section>
+
+				{/* In the app there is no site footer to find these in. */}
+				{NATIVE && (
+					<Section title="About">
+						<p className="text-[0.875rem] text-text-muted">
+							<a
+								href={siteUrl('/privacy')}
+								target="_blank"
+								rel="noreferrer"
+								className="text-accent-bright transition-opacity hover:opacity-80"
+							>
+								Privacy policy
+							</a>
+							<span aria-hidden> · </span>
+							<a
+								href={siteUrl('/terms')}
+								target="_blank"
+								rel="noreferrer"
+								className="text-accent-bright transition-opacity hover:opacity-80"
+							>
+								Terms of service
+							</a>
+							<span aria-hidden> · </span>
+							<a
+								href={siteUrl('/contact')}
+								target="_blank"
+								rel="noreferrer"
+								className="text-accent-bright transition-opacity hover:opacity-80"
+							>
+								Contact
+							</a>
+						</p>
+					</Section>
+				)}
 
 				<Section title="Delete Account">
 					{confirmingDelete ? (

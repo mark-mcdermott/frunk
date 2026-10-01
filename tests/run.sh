@@ -32,8 +32,16 @@ if [ -n "${PGHOST}" ]; then
 fi
 ASTRO="node_modules/.bin/astro"
 
+# The journeys also rehearse the native bundle: built against this server and served
+# from a second port, it is a different origin, which is the whole point — CORS, the
+# bearer session and the file helpers only exist cross-origin.
+NATIVE_PORT="${TEST_NATIVE_PORT:-4477}"
+NATIVE_BASE="http://localhost:${NATIVE_PORT}"
+NATIVE_PID=""
+
 cleanup() {
   "$ASTRO" dev stop >/dev/null 2>&1 || true
+  if [ -n "$NATIVE_PID" ]; then kill "$NATIVE_PID" >/dev/null 2>&1 || true; fi
 }
 trap cleanup EXIT
 
@@ -48,6 +56,12 @@ DATABASE_URL="${TEST_DATABASE_URL:-postgresql://localhost/${DB}}" npx tsx script
 # Exported rather than passed, so the reaper test can present the same secret.
 export CRON_SECRET="test-only-cron-secret"
 
+# Built before the dev server starts, so nothing else runs a bundler while it is up.
+if [ "$RUNNER" = "playwright" ]; then
+  PUBLIC_API_BASE="$BASE" node_modules/.bin/vite build --config vite.native.config.ts --mode native >/dev/null
+  export NATIVE_ORIGINS_EXTRA="$NATIVE_BASE"
+fi
+
 DATABASE_URL="${TEST_DATABASE_URL:-postgresql://localhost/${DB}}" \
 BETTER_AUTH_SECRET="test-only-secret-at-least-32-characters-long" \
 NODE_ENV=development \
@@ -61,7 +75,14 @@ done
 curl -sf -o /dev/null "${BASE}/api/auth/ok" || { echo "server never became ready on ${BASE}"; exit 1; }
 
 if [ "$RUNNER" = "playwright" ]; then
-  TEST_BASE="$BASE" TEST_DB="$DB" npx playwright test "$@"
+  node_modules/.bin/vite preview --config vite.native.config.ts --port "$NATIVE_PORT" --strictPort >/dev/null 2>&1 &
+  NATIVE_PID=$!
+  for _ in $(seq 1 40); do
+    if curl -sf -o /dev/null "$NATIVE_BASE/"; then break; fi
+    sleep 0.25
+  done
+
+  TEST_BASE="$BASE" TEST_NATIVE_BASE="$NATIVE_BASE" TEST_DB="$DB" npx playwright test "$@"
 else
   TEST_BASE="$BASE" TEST_DB="$DB" npx vitest run "$@"
 fi

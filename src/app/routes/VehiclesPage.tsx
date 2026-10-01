@@ -5,6 +5,7 @@ import { Link } from 'react-router';
 import type { Summary } from '@/lib/maintenance';
 import { deleteVehicle, keys, listVehicles, type VehicleListItem } from '../api';
 import { formatDate, formatTime } from '../format';
+import { FileImage } from '../files';
 
 /**
  * The garage, built to `docs/mocks/vehicles-index.webp`.
@@ -37,7 +38,7 @@ function Stamp({ label, iso }: { label: string; iso: string }) {
 function MaintenanceBadge({ maintenance }: { maintenance: Summary }) {
 	if (maintenance.overdue > 0) {
 		return (
-			<span className="inline-flex items-center gap-1.5 rounded-full bg-destructive-bg px-3 py-1 text-[0.75rem] font-medium text-destructive">
+			<span className="inline-flex items-center gap-1.5 rounded-full bg-destructive-bg px-3 py-1 text-[0.75rem] font-medium whitespace-nowrap text-destructive">
 				<AlertTriangle className="size-3.5" strokeWidth={2} aria-hidden />
 				{maintenance.overdue} overdue
 			</span>
@@ -45,7 +46,7 @@ function MaintenanceBadge({ maintenance }: { maintenance: Summary }) {
 	}
 	if (maintenance.dueSoon > 0) {
 		return (
-			<span className="inline-flex items-center gap-1.5 rounded-full bg-warning-bg px-3 py-1 text-[0.75rem] font-medium text-warning">
+			<span className="inline-flex items-center gap-1.5 rounded-full bg-warning-bg px-3 py-1 text-[0.75rem] font-medium whitespace-nowrap text-warning">
 				<Clock className="size-3.5" strokeWidth={2} aria-hidden />
 				{maintenance.dueSoon} due soon
 			</span>
@@ -64,38 +65,40 @@ function VehicleRow({
 	const title = `${vehicle.year} ${vehicle.make} ${vehicle.model}`;
 
 	return (
-		<article className="flex items-center gap-6 border-b border-border px-6 py-5 last:border-b-0">
+		<article className="flex items-center gap-4 border-b border-border px-4 py-5 last:border-b-0 sm:gap-6 sm:px-6">
 			{vehicle.image ? (
-				<img
+				<FileImage
 					src={vehicle.image}
 					alt=""
-					className="size-20 shrink-0 rounded-[12px] border border-border object-cover"
+					className="size-16 shrink-0 rounded-[12px] border border-border object-cover sm:size-20"
 				/>
 			) : (
 				<span
 					aria-hidden
-					className="flex size-20 shrink-0 items-center justify-center rounded-[12px] border border-border bg-surface-raised"
+					className="flex size-16 shrink-0 items-center justify-center rounded-[12px] border border-border bg-surface-raised sm:size-20"
 				>
 					<Car className="size-7 text-text-faint" strokeWidth={1.5} />
 				</span>
 			)}
 
 			<div className="min-w-0 flex-1">
-				<h2 className="display-sm truncate text-xl">
+				{/* A phone has no room for the stamps or the row actions, so the name gets the
+				    width and wraps rather than truncating to "1974 AM…". */}
+				<h2 className="display-sm text-lg sm:truncate sm:text-xl">
 					<Link to={`/vehicles/${vehicle.id}`} className="transition-opacity hover:opacity-80">
 						{vehicle.nickname || title}
 					</Link>
 				</h2>
 
 				{vehicle.vin && (
-					<p className="mt-1 text-[0.8125rem] text-text-muted">
+					<p className="mt-1 truncate text-[0.8125rem] text-text-muted">
 						VIN: <span className="text-accent-bright">{vehicle.vin}</span>
 					</p>
 				)}
 
 				<div className="mt-3 flex flex-wrap items-center gap-2 empty:hidden">
 					{vehicle.currentMileage != null && (
-						<span className="inline-flex items-center gap-2 rounded-full border border-border px-3 py-1 text-[0.75rem] text-text-muted">
+						<span className="inline-flex items-center gap-2 rounded-full border border-border px-3 py-1 text-[0.75rem] whitespace-nowrap text-text-muted">
 							<Folder className="size-3.5" strokeWidth={1.75} aria-hidden />
 							{vehicle.currentMileage.toLocaleString()} miles
 						</span>
@@ -107,7 +110,9 @@ function VehicleRow({
 			<Stamp label="Last updated" iso={vehicle.updatedAt} />
 			<Stamp label="Added" iso={vehicle.createdAt} />
 
-			<div className="flex shrink-0 items-center gap-2">
+			{/* Edit and delete are on the vehicle's own screen too, which is where a phone
+			    finds them. */}
+			<div className="hidden shrink-0 items-center gap-2 sm:flex">
 				<Link
 					to={`/vehicles/${vehicle.id}/edit`}
 					aria-label={`Edit ${title}`}

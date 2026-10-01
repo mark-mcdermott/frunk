@@ -28,6 +28,7 @@ import {
 } from '../api';
 import { useCrumbs } from '../AppShell';
 import { formatBytes, formatCost, formatDate, formatMiles } from '../format';
+import { FileImage, FileLink } from '../files';
 
 /**
  * The repair detail, built to `docs/mocks/repair-single.webp`.
@@ -102,15 +103,13 @@ function NoteCard({ note, onDelete }: { note: NoteDetail; onDelete: () => void }
 			</div>
 			{note.body && <p className="mt-2 text-[0.875rem] text-text-muted">{note.body}</p>}
 			{note.imageUrl && (
-				<a
+				<FileLink
 					href={note.imageUrl}
-					target="_blank"
-					rel="noreferrer"
 					className="mt-3 flex items-center gap-2 text-[0.8125rem] text-accent-bright transition-opacity hover:opacity-80"
 				>
 					<Paperclip className="size-3.5" strokeWidth={1.75} aria-hidden />
 					View attachment
-				</a>
+				</FileLink>
 			)}
 		</article>
 	);
@@ -123,7 +122,7 @@ function AttachmentRow({ attachment, onDelete }: { attachment: Attachment; onDel
 	return (
 		<li className="flex items-center gap-3 rounded-control border border-border bg-surface-raised p-3">
 			{isImage ? (
-				<img
+				<FileImage
 					src={attachment.url}
 					alt=""
 					className="size-12 shrink-0 rounded-[8px] border border-border object-cover"
@@ -137,14 +136,13 @@ function AttachmentRow({ attachment, onDelete }: { attachment: Attachment; onDel
 				</span>
 			)}
 			<div className="min-w-0 flex-1">
-				<a
+				<FileLink
 					href={attachment.url}
-					target="_blank"
-					rel="noreferrer"
+					filename={attachment.name}
 					className="block truncate text-[0.9375rem] text-text transition-opacity hover:opacity-80"
 				>
 					{attachment.name}
-				</a>
+				</FileLink>
 				<p className="mt-0.5 text-[0.75rem] text-text-faint">
 					{formatBytes(attachment.size)} · {formatDate(attachment.createdAt)}
 				</p>
