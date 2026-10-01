@@ -21,17 +21,35 @@ const REGISTRATION_TIMEOUT_MS = 15_000;
 
 export const pushAvailable = () => NATIVE && Capacitor.getPlatform() === 'ios';
 
-const preferences = async () => (await import('@capacitor/preferences')).Preferences;
-const plugin = async () => (await import('@capacitor/push-notifications')).PushNotifications;
+/*
+ * The plugins are loaded on demand and handed back **inside an object**, never bare.
+ * A Capacitor plugin is a proxy that answers to any property name — `then` included —
+ * so a promise that resolves to one treats it as a thenable, calls the plugin's
+ * non-existent `then` method, and never settles. Returned bare from these two helpers,
+ * that hung every function below, sign-out among them (found in the simulator,
+ * 2026-09-30; a browser cannot reach this code).
+ */
+const preferences = async () => ({
+	store: (await import('@capacitor/preferences')).Preferences
+});
+const plugin = async () => ({
+	push: (await import('@capacitor/push-notifications')).PushNotifications
+});
 
 /** The token this phone last registered, which doubles as "the switch is on". */
 async function stored(): Promise<string | null> {
-	return (await (await preferences()).get({ key: TOKEN_KEY })).value;
+	const { store } = await preferences();
+	return (await store.get({ key: TOKEN_KEY })).value;
+}
+
+async function remember(token: string): Promise<void> {
+	const { store } = await preferences();
+	await store.set({ key: TOKEN_KEY, value: token });
 }
 
 /** Registers with the platform's push service; null if nothing answers in time. */
 async function deviceToken(): Promise<string | null> {
-	const push = await plugin();
+	const { push } = await plugin();
 
 	let settle: (token: string | null) => void = () => {};
 	const outcome = new Promise<string | null>((resolve) => {
@@ -70,13 +88,14 @@ export async function pushEnabled(): Promise<boolean> {
 export async function enablePush(): Promise<boolean> {
 	if (!pushAvailable()) return false;
 
-	const permission = await (await plugin()).requestPermissions();
+	const { push } = await plugin();
+	const permission = await push.requestPermissions();
 	if (permission.receive !== 'granted') return false;
 
 	const token = await deviceToken();
 	if (!token || !(await tell('POST', token))) return false;
 
-	await (await preferences()).set({ key: TOKEN_KEY, value: token });
+	await remember(token);
 	return true;
 }
 
@@ -89,30 +108,31 @@ export async function disablePush(): Promise<void> {
 	// Best effort: a phone that cannot reach the API still stops asking to be notified,
 	// and a token nobody claims is dropped the first time Apple says it is gone.
 	await tell('DELETE', token).catch(() => false);
-	await (await preferences()).remove({ key: TOKEN_KEY });
+	const { store } = await preferences();
+	await store.remove({ key: TOKEN_KEY });
 }
 
 /** At launch: if this phone opted in, re-register and send the token again. Never prompts. */
 export async function refreshPush(): Promise<void> {
 	if (!pushAvailable() || !(await stored())) return;
 
-	const permission = await (await plugin()).checkPermissions();
+	const { push } = await plugin();
+	const permission = await push.checkPermissions();
 	if (permission.receive !== 'granted') return;
 
 	const token = await deviceToken();
-	if (token && (await tell('POST', token))) {
-		await (await preferences()).set({ key: TOKEN_KEY, value: token });
-	}
+	if (token && (await tell('POST', token))) await remember(token);
 }
 
 /** A tapped notification opens the car it was about. */
 export async function openFromPush(open: (path: string) => void): Promise<void> {
 	if (!pushAvailable()) return;
 
-	await (
-		await plugin()
-	).addListener('pushNotificationActionPerformed', (action) => {
+	const { push } = await plugin();
+	await push.addListener('pushNotificationActionPerformed', (action) => {
 		const vehicleId: unknown = action.notification.data?.vehicleId;
-		if (typeof vehicleId === 'string' && /^[\w-]+$/.test(vehicleId)) open(`/vehicles/${vehicleId}`);
+		if (typeof vehicleId === 'string' && /^[\w-]+$/.test(vehicleId)) {
+			open(`/vehicles/${vehicleId}`);
+		}
 	});
 }
