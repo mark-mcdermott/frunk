@@ -27,6 +27,7 @@ export default tseslint.config(
 			'.vercel/**',
 			'.astro/**',
 			'dist/**',
+			'dist-native/**',
 			'drizzle/**',
 			'test-results/**',
 			'playwright-report/**',

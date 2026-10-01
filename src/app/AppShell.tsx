@@ -1,8 +1,11 @@
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
+import { Car, FileText, Store, UserRound, Wrench } from 'lucide-react';
 import { Link, NavLink, useLocation } from 'react-router';
 import { toSessionUser, useSession } from '../lib/auth-client';
+import { NATIVE } from '../lib/platform';
 import { isAdmin } from '../lib/roles';
 import { initial } from '../lib/user';
+import { FileImage } from './files';
 
 /**
  * The signed-in chrome, built to `docs/mocks/vehicles-index.webp`.
@@ -21,11 +24,20 @@ import { initial } from '../lib/user';
  */
 
 const SECTIONS = [
-	{ label: 'Vehicles', to: '/vehicles' },
-	{ label: 'Repairs', to: '/repairs' },
-	{ label: 'Notes', to: '/notes' },
-	{ label: 'Vendors', to: '/vendors' }
+	{ label: 'Vehicles', to: '/vehicles', icon: Car },
+	{ label: 'Repairs', to: '/repairs', icon: Wrench },
+	{ label: 'Notes', to: '/notes', icon: FileText },
+	{ label: 'Vendors', to: '/vendors', icon: Store }
 ];
+
+/**
+ * Below `md` the header's section links do not fit, and until this bar existed nothing
+ * replaced them — a phone could reach the garage and whatever a screen happened to link
+ * to, and nothing else. A bottom bar is where a thumb expects sections to be, on the
+ * web and in the native apps alike; the profile joins it there because the header's
+ * avatar is the far corner of a tall screen.
+ */
+const TABS = [...SECTIONS, { label: 'Profile', to: '/profile', icon: UserRound }];
 
 /**
  * Hiding the entry is presentation, not protection — the auth boundary stays at the
@@ -80,7 +92,8 @@ function Breadcrumbs({ trail }: { trail: Crumb[] }) {
 	const section = [...SECTIONS, ...ADMIN_SECTIONS].find((s) => pathname.startsWith(s.to));
 
 	const crumbs: Crumb[] = [
-		{ label: 'Home', to: '/' },
+		// "Home" is the marketing page, which the native bundle does not carry.
+		...(NATIVE ? [] : [{ label: 'Home', to: '/' }]),
 		...(section ? [{ label: section.label, to: section.to }] : []),
 		...trail
 	];
@@ -123,9 +136,19 @@ export function AppShell({ children }: { children: ReactNode }) {
 			<header className="border-b border-border">
 				{/* Top padding absorbs the notch inset — see Header.astro for the reasoning. */}
 				<div className="mx-auto flex max-w-[1400px] items-center gap-8 px-6 pt-[calc(1.25rem+env(safe-area-inset-top,0px))] pb-5 sm:px-10 lg:px-16">
-					<a href="/" className="wordmark shrink-0 text-lg" aria-label="Frunk, home">
-						FRUNK
-					</a>
+					{NATIVE ? (
+						<Link
+							to="/vehicles"
+							className="wordmark shrink-0 text-lg"
+							aria-label="Frunk, your garage"
+						>
+							FRUNK
+						</Link>
+					) : (
+						<a href="/" className="wordmark shrink-0 text-lg" aria-label="Frunk, home">
+							FRUNK
+						</a>
+					)}
 
 					<nav aria-label="Sections" className="hidden items-center gap-8 md:flex">
 						{sections.map((section) => (
@@ -164,7 +187,7 @@ export function AppShell({ children }: { children: ReactNode }) {
 								className="block shrink-0 rounded-full transition-opacity hover:opacity-80"
 							>
 								{user.image ? (
-									<img
+									<FileImage
 										src={user.image}
 										alt=""
 										className="size-8 rounded-full border border-border object-cover"
@@ -184,9 +207,32 @@ export function AppShell({ children }: { children: ReactNode }) {
 				<Breadcrumbs trail={trail} />
 			</div>
 
-			<main className="mx-auto w-full max-w-[1400px] flex-1 px-6 pt-6 pb-24 sm:px-10 lg:px-16">
+			<main className="mx-auto w-full max-w-[1400px] flex-1 px-6 pt-6 pb-32 sm:px-10 md:pb-24 lg:px-16">
 				<SetCrumbs.Provider value={set}>{children}</SetCrumbs.Provider>
 			</main>
+
+			<nav
+				aria-label="Sections"
+				className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-bg/95 pb-[env(safe-area-inset-bottom,0px)] backdrop-blur md:hidden"
+			>
+				<ul className="mx-auto flex max-w-lg items-stretch">
+					{TABS.map(({ label, to, icon: Icon }) => (
+						<li key={to} className="flex-1">
+							<NavLink
+								to={to}
+								className={({ isActive }) =>
+									`flex flex-col items-center gap-1 px-1 pt-2.5 pb-2 text-[0.6875rem] transition-colors ${
+										isActive ? 'text-accent-bright' : 'text-text-muted hover:text-text'
+									}`
+								}
+							>
+								<Icon className="size-5" strokeWidth={1.75} aria-hidden />
+								{label}
+							</NavLink>
+						</li>
+					))}
+				</ul>
+			</nav>
 		</div>
 	);
 }

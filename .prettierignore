@@ -6,6 +6,7 @@ src-tauri/
 .vercel/
 .astro/
 dist/
+dist-native/
 node_modules/
 drizzle/
 test-results/

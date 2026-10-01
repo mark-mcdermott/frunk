@@ -8,6 +8,7 @@ import { RecoverySetup } from '../../components/auth/RecoverySetup';
 import {
 	authErrorMessage,
 	changeEmailAddress,
+	forgetSession,
 	keepDemoAccount,
 	registerPasskey,
 	signOut,
@@ -18,6 +19,7 @@ import {
 import { isDemo } from '../../lib/roles';
 import { displayName, hasPlaceholderEmail, initial } from '../../lib/user';
 import { formatDate } from '../format';
+import { FileImage } from '../files';
 
 /**
  * The account screen, built to `docs/mocks/profile.webp` — collapsed from its
@@ -148,8 +150,8 @@ function ProfileBody({
 	const removeAccount = useMutation({
 		mutationFn: () => deleteUser(user.id),
 		onSuccess: () => {
-			// The server already ended the session; land on the marketing page signed out.
-			window.location.assign('/');
+			// The server already ended the session; forget it here and land signed out.
+			void forgetSession().then(() => window.location.assign('/'));
 		}
 	});
 
@@ -176,7 +178,7 @@ function ProfileBody({
 				<div className="flex items-center gap-5">
 					<div className="relative">
 						{user.image ? (
-							<img
+							<FileImage
 								src={user.image}
 								alt=""
 								className="size-20 rounded-full border border-border object-cover"

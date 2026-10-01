@@ -5,7 +5,16 @@ import {
 	twoFactorClient
 } from 'better-auth/client/plugins';
 import { passkeyClient } from '@better-auth/passkey/client';
+import { API_BASE, apiUrl, NATIVE } from './platform';
 import type { Auth } from './server/auth/config';
+import {
+	absorbRelay,
+	authHeaders,
+	clearToken,
+	getToken,
+	relayHeader,
+	setToken
+} from './session-token';
 import type { SessionUser } from './user';
 
 /**
@@ -22,7 +31,31 @@ import type { SessionUser } from './user';
  * `roles` — which every demo check reads — comes back as `unknown`.
  */
 export const authClient = createAuthClient({
-	plugins: [passkeyClient(), twoFactorClient(), anonymousClient(), inferAdditionalFields<Auth>()]
+	baseURL: API_BASE || undefined,
+	plugins: [passkeyClient(), twoFactorClient(), anonymousClient(), inferAdditionalFields<Auth>()],
+	/*
+	 * The native bundle is another origin (`platform.ts`): no cookies cross, so the
+	 * session is the bearer token the server returns in `set-auth-token`, and the
+	 * challenge cookies of the passkey and recovery flows ride `x-frunk-relay` in both
+	 * directions. On the web none of this is set and the cookie does everything.
+	 */
+	fetchOptions: NATIVE
+		? {
+				credentials: 'omit',
+				auth: { type: 'Bearer', token: () => getToken() ?? '' },
+				onRequest: (context) => {
+					const relay = relayHeader();
+					if (relay) context.headers.set('x-frunk-relay', relay);
+					return context;
+				},
+				onResponse: (context) => {
+					absorbRelay(context.response.headers.get('x-frunk-relay'));
+					const token = context.response.headers.get('set-auth-token');
+					if (token) void setToken(token);
+					return context.response;
+				}
+			}
+		: undefined
 });
 
 /** Better Auth's session store is a nanostore, so islands can subscribe to it directly. */
@@ -144,10 +177,15 @@ export async function confirmRecoverySetup(code: string): Promise<void> {
  * clones the template garage, and applies the DEMO role, none of which the plugin does.
  */
 export async function startDemo(): Promise<SessionUser> {
-	const response = await fetch('/api/demo', {
+	const response = await fetch(apiUrl('/api/demo'), {
 		method: 'POST',
-		headers: { 'content-type': 'application/json' }
+		headers: { 'content-type': 'application/json', ...authHeaders() },
+		body: '{}'
 	});
+
+	// Frunk's own endpoint, so the client's hooks do not see it: take the token here.
+	const token = response.headers.get('set-auth-token');
+	if (token) await setToken(token);
 
 	if (!response.ok) {
 		const body = await response.json().catch(() => ({}));
@@ -175,7 +213,11 @@ export async function resendVerification(email: string): Promise<void> {
 
 export async function signOut(): Promise<void> {
 	await endSession();
+	await clearToken();
 }
+
+/** After the server has ended the session itself — an account deletion — forget it here too. */
+export const forgetSession = clearToken;
 
 /**
  * Name and avatar go through Better Auth's own endpoint rather than

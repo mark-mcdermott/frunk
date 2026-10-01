@@ -8,6 +8,8 @@
  */
 
 import type { Summary } from '@/lib/maintenance';
+import { apiUrl } from '@/lib/platform';
+import { authHeaders, clearToken } from '@/lib/session-token';
 
 export class ApiError extends Error {
 	constructor(
@@ -20,15 +22,19 @@ export class ApiError extends Error {
 }
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
-	const response = await fetch(path, {
+	// `apiUrl` and `authHeaders` are both no-ops on the web; the native bundle calls
+	// the deployed origin with its bearer token (`src/lib/platform.ts`).
+	const response = await fetch(apiUrl(path), {
 		...init,
 		headers: {
 			...(init?.body ? { 'content-type': 'application/json' } : {}),
+			...authHeaders(),
 			...init?.headers
 		}
 	});
 
 	if (response.status === 401) {
+		await clearToken();
 		/*
 		 * The session is gone — expired, or signed out in another tab. Sending them to
 		 * sign-in beats rendering an empty screen that looks like they own nothing.

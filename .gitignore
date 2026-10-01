@@ -8,6 +8,7 @@ node_modules
 .netlify
 .wrangler
 /dist
+/dist-native
 /.astro
 
 # OS
@@ -19,6 +20,7 @@ Thumbs.db
 .env.*
 !.env.example
 !.env.test
+!.env.native
 
 # Per-machine tool settings; the shared ones are in .claude/settings.json
 .claude/settings.local.json
