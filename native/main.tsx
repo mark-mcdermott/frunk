@@ -5,6 +5,7 @@ import './native.css';
 import { Capacitor } from '@capacitor/core';
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
+import { openFromPush, refreshPush } from '@/lib/native-push';
 import { getToken, loadSession } from '@/lib/session-token';
 import { NativeRoot, screenFor } from './NativeRoot';
 
@@ -36,6 +37,10 @@ async function boot() {
 			<NativeRoot screen={screenFor(window.location, Boolean(getToken()))} />
 		</StrictMode>
 	);
+
+	// After the first paint, and only for a phone that opted in on the profile.
+	void openFromPush((path) => window.location.assign(path));
+	if (getToken()) void refreshPush();
 }
 
 void boot();
