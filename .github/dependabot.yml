@@ -10,11 +10,11 @@ updates:
     # reading them. Majors stay out of the groups because they need reading.
     groups:
       dev-dependencies:
-        patterns: ["*"]
+        patterns: ['*']
         dependency-type: development
         update-types: [minor, patch]
       production-patch:
-        patterns: ["*"]
+        patterns: ['*']
         dependency-type: production
         update-types: [patch]
 
@@ -25,4 +25,4 @@ updates:
       day: monday
     groups:
       actions:
-        patterns: ["*"]
+        patterns: ['*']
