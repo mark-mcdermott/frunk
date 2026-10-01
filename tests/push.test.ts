@@ -1,5 +1,5 @@
 import { createPrivateKey, createPublicKey, createVerify } from 'node:crypto';
-import { createServer, type Http2Server } from 'node:http2';
+import { createServer, type Http2Server, type ServerHttp2Stream } from 'node:http2';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { api, json, signUpAndSignIn, sql, type TestUser } from './helpers';
 
@@ -23,7 +23,7 @@ let apple: Http2Server;
 
 beforeAll(async () => {
 	apple = createServer();
-	apple.on('stream', (stream, headers) => {
+	apple.on('stream', (stream: ServerHttp2Stream, headers) => {
 		let raw = '';
 		stream.setEncoding('utf8');
 		stream.on('data', (chunk: string) => {
