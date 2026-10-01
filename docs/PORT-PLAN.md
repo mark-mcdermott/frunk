@@ -1178,6 +1178,21 @@ stays the one place that says what frunk is.
   runs every reap with the template long past the window. The lesson is the usual one:
   the test backdated a demo, never the fixture the demo depends on.
 
+- **The App Store build — started 2026-09-30.** v1 was "Add to Home Screen" with thin
+  shells that loaded frunk.cloud; the store wants an app. The shells now **bundle the
+  applet** (`pnpm build:native`), which launches with no network and is the difference
+  Guideline 4.2 is about. That makes the applet cross-origin to its own API, handled in
+  two PRs: the server half (CORS for the native origins, bearer sessions, a header relay
+  for Better Auth's challenge cookies, the cross-site form check restated with a native
+  exemption) and the client half (`platform.ts`, the token store, token-carrying file
+  helpers, a `NativeRoot` that is the sign-in screens plus the applet). A bottom tab bar
+  arrived with it, for the web as much as the app: below `md` the section links had
+  simply been hidden with nothing in their place. Native passkeys go through
+  `@capgo/capacitor-passkey`, so the passkey-first design survives the move off the
+  origin. The iOS project gained its camera and photo usage strings, the
+  export-compliance flag and a store-ready entitlement. Still to come: push
+  notifications for the reminders, and the store listing itself.
+
 ## Key files / patterns
 
 - **Reuse near-verbatim:** `src/lib/server/db/schema.ts`, `stripe.ts`, `printful.ts`,
