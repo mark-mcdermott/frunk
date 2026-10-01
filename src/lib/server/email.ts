@@ -45,6 +45,9 @@ export interface EmailMessage {
  * **the sign-up UI must offer "resend verification email"** rather than treating a 200
  * as proof that mail went out. Verified against 1.7.5 on 2026-09-19.
  */
+/** Whether mail can be sent at all — the digest skips the channel rather than throwing per person. */
+export const emailConfigured = () => Boolean(RESEND_API_KEY);
+
 export async function sendEmail({ to, subject, html, text, replyTo }: EmailMessage) {
 	if (!RESEND_API_KEY) {
 		throw new Error('RESEND_API_KEY is not set — refusing to pretend the message was sent');

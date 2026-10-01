@@ -5,6 +5,7 @@ import {
 	twoFactorClient
 } from 'better-auth/client/plugins';
 import { passkeyClient } from '@better-auth/passkey/client';
+import { disablePush } from './native-push';
 import { API_BASE, apiUrl, NATIVE } from './platform';
 import type { Auth } from './server/auth/config';
 import {
@@ -212,6 +213,8 @@ export async function resendVerification(email: string): Promise<void> {
 }
 
 export async function signOut(): Promise<void> {
+	// While the session still exists: this phone stops being an address for the account.
+	await disablePush();
 	await endSession();
 	await clearToken();
 }

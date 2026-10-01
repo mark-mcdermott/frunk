@@ -15,8 +15,9 @@ import { api, json, signUpAndSignIn, sql, startDemo, type TestUser } from './hel
  * The rule (`assess`) is pure and tested as a function; everything that touches a
  * row is tested over HTTP with the column read back from Postgres, like the rest of
  * the suite. The digest is exercised through `?dryRun=1`, which selects and renders
- * nothing else — the test run has no mail provider, and the real run must answer 503
- * rather than pretend.
+ * nothing else. The test run has no mail provider, so a real run must leave a person it
+ * can only mail untouched rather than pretend; `push.test.ts` covers the channel that
+ * is configured here.
  */
 
 const DAY = 24 * 60 * 60 * 1000;
@@ -467,9 +468,12 @@ describe('GET /api/cron/maintenance-digest', () => {
 		expect(await registration()).toMatchObject({ expiration: 'registration', state: 'due-soon' });
 	});
 
-	it('refuses to run for real without a mail provider', async () => {
-		// No RESEND_API_KEY in a test run: the honest answer is 503, not a silent no-op.
-		expect((await digest()).status).toBe(503);
+	it('leaves alone anyone it has no way to reach', async () => {
+		// The test run has no mail provider, and this account registered no phone: the
+		// run answers, counts the person as skipped, and records nothing as told.
+		const run = await digest();
+		expect(run.status).toBe(200);
+		expect((await json<{ skipped: number }>(run)).skipped).toBeGreaterThan(0);
 		expect(
 			await sql(
 				`select reminder_sent_at is null from maintenance_schedules where id = '${scheduleId}'`

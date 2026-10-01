@@ -177,6 +177,12 @@ export const createAttachmentSchema = z.object({
 	size: z.number().int().nonnegative()
 });
 
+/** `POST` / `DELETE /api/push/device-token` — the address a phone is notified at. */
+export const deviceTokenSchema = z.object({
+	platform: z.enum(['ios', 'android']),
+	token: nonEmpty.max(512)
+});
+
 export const createPhotoSchema = z.object({
 	galleryId: nonEmpty,
 	imageUrl: nonEmpty,
