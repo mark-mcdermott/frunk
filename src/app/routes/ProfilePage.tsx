@@ -20,6 +20,7 @@ import { isDemo } from '../../lib/roles';
 import { displayName, hasPlaceholderEmail, initial } from '../../lib/user';
 import { formatDate } from '../format';
 import { FileImage } from '../files';
+import { disablePush, enablePush, pushAvailable, pushEnabled } from '../../lib/native-push';
 import { NATIVE, siteUrl } from '../../lib/platform';
 
 /**
@@ -295,7 +296,7 @@ function ProfileBody({
 					)}
 				</Section>
 
-				{!demo && <ReminderSettings user={user} />}
+				{(!demo || pushAvailable()) && <ReminderSettings user={user} byEmail={!demo} />}
 
 				<Section title="Session">
 					<button
@@ -394,7 +395,15 @@ function ProfileBody({
  * email that cannot be turned off from the account that receives it is not a
  * reminder, it is spam.
  */
-function ReminderSettings({ user }: { user: ReturnType<typeof toSessionUser> }) {
+function ReminderSettings({
+	user,
+	byEmail
+}: {
+	user: ReturnType<typeof toSessionUser>;
+	/** A demo has no address to write to, so it is offered the phone alone. */
+	byEmail: boolean;
+}) {
+	const client = useQueryClient();
 	const [enabled, setEnabled] = useState(user.remindersByEmail);
 
 	const save = useMutation({
@@ -405,25 +414,68 @@ function ReminderSettings({ user }: { user: ReturnType<typeof toSessionUser> }) 
 		onSuccess: setEnabled
 	});
 
+	// Only the native app has a phone to notify; on the web this query never runs.
+	const phone = useQuery({
+		queryKey: ['push-enabled'],
+		queryFn: pushEnabled,
+		enabled: pushAvailable()
+	});
+	const notify = useMutation({
+		mutationFn: async (on: boolean) => {
+			if (!on) return disablePush().then(() => true);
+			return enablePush();
+		},
+		onSuccess: () => client.invalidateQueries({ queryKey: ['push-enabled'] })
+	});
+
 	return (
 		<Section title="Reminders">
-			<label className="flex max-w-md items-start gap-3 text-[0.9375rem] text-text">
-				<input
-					type="checkbox"
-					checked={save.isPending ? save.variables : enabled}
-					disabled={save.isPending}
-					onChange={(event) => save.mutate(event.target.checked)}
-					className="mt-1 size-4 shrink-0 rounded accent-accent"
-				/>
-				<span>
-					Email me when maintenance is due
-					<span className="mt-1 block text-[0.8125rem] text-text-muted">
-						One message a day at most, only when something on a schedule is overdue or due within a
-						month, and once per item until it is marked done.
-					</span>
-				</span>
-			</label>
-			<Failure error={save.error} fallback="Could not save that." />
+			<div className="flex max-w-md flex-col gap-5">
+				{pushAvailable() && (
+					<label className="flex items-start gap-3 text-[0.9375rem] text-text">
+						<input
+							type="checkbox"
+							checked={notify.isPending ? notify.variables : (phone.data ?? false)}
+							disabled={notify.isPending || phone.isPending}
+							onChange={(event) => notify.mutate(event.target.checked)}
+							className="mt-1 size-4 shrink-0 rounded accent-accent"
+						/>
+						<span>
+							Notify me on this phone
+							<span className="mt-1 block text-[0.8125rem] text-text-muted">
+								A notification when a service is overdue or due within a month, or a renewal is
+								about to expire. Once per item, not every day.
+							</span>
+						</span>
+					</label>
+				)}
+				{notify.isSuccess && notify.variables && notify.data === false && (
+					<p role="alert" className="text-[0.8125rem] text-destructive">
+						Notifications are turned off for Frunk. Allow them in Settings, then switch this on
+						again.
+					</p>
+				)}
+
+				{byEmail && (
+					<label className="flex items-start gap-3 text-[0.9375rem] text-text">
+						<input
+							type="checkbox"
+							checked={save.isPending ? save.variables : enabled}
+							disabled={save.isPending}
+							onChange={(event) => save.mutate(event.target.checked)}
+							className="mt-1 size-4 shrink-0 rounded accent-accent"
+						/>
+						<span>
+							Email me when maintenance is due
+							<span className="mt-1 block text-[0.8125rem] text-text-muted">
+								One message a day at most, only when something on a schedule is overdue or due
+								within a month, and once per item until it is marked done.
+							</span>
+						</span>
+					</label>
+				)}
+			</div>
+			<Failure error={save.error ?? notify.error} fallback="Could not save that." />
 		</Section>
 	);
 }

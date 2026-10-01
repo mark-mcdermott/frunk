@@ -51,6 +51,13 @@ export default defineConfig({
 				access: 'secret',
 				optional: true
 			}),
+			// Apple Push Notification service, for the reminders (`src/lib/server/push.ts`):
+			// the .p8 key's contents, its key id, and the team id. All three or no push.
+			// `APNS_HOST` overrides Apple's hosts — the suite points it at a stand-in.
+			APNS_KEY: envField.string({ context: 'server', access: 'secret', optional: true }),
+			APNS_KEY_ID: envField.string({ context: 'server', access: 'secret', optional: true }),
+			APNS_TEAM_ID: envField.string({ context: 'server', access: 'secret', optional: true }),
+			APNS_HOST: envField.string({ context: 'server', access: 'secret', optional: true }),
 			// Extra origins treated like the native app's, comma-separated. Unset in
 			// production; the journeys set it to serve the native bundle from a second port.
 			NATIVE_ORIGINS_EXTRA: envField.string({ context: 'server', access: 'secret', optional: true })

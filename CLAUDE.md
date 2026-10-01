@@ -44,6 +44,18 @@ assessed by `assessDeadline` with the same thresholds, counted in the garage bad
 as pills on the detail's Renewals block, and mailed once per date via
 `expiration_reminders` (vehicle, kind, sent_for).
 
+**Reminders also go out as push notifications** (2026-09-30), which is the thing the
+native app does that a browser tab cannot. A phone opts in from the profile's Reminders
+section ("Notify me on this phone", iOS only for now) — never at launch — and its token
+lands in `device_tokens` via `POST /api/push/device-token`; `src/lib/native-push.ts`
+refreshes it at each launch and removes it on sign-out. The digest then has two channels
+(`reminders.ts`): email as before, and `sendPush` in `src/lib/server/push.ts`, which is
+APNs over `node:http2` with a JWT signed by `node:crypto` — no SDK. A digest is recorded
+as told when either channel got through. `APNS_KEY`, `APNS_KEY_ID` and `APNS_TEAM_ID`
+turn the channel on; `APNS_HOST` points it at a stand-in, which is how
+`tests/push.test.ts` receives and verifies exactly what Apple would. Android would crash
+on registration without Firebase's config file, so the switch is not offered there.
+
 **A new column needs the bootstrap on production before the deploy that reads it.**
 Drizzle selects every declared column, so code that lands on Vercel ahead of the column
 500s on that table. `drizzle/bootstrap.sql` guards `ADD COLUMN` with `IF NOT EXISTS`
