@@ -52,7 +52,7 @@
 		"class-variance-authority": "^0.7.1",
 		"cn": "^0.3.0",
 		"drizzle-orm": "^0.45.3",
-		"lucide-react": "^1.39.0",
+		"lucide-react": "^1.48.0",
 		"nanostores": "^1.5.4",
 		"pdfkit": "^0.20.2",
 		"pg": "^8.23.0",
