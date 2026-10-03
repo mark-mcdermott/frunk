@@ -73,6 +73,7 @@ test('adds a car from its VIN and shows its recalls', async ({ page }) => {
 	await expect(page.getByLabel('Engine Type')).toHaveValue('I6');
 	await expect(page.getByLabel('Drivetrain')).toHaveValue('4WD');
 
+	await page.getByLabel('Current Mileage').fill('115000');
 	await page.getByRole('button', { name: 'Add Vehicle' }).click();
 	await expect(page).toHaveURL(/\/vehicles\/[0-9a-f-]{36}$/);
 	expect(
@@ -85,6 +86,22 @@ test('adds a car from its VIN and shows its recalls', async ({ page }) => {
 	await expect(recalls.getByText('1 recall on file for the 1991 Jeep Wrangler.')).toBeVisible();
 	await recalls.getByText('Steering', { exact: true }).click();
 	await expect(recalls.getByText('Dealers will inspect and repair.')).toBeVisible();
+
+	// No schedules yet, so the usual ones are offered, counting from today's odometer.
+	const maintenance = page.getByRole('region', { name: 'Maintenance Schedule' });
+	await maintenance.getByLabel('Spark plugs').uncheck();
+	await expect(maintenance.getByLabel('Count from today at 115,000 mi')).toBeChecked();
+	await maintenance.getByRole('button', { name: 'Add 8 schedules' }).click();
+	await expect(maintenance.getByText('Suggested for this car')).toBeHidden();
+	await expect(maintenance.getByText('Oil change')).toBeVisible();
+	const vehicleId = await sql(`select id from vehicles where vin = '${VIN}'`);
+	expect(
+		await sql(
+			`select count(*) || '|' || min(last_completed_mileage) || '|' || count(*) filter (where name = 'Spark plugs') from maintenance_schedules where vehicle_id = '${vehicleId}'`
+		)
+	).toBe('8|115000|0');
+	// A baseline is not a service: nothing is logged as a repair for it.
+	expect(await sql(`select count(*) from repairs where vehicle_id = '${vehicleId}'`)).toBe('0');
 
 	// What the owner typed is theirs: a second lookup fills nothing over it.
 	await page.getByRole('link', { name: 'Edit Vehicle' }).click();

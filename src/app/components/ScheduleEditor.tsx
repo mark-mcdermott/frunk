@@ -12,6 +12,7 @@ import {
 } from '../api';
 import { DuePill } from './DuePill';
 import { EmptyState } from './EmptyState';
+import { ScheduleSuggestions } from './ScheduleSuggestions';
 import { TextField } from './Field';
 import { formatDate, formatMiles, fromDateInput, toCents, toDateInput } from '../format';
 
@@ -382,14 +383,17 @@ type Open = { kind: 'new' } | { kind: 'edit'; id: string } | { kind: 'done'; id:
 export function ScheduleEditor({
 	vehicleId,
 	currentMileage,
+	fuelType,
 	schedules
 }: {
 	vehicleId: string;
 	currentMileage: number | null;
+	fuelType: string | null;
 	schedules: Schedule[];
 }) {
 	const client = useQueryClient();
 	const [open, setOpen] = useState<Open>(null);
+	const [suggesting, setSuggesting] = useState(true);
 	const [draft, setDraft] = useState<Draft>(BLANK);
 	const [errors, setErrors] = useState<Errors>({});
 
@@ -489,7 +493,14 @@ export function ScheduleEditor({
 				</p>
 			)}
 
-			{schedules.length === 0 && open?.kind !== 'new' ? (
+			{schedules.length === 0 && open?.kind !== 'new' && suggesting ? (
+				<ScheduleSuggestions
+					vehicleId={vehicleId}
+					currentMileage={currentMileage}
+					fuelType={fuelType}
+					onDismiss={() => setSuggesting(false)}
+				/>
+			) : schedules.length === 0 && open?.kind !== 'new' ? (
 				<EmptyState
 					compact
 					title="No maintenance scheduled"
