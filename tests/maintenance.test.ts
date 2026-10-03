@@ -4,7 +4,9 @@ import {
 	assess,
 	assessDeadline,
 	describeDeadline,
-	describeDue
+	describeDue,
+	describeInterval,
+	suggestedSchedules
 } from '../src/lib/maintenance';
 import { api, json, signUpAndSignIn, sql, startDemo, type TestUser } from './helpers';
 
@@ -130,6 +132,43 @@ const lastDone = (scheduleId: string) =>
 		`select coalesce(to_char(last_completed_date at time zone 'UTC', 'YYYY-MM-DD'), '<null>') || '|' || coalesce(last_completed_mileage::text, '<null>') from maintenance_schedules where id = '${scheduleId}'`
 	);
 const ymd = (date: Date) => iso(date).slice(0, 10);
+
+describe('suggestedSchedules', () => {
+	const names = (fuel: string | null, existing?: string[]) =>
+		suggestedSchedules(fuel, existing).map((template) => template.name);
+
+	it('suggests the usual services, leaving out what the renewals or common sense cover', () => {
+		const gas = names('Gasoline');
+		expect(gas).toContain('Oil change');
+		expect(gas).toContain('Spark plugs');
+		expect(gas).not.toContain('State inspection');
+		expect(gas).not.toContain('Wiper blades');
+		expect(names(null)).toEqual(gas);
+	});
+
+	it('leaves out what an electric car or a diesel does not have', () => {
+		const electric = names('Electric');
+		expect(electric).not.toContain('Oil change');
+		expect(electric).not.toContain('Spark plugs');
+		expect(electric).toContain('Tire rotation');
+		expect(names('Gasoline/Electric Hybrid')).toContain('Oil change');
+		expect(names('Diesel')).not.toContain('Spark plugs');
+		expect(names('Diesel')).toContain('Oil change');
+	});
+
+	it('skips what is already scheduled, whatever its case', () => {
+		expect(names('Gasoline', [' oil CHANGE '])).not.toContain('Oil change');
+	});
+
+	it('words an interval the way a schedule reads', () => {
+		expect(describeInterval({ name: '', intervalMiles: 5000, intervalMonths: 6 })).toBe(
+			'Every 5,000 mi or 6 months'
+		);
+		expect(describeInterval({ name: '', intervalMiles: null, intervalMonths: 1 })).toBe(
+			'Every 1 month'
+		);
+	});
+});
 
 describe('POST /api/maintenance-schedules/:id/complete', () => {
 	it("answers 404 for someone else's schedule", async () => {

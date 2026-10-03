@@ -517,6 +517,7 @@ export function VehicleDetailPage() {
 				<ScheduleEditor
 					vehicleId={vehicle.id}
 					currentMileage={vehicle.currentMileage}
+					fuelType={vehicle.fuelType}
 					schedules={data.schedules}
 				/>
 			</Panel>

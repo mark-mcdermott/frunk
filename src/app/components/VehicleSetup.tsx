@@ -153,7 +153,7 @@ export function VehicleSetup({
 		{
 			key: 'maintenance',
 			label: 'Set up maintenance',
-			hint: 'Start from a common service like an oil change.',
+			hint: 'One tap adds the usual services for this car.',
 			done: hasSchedules,
 			onGo: () => document.getElementById(maintenanceId)?.scrollIntoView({ behavior: 'smooth' })
 		},

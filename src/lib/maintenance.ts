@@ -216,3 +216,46 @@ export const TEMPLATES: readonly Template[] = [
 	{ name: 'Transmission fluid', intervalMiles: 60000, intervalMonths: null },
 	{ name: 'Spark plugs', intervalMiles: 60000, intervalMonths: null }
 ];
+
+/**
+ * The services worth scheduling on a car that has none yet, from the templates.
+ *
+ * An electric car has no oil, spark plugs, engine air filter or gearbox fluid to change,
+ * and a diesel has no spark plugs. The state inspection is left out because the renewal
+ * dates already carry it; wipers and the battery because a reminder for them is noise
+ * more than help. Anything already scheduled under the same name is skipped.
+ */
+const NOT_SUGGESTED = new Set(['State inspection', 'Wiper blades', 'Battery']);
+const COMBUSTION_ONLY = new Set([
+	'Oil change',
+	'Engine air filter',
+	'Spark plugs',
+	'Transmission fluid'
+]);
+
+export function suggestedSchedules(
+	fuelType: string | null,
+	existingNames: readonly string[] = []
+): Template[] {
+	const fuel = fuelType?.toLowerCase() ?? '';
+	const electric = fuel.includes('electric') && !fuel.includes('hybrid') && !fuel.includes('gas');
+	const diesel = fuel.includes('diesel');
+	const taken = new Set(existingNames.map((name) => name.trim().toLowerCase()));
+
+	return TEMPLATES.filter(
+		(template) =>
+			!NOT_SUGGESTED.has(template.name) &&
+			!(electric && COMBUSTION_ONLY.has(template.name)) &&
+			!(diesel && template.name === 'Spark plugs') &&
+			!taken.has(template.name.toLowerCase())
+	);
+}
+
+/** "Every 5,000 mi or 6 months", the way a schedule's interval reads on its own. */
+export function describeInterval({ intervalMiles, intervalMonths }: Template): string {
+	const parts = [
+		intervalMiles != null && `${intervalMiles.toLocaleString()} mi`,
+		intervalMonths != null && plural(intervalMonths, 'month')
+	].filter(Boolean);
+	return `Every ${parts.join(' or ')}`;
+}
