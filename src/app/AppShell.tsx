@@ -1,11 +1,12 @@
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
-import { Car, FileText, Store, UserRound, Wrench } from 'lucide-react';
-import { Link, NavLink, useLocation } from 'react-router';
+import { Car, ChevronLeft, FileText, Store, UserRound, Wrench } from 'lucide-react';
+import { Link, NavLink, useLocation, useNavigate } from 'react-router';
 import { toSessionUser, useSession } from '../lib/auth-client';
 import { NATIVE } from '../lib/platform';
 import { isAdmin } from '../lib/roles';
 import { initial } from '../lib/user';
 import { FileImage } from './files';
+import { HistoryProvider, usePrevious } from './history';
 
 /**
  * The signed-in chrome, built to `docs/mocks/vehicles-index.webp`.
@@ -87,8 +88,17 @@ function CrumbLink({ to, children }: { to: string; children: ReactNode }) {
 	);
 }
 
-function Breadcrumbs({ trail }: { trail: Crumb[] }) {
+/**
+ * Where a thumb looks for the way back: top left, as in every iOS app, in place of the
+ * breadcrumbs, which wrap into a paragraph at phone width. With history behind the
+ * screen it goes back there; on a screen opened cold (a reload, a link, a notification)
+ * it goes up to the trail's parent instead. Wider screens keep the breadcrumbs, which
+ * carry the same parent and sit beside the browser's own Back.
+ */
+function Wayfinding({ trail }: { trail: Crumb[] }) {
 	const { pathname } = useLocation();
+	const navigate = useNavigate();
+	const previous = usePrevious();
 	const section = [...SECTIONS, ...ADMIN_SECTIONS].find((s) => pathname.startsWith(s.to));
 
 	const crumbs: Crumb[] = [
@@ -97,7 +107,39 @@ function Breadcrumbs({ trail }: { trail: Crumb[] }) {
 		...(section ? [{ label: section.label, to: section.to }] : []),
 		...trail
 	];
+	const parent = crumbs
+		.slice(0, -1)
+		.findLast((crumb): crumb is Required<Crumb> => !!crumb.to && crumb.to !== '/');
 
+	// The trail knows the parent's real name; history only knows what kind of screen it was.
+	const back = previous
+		? {
+				label: previous.pathname === parent?.to ? parent.label : (previous.place ?? 'Back'),
+				go: previous.back
+			}
+		: parent && { label: parent.label, go: () => navigate(parent.to) };
+
+	return (
+		<>
+			{back && (
+				<button
+					type="button"
+					onClick={back.go}
+					aria-label={back.label === 'Back' ? 'Back' : `Back to ${back.label}`}
+					className="-my-2.5 -ml-1.5 flex min-h-11 max-w-full items-center gap-0.5 pr-2 text-[0.9375rem] text-accent-bright transition-opacity hover:opacity-80 md:hidden"
+				>
+					<ChevronLeft className="size-5 shrink-0" strokeWidth={1.75} aria-hidden />
+					<span className="truncate">{back.label}</span>
+				</button>
+			)}
+			<div className={back ? 'hidden md:block' : undefined}>
+				<Breadcrumbs crumbs={crumbs} />
+			</div>
+		</>
+	);
+}
+
+function Breadcrumbs({ crumbs }: { crumbs: Crumb[] }) {
 	return (
 		<nav aria-label="Breadcrumb" className="flex flex-wrap items-center gap-2 text-[0.8125rem]">
 			{crumbs.map((crumb, index) => {
@@ -142,107 +184,109 @@ export function AppShell({ children }: { children: ReactNode }) {
 	}, [pathname]);
 
 	return (
-		<div className="surface-dark flex min-h-screen flex-col pb-[env(safe-area-inset-bottom,0px)]">
-			<header className="border-b border-border">
-				{/* Top padding absorbs the notch inset — see Header.astro for the reasoning. */}
-				<div className="mx-auto flex max-w-[1400px] items-center gap-8 px-6 pt-[calc(1.25rem+env(safe-area-inset-top,0px))] pb-5 sm:px-10 lg:px-16">
-					{NATIVE ? (
-						<Link
-							to="/vehicles"
-							className="wordmark shrink-0 text-lg"
-							aria-label="Frunk, your garage"
-						>
-							FRUNK
-						</Link>
-					) : (
-						<a href="/" className="wordmark shrink-0 text-lg" aria-label="Frunk, home">
-							FRUNK
-						</a>
-					)}
-
-					<nav aria-label="Sections" className="hidden items-center gap-8 md:flex">
-						{sections.map((section) => (
-							<NavLink
-								key={section.to}
-								to={section.to}
-								className={({ isActive }) =>
-									`relative py-1 text-[0.9375rem] transition-colors ${
-										isActive ? 'text-accent-bright' : 'text-text-muted hover:text-text'
-									}`
-								}
-							>
-								{({ isActive }) => (
-									<>
-										{section.label}
-										{isActive && (
-											<span
-												aria-hidden
-												className="absolute -bottom-1.5 left-1/2 size-[5px] -translate-x-1/2 rounded-full bg-accent-bright"
-											/>
-										)}
-									</>
-								)}
-							</NavLink>
-						))}
-					</nav>
-
-					<div className="ml-auto flex items-center gap-5">
-						{/* The mock's theme toggle is absent: nothing calls setTheme yet and the
-						    applet is dark by spec, so the control would be decoration. */}
-						{user && (
+		<HistoryProvider>
+			<div className="surface-dark flex min-h-screen flex-col pb-[env(safe-area-inset-bottom,0px)]">
+				<header className="border-b border-border">
+					{/* Top padding absorbs the notch inset — see Header.astro for the reasoning. */}
+					<div className="mx-auto flex max-w-[1400px] items-center gap-8 px-6 pt-[calc(1.25rem+env(safe-area-inset-top,0px))] pb-5 sm:px-10 lg:px-16">
+						{NATIVE ? (
 							<Link
-								to="/profile"
-								aria-label={`Your profile (${user.name || user.email})`}
-								title={user.name || user.email}
-								className="block shrink-0 rounded-full transition-opacity hover:opacity-80"
+								to="/vehicles"
+								className="wordmark shrink-0 text-lg"
+								aria-label="Frunk, your garage"
 							>
-								{user.image ? (
-									<FileImage
-										src={user.image}
-										alt=""
-										className="size-8 rounded-full border border-border object-cover"
-									/>
-								) : (
-									<span className="flex size-8 items-center justify-center rounded-full border border-border bg-surface-raised text-[0.8125rem] font-semibold text-text">
-										{initial(user)}
-									</span>
-								)}
+								FRUNK
 							</Link>
+						) : (
+							<a href="/" className="wordmark shrink-0 text-lg" aria-label="Frunk, home">
+								FRUNK
+							</a>
 						)}
+
+						<nav aria-label="Sections" className="hidden items-center gap-8 md:flex">
+							{sections.map((section) => (
+								<NavLink
+									key={section.to}
+									to={section.to}
+									className={({ isActive }) =>
+										`relative py-1 text-[0.9375rem] transition-colors ${
+											isActive ? 'text-accent-bright' : 'text-text-muted hover:text-text'
+										}`
+									}
+								>
+									{({ isActive }) => (
+										<>
+											{section.label}
+											{isActive && (
+												<span
+													aria-hidden
+													className="absolute -bottom-1.5 left-1/2 size-[5px] -translate-x-1/2 rounded-full bg-accent-bright"
+												/>
+											)}
+										</>
+									)}
+								</NavLink>
+							))}
+						</nav>
+
+						<div className="ml-auto flex items-center gap-5">
+							{/* The mock's theme toggle is absent: nothing calls setTheme yet and the
+						    applet is dark by spec, so the control would be decoration. */}
+							{user && (
+								<Link
+									to="/profile"
+									aria-label={`Your profile (${user.name || user.email})`}
+									title={user.name || user.email}
+									className="block shrink-0 rounded-full transition-opacity hover:opacity-80"
+								>
+									{user.image ? (
+										<FileImage
+											src={user.image}
+											alt=""
+											className="size-8 rounded-full border border-border object-cover"
+										/>
+									) : (
+										<span className="flex size-8 items-center justify-center rounded-full border border-border bg-surface-raised text-[0.8125rem] font-semibold text-text">
+											{initial(user)}
+										</span>
+									)}
+								</Link>
+							)}
+						</div>
 					</div>
+				</header>
+
+				<div className="mx-auto w-full max-w-[1400px] px-6 pt-6 sm:px-10 lg:px-16">
+					<Wayfinding trail={trail} />
 				</div>
-			</header>
 
-			<div className="mx-auto w-full max-w-[1400px] px-6 pt-6 sm:px-10 lg:px-16">
-				<Breadcrumbs trail={trail} />
+				<main className="mx-auto w-full max-w-[1400px] flex-1 px-6 pt-6 pb-32 sm:px-10 md:pb-24 lg:px-16">
+					<SetCrumbs.Provider value={set}>{children}</SetCrumbs.Provider>
+				</main>
+
+				<nav
+					aria-label="Sections"
+					className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-bg/95 pb-[env(safe-area-inset-bottom,0px)] backdrop-blur md:hidden"
+				>
+					<ul className="mx-auto flex max-w-lg items-stretch">
+						{TABS.map(({ label, to, icon: Icon }) => (
+							<li key={to} className="flex-1">
+								<NavLink
+									to={to}
+									className={({ isActive }) =>
+										`flex flex-col items-center gap-1 px-1 pt-2.5 pb-2 text-[0.6875rem] transition-colors ${
+											isActive ? 'text-accent-bright' : 'text-text-muted hover:text-text'
+										}`
+									}
+								>
+									<Icon className="size-5" strokeWidth={1.75} aria-hidden />
+									{label}
+								</NavLink>
+							</li>
+						))}
+					</ul>
+				</nav>
 			</div>
-
-			<main className="mx-auto w-full max-w-[1400px] flex-1 px-6 pt-6 pb-32 sm:px-10 md:pb-24 lg:px-16">
-				<SetCrumbs.Provider value={set}>{children}</SetCrumbs.Provider>
-			</main>
-
-			<nav
-				aria-label="Sections"
-				className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-bg/95 pb-[env(safe-area-inset-bottom,0px)] backdrop-blur md:hidden"
-			>
-				<ul className="mx-auto flex max-w-lg items-stretch">
-					{TABS.map(({ label, to, icon: Icon }) => (
-						<li key={to} className="flex-1">
-							<NavLink
-								to={to}
-								className={({ isActive }) =>
-									`flex flex-col items-center gap-1 px-1 pt-2.5 pb-2 text-[0.6875rem] transition-colors ${
-										isActive ? 'text-accent-bright' : 'text-text-muted hover:text-text'
-									}`
-								}
-							>
-								<Icon className="size-5" strokeWidth={1.75} aria-hidden />
-								{label}
-							</NavLink>
-						</li>
-					))}
-				</ul>
-			</nav>
-		</div>
+		</HistoryProvider>
 	);
 }

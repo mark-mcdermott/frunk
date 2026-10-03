@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Trash2 } from 'lucide-react';
 import { useState, type SubmitEvent } from 'react';
-import { useNavigate, useParams } from 'react-router';
+import { useParams } from 'react-router';
 import {
 	createVehicle,
 	deleteVehicle,
@@ -12,6 +12,7 @@ import {
 	type VehicleInput
 } from '../api';
 import { useCrumbs } from '../AppShell';
+import { useLeave } from '../history';
 import { plainOptions, SelectField, TextField } from '../components/Field';
 import { FileField } from '../components/FileField';
 import { fromDateInput, toDateInput } from '../format';
@@ -210,7 +211,7 @@ export function VehicleFormPage() {
 function VehicleForm({ loaded }: { loaded: Vehicle | undefined }) {
 	const { id } = useParams();
 	const editing = Boolean(id);
-	const navigate = useNavigate();
+	const leave = useLeave();
 	const client = useQueryClient();
 
 	const [form, setForm] = useState<FormState>(() => (loaded ? toForm(loaded) : BLANK));
@@ -233,7 +234,7 @@ function VehicleForm({ loaded }: { loaded: Vehicle | undefined }) {
 		onSuccess: (vehicle) => {
 			client.invalidateQueries({ queryKey: keys.vehicles });
 			client.invalidateQueries({ queryKey: keys.vehicle(vehicle.id) });
-			navigate(`/vehicles/${vehicle.id}`);
+			leave(`/vehicles/${vehicle.id}`);
 		}
 	});
 
@@ -241,7 +242,7 @@ function VehicleForm({ loaded }: { loaded: Vehicle | undefined }) {
 		mutationFn: () => deleteVehicle(id as string),
 		onSuccess: () => {
 			client.invalidateQueries({ queryKey: keys.vehicles });
-			navigate('/vehicles');
+			leave('/vehicles', `/vehicles/${id}`);
 		}
 	});
 

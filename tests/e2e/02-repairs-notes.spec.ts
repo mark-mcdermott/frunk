@@ -100,7 +100,8 @@ test('logs a repair on a vehicle, attaches a note, and cleans up', async ({ page
 	await page.getByRole('link', { name: 'Journey receipt (paid)', exact: true }).click();
 	await page.getByRole('button', { name: 'Delete', exact: true }).click();
 	await page.getByRole('button', { name: 'Delete permanently' }).click();
-	await expect(page).toHaveURL(/\/notes$/);
+	// Deleting returns to where the note was opened from, not to the list of all notes.
+	await expect(page).toHaveURL(repairUrl);
 	expect(await sql(`select count(*) from notes where title = 'Journey receipt (paid)'`)).toBe('0');
 
 	const remaining = uploadsAvailable ? await sql(receipts) : '';

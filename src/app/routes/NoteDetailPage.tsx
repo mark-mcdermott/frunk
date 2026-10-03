@@ -1,18 +1,10 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import {
-	ArrowLeft,
-	Calendar,
-	Car,
-	FileText,
-	Paperclip,
-	Pencil,
-	Trash2,
-	Wrench
-} from 'lucide-react';
+import { Calendar, Car, FileText, Paperclip, Pencil, Trash2, Wrench } from 'lucide-react';
 import { useState } from 'react';
-import { Link, useNavigate, useParams } from 'react-router';
+import { Link, useParams } from 'react-router';
 import { deleteNote, getNote, keys, listVehicles } from '../api';
 import { useCrumbs } from '../AppShell';
+import { useLeave } from '../history';
 import { formatDate } from '../format';
 import { FileImage, FileLink } from '../files';
 
@@ -53,7 +45,7 @@ function Meta({
 
 export function NoteDetailPage() {
 	const { uuid = '' } = useParams();
-	const navigate = useNavigate();
+	const leave = useLeave();
 	const client = useQueryClient();
 	const [confirmingDelete, setConfirmingDelete] = useState(false);
 
@@ -72,7 +64,7 @@ export function NoteDetailPage() {
 			client.invalidateQueries({ queryKey: keys.notes });
 			if (note?.vehicleId) client.invalidateQueries({ queryKey: keys.vehicle(note.vehicleId) });
 			if (note?.repairId) client.invalidateQueries({ queryKey: keys.repair(note.repairId) });
-			navigate('/notes');
+			leave('/notes', `/notes/${uuid}`);
 		}
 	});
 
@@ -98,15 +90,7 @@ export function NoteDetailPage() {
 
 	return (
 		<>
-			<Link
-				to="/notes"
-				className="inline-flex items-center gap-2 text-[0.9375rem] text-accent-bright transition-opacity hover:opacity-80"
-			>
-				<ArrowLeft className="size-4" strokeWidth={1.75} aria-hidden />
-				Back to notes
-			</Link>
-
-			<div className="card mt-6 max-w-3xl p-6 sm:p-8">
+			<div className="card max-w-3xl p-6 sm:p-8">
 				<div className="flex flex-wrap items-start justify-between gap-4">
 					<div className="flex min-w-0 items-center gap-4">
 						<span
