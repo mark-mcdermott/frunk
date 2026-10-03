@@ -71,11 +71,17 @@ Keep that restraint: no gradients-as-decoration, no rounded-everything, no emoji
 
 Two families, sharply contrasted — this pairing _is_ the design.
 
-**Display / headings — high-contrast serif.** Used far more widely than a typical app:
-marketing headlines, page titles ("My Vehicles"), entity names ("1974 AMC Gremlin"),
-section headings ("Notes", "Repairs", "Galleries"), and modal titles ("Welcome back."),
-plus italic for pull quotes. Characteristics: pronounced thick/thin stroke modulation,
-vertical stress, fine hairline serifs, tight optical tracking at large sizes.
+**Display / headings — high-contrast serif, for names.** Marketing headlines, page titles
+("My Vehicles"), entity names ("1974 AMC Gremlin", on its own page and on cards), and the
+auth modal titles ("Welcome back."), plus italic for pull quotes. Characteristics:
+pronounced thick/thin stroke modulation, vertical stress, fine hairline serifs, tight
+optical tracking at large sizes.
+
+**UI headings — the sans, semibold (`.heading`).** Section headings ("Notes", "Repairs",
+"Maintenance Schedule"), empty-state titles, dialog titles and form section headings. The
+mocks set these in the serif too. Dogfooding on a phone (2026-10-02) found that tiring:
+at 18–20px, Playfair's hairlines and the 600 weight it needs on dark make a label you scan
+past read like a headline. The rule is **serif for names, sans for UI**.
 
 **Body / UI — neutral geometric sans.** Body copy, form fields, table data, buttons,
 navigation.
@@ -150,8 +156,12 @@ red glyph on red-tinted border for delete (trash).
 **Field rows** (vehicle spec table) — icon + muted label on the left, value right-aligned,
 one per line, no dividers.
 
-**Empty states** — centred: icon in a soft violet glow, a serif title
-("No maintenance scheduled"), then one muted line of guidance.
+**Empty states** (`EmptyState`) — on a screen whose purpose is the missing list: centred,
+icon in a soft violet glow, a sans title ("No vehicles yet"), then one muted line of
+guidance. Inside a panel among others (`compact`): the title and line alone, left-aligned.
+A new vehicle's page is otherwise five glowing announcements that nothing is there, and
+it leads with a **"Finish setting up" checklist** (`VehicleSetup`) whose steps link to
+the field or panel each one fills.
 
 **Footer** — dark in both themes. Five columns: wordmark + tagline + short violet rule,
 then `PRODUCT` / `COMPANY` / `SUPPORT` link lists, then `STAY IN THE LOOP` with the

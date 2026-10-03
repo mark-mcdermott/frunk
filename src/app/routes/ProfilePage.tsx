@@ -50,7 +50,7 @@ import { NATIVE, siteUrl } from '../../lib/platform';
 function Section({ title, children }: { title: string; children: ReactNode }) {
 	return (
 		<section className="border-t border-border pt-6">
-			<h2 className="display-sm text-lg">{title}</h2>
+			<h2 className="heading text-lg">{title}</h2>
 			<div className="mt-4">{children}</div>
 		</section>
 	);
