@@ -15,38 +15,40 @@ let nhtsa: Server;
 test.beforeAll(async () => {
 	nhtsa = createServer((request, response) => {
 		const url = new URL(request.url ?? '/', 'http://stand-in');
-		const body = url.pathname.startsWith('/api/vehicles/DecodeVinValues/')
-			? {
-					Results: [
-						{
-							ModelYear: '1991',
-							Make: 'JEEP',
-							Model: 'Wrangler',
-							Trim: 'S',
-							BodyClass: 'Sport Utility Vehicle (SUV)/Multipurpose Vehicle (MPV)',
-							DisplacementL: '4',
-							EngineCylinders: '6',
-							EngineConfiguration: 'In-Line',
-							FuelTypePrimary: 'Gasoline',
-							DriveType: '4WD/4-Wheel Drive/4x4',
-							TransmissionStyle: 'Manual/Standard',
-							TransmissionSpeeds: '5',
-							ErrorCode: '0'
-						}
-					]
-				}
-			: {
-					results: [
-						{
-							NHTSACampaignNumber: '93V105000',
-							Component: 'STEERING',
-							Summary: 'THE STEERING COLUMN MAY SEPARATE.',
-							Consequence: 'LOSS OF STEERING CONTROL.',
-							Remedy: 'DEALERS WILL INSPECT AND REPAIR.',
-							ReportReceivedDate: '02/07/1993'
-						}
-					]
-				};
+		const body = url.pathname.startsWith('/api/vehicles/GetModelsForMake')
+			? { Results: ['Wrangler', 'Cherokee', 'Comanche'].map((Model_Name) => ({ Model_Name })) }
+			: url.pathname.startsWith('/api/vehicles/DecodeVinValues/')
+				? {
+						Results: [
+							{
+								ModelYear: '1991',
+								Make: 'JEEP',
+								Model: 'Wrangler',
+								Trim: 'S',
+								BodyClass: 'Sport Utility Vehicle (SUV)/Multipurpose Vehicle (MPV)',
+								DisplacementL: '4',
+								EngineCylinders: '6',
+								EngineConfiguration: 'In-Line',
+								FuelTypePrimary: 'Gasoline',
+								DriveType: '4WD/4-Wheel Drive/4x4',
+								TransmissionStyle: 'Manual/Standard',
+								TransmissionSpeeds: '5',
+								ErrorCode: '0'
+							}
+						]
+					}
+				: {
+						results: [
+							{
+								NHTSACampaignNumber: '93V105000',
+								Component: 'STEERING',
+								Summary: 'THE STEERING COLUMN MAY SEPARATE.',
+								Consequence: 'LOSS OF STEERING CONTROL.',
+								Remedy: 'DEALERS WILL INSPECT AND REPAIR.',
+								ReportReceivedDate: '02/07/1993'
+							}
+						]
+					};
 		response.writeHead(200, { 'content-type': 'application/json' });
 		response.end(JSON.stringify(body));
 	});
@@ -119,6 +121,12 @@ test('adds a car from its VIN and shows its recalls', async ({ page }) => {
 	await page.getByRole('button', { name: 'Look up' }).click();
 	await expect(page.getByText('Nothing new to fill in')).toBeVisible();
 	await expect(page.getByLabel('Trim')).toHaveValue('Sahara');
+
+	// Model suggests the make's models for the year, from NHTSA.
+	await page.getByLabel('Model', { exact: true }).fill('');
+	await page.getByLabel('Model', { exact: true }).click();
+	await page.getByRole('option', { name: 'Cherokee' }).click();
+	await expect(page.getByLabel('Model', { exact: true })).toHaveValue('Cherokee');
 
 	await sql(`delete from vehicles where vin = '${VIN}' and user_id = '${owner}'`);
 });

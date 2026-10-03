@@ -195,3 +195,19 @@ export function recallsFor(make: string, model: string, year: number): Promise<R
 			.sort((a, b) => (b.reportedOn ?? '').localeCompare(a.reportedOn ?? ''));
 	});
 }
+
+/**
+ * The model names NHTSA has for a make, in its year when the year is known; sorted, each
+ * once (NHTSA lists a model once per body or plant, so "Comanche" can appear twice).
+ */
+export function modelsFor(make: string, year: number | null): Promise<string[]> {
+	const path = year
+		? `GetModelsForMakeYear/make/${encodeURIComponent(make)}/modelyear/${year}`
+		: `GetModelsForMake/${encodeURIComponent(make)}`;
+	return cached(`models:${path.toLowerCase()}`, async () => {
+		const body = await getJson(`${VPIC}/api/vehicles/${path}?format=json`);
+		const rows = (body as { Results?: Record<string, unknown>[] }).Results ?? [];
+		const names = new Set(rows.map((row) => text(row.Model_Name)).filter(Boolean));
+		return [...names].sort((a, b) => a.localeCompare(b));
+	});
+}

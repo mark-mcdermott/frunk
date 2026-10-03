@@ -1,5 +1,5 @@
 import { Autocomplete } from '@base-ui/react/autocomplete';
-import { useLayoutEffect, useRef, type ReactNode } from 'react';
+import { useLayoutEffect, useRef, useState, type ReactNode } from 'react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
@@ -307,19 +307,36 @@ export function SuggestField({
 	optional,
 	hint,
 	error,
-	placeholder
+	placeholder,
+	notice,
+	onFocusChange
 }: {
 	id: string;
 	label: string;
 	value: string;
 	onChange: (value: string) => void;
 	suggestions: readonly Suggestion[];
+	/** Said in the list when nothing matches — "Looking up…", "Enter the make first". */
+	notice?: string;
+	/** For suggestions worth fetching only while the field is in use. */
+	onFocusChange?: (focused: boolean) => void;
 	optional?: boolean;
 	hint?: ReactNode;
 	error?: string;
 	placeholder?: string;
 }) {
-	const chosen = suggestions.find((s) => s.value.toLowerCase() === value.trim().toLowerCase());
+	const query = value.trim().toLowerCase();
+	const chosen = suggestions.find((s) => s.value.toLowerCase() === query);
+
+	/*
+	 * Open only with something to show. While its list is open, Base UI hides the rest of
+	 * the page from assistive tech to keep a screen reader in the list; a list with
+	 * nothing in it would do that for no reason, and a value of one's own is the normal
+	 * case here, not an error to report.
+	 */
+	const [wanted, setWanted] = useState(false);
+	const matches = suggestions.some((s) => s.value.toLowerCase().includes(query));
+	const open = wanted && (matches || Boolean(notice));
 
 	return (
 		<FieldShell id={id} label={label} optional={optional} hint={hint} error={error}>
@@ -328,6 +345,8 @@ export function SuggestField({
 				itemToStringValue={(item: Suggestion) => item.value}
 				value={value}
 				onValueChange={(next) => onChange(next)}
+				open={open}
+				onOpenChange={setWanted}
 				openOnInputClick
 				mode="list"
 			>
@@ -341,6 +360,8 @@ export function SuggestField({
 						id={id}
 						placeholder={placeholder}
 						autoComplete="off"
+						onFocus={() => onFocusChange?.(true)}
+						onBlur={() => onFocusChange?.(false)}
 						aria-invalid={error ? true : undefined}
 						className={`${CONTROL} ${CONTROL_H} border transition-colors outline-none focus:border-accent ${chosen?.swatch ? 'pl-11' : ''}`}
 					/>
@@ -349,7 +370,7 @@ export function SuggestField({
 					<Autocomplete.Positioner sideOffset={6} className="z-50 outline-none">
 						<Autocomplete.Popup className="max-h-[min(18rem,var(--available-height))] w-[var(--anchor-width)] overflow-y-auto rounded-control border border-border bg-surface-raised p-1.5 shadow-lg transition-opacity duration-100 data-[ending-style]:opacity-0 data-[starting-style]:opacity-0">
 							<Autocomplete.Empty className="px-3 py-2 text-[0.8125rem] text-text-muted empty:hidden">
-								No suggestion — what you typed is kept.
+								{notice}
 							</Autocomplete.Empty>
 							<Autocomplete.List>
 								{(item: Suggestion) => (
