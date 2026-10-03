@@ -1,6 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
-	ArrowLeft,
 	Calendar,
 	DollarSign,
 	FileText,
@@ -292,15 +291,7 @@ export function RepairDetailPage() {
 
 	return (
 		<>
-			<Link
-				to={`/vehicles/${repair.vehicleId}`}
-				className="inline-flex items-center gap-2 text-[0.9375rem] text-accent-bright transition-opacity hover:opacity-80"
-			>
-				<ArrowLeft className="size-4" strokeWidth={1.75} aria-hidden />
-				Back to vehicle
-			</Link>
-
-			<div className="mt-6 flex flex-wrap items-start justify-between gap-6">
+			<div className="flex flex-wrap items-start justify-between gap-6">
 				<div className="flex items-center gap-4">
 					<span
 						aria-hidden

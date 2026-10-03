@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { ArrowLeft, Trash2 } from 'lucide-react';
+import { Trash2 } from 'lucide-react';
 import { useState, type SubmitEvent } from 'react';
-import { Link, useNavigate, useParams } from 'react-router';
+import { useParams } from 'react-router';
 import {
 	createVendor,
 	deleteVendor,
@@ -12,6 +12,7 @@ import {
 	type VendorInput
 } from '../api';
 import { useCrumbs } from '../AppShell';
+import { useLeave } from '../history';
 import { TextField } from '../components/Field';
 
 /**
@@ -72,7 +73,7 @@ export function VendorFormPage() {
 function VendorForm({ existing }: { existing: Vendor | undefined }) {
 	const { id } = useParams();
 	const editing = Boolean(id);
-	const navigate = useNavigate();
+	const leave = useLeave();
 	const client = useQueryClient();
 
 	const [form, setForm] = useState<FormState>(() => (existing ? toForm(existing) : BLANK));
@@ -89,7 +90,7 @@ function VendorForm({ existing }: { existing: Vendor | undefined }) {
 		onSuccess: (vendor: Vendor) => {
 			client.invalidateQueries({ queryKey: keys.vendors });
 			client.invalidateQueries({ queryKey: keys.repairs });
-			navigate('/vendors');
+			leave('/vendors');
 			return vendor;
 		}
 	});
@@ -99,7 +100,7 @@ function VendorForm({ existing }: { existing: Vendor | undefined }) {
 		onSuccess: () => {
 			client.invalidateQueries({ queryKey: keys.vendors });
 			client.invalidateQueries({ queryKey: keys.repairs });
-			navigate('/vendors');
+			leave('/vendors', `/vendors/${id}`);
 		}
 	});
 
@@ -132,15 +133,7 @@ function VendorForm({ existing }: { existing: Vendor | undefined }) {
 
 	return (
 		<>
-			<Link
-				to="/vendors"
-				className="inline-flex items-center gap-2 text-[0.9375rem] text-accent-bright transition-opacity hover:opacity-80"
-			>
-				<ArrowLeft className="size-4" strokeWidth={1.75} aria-hidden />
-				Back to vendors
-			</Link>
-
-			<h1 className="display mt-6 text-[clamp(2rem,4vw,2.75rem)]">
+			<h1 className="display text-[clamp(2rem,4vw,2.75rem)]">
 				{editing ? 'Edit Vendor' : 'Add Vendor'}
 			</h1>
 			<p className="mt-3 text-[0.9375rem] text-text-muted">
