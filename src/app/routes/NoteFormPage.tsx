@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { ArrowLeft, Trash2 } from 'lucide-react';
+import { Trash2 } from 'lucide-react';
 import { useState, type SubmitEvent } from 'react';
-import { Link, useNavigate, useParams, useSearchParams } from 'react-router';
+import { Link, useParams, useSearchParams } from 'react-router';
 import {
 	createNote,
 	deleteNote,
@@ -12,6 +12,7 @@ import {
 	type NoteRow
 } from '../api';
 import { useCrumbs } from '../AppShell';
+import { useLeave } from '../history';
 import { SelectField, TextAreaField, TextField, type Option } from '../components/Field';
 import { FileField } from '../components/FileField';
 
@@ -86,7 +87,7 @@ function NoteForm({ existing }: { existing: ExistingNote | undefined }) {
 	const { uuid } = useParams();
 	const editing = Boolean(uuid);
 	const [params] = useSearchParams();
-	const navigate = useNavigate();
+	const leave = useLeave();
 	const client = useQueryClient();
 
 	const [form, setForm] = useState<FormState>(() =>
@@ -110,17 +111,12 @@ function NoteForm({ existing }: { existing: ExistingNote | undefined }) {
 		? vehicle.nickname || `${vehicle.year} ${vehicle.make} ${vehicle.model}`
 		: null;
 
-	useCrumbs(
-		editing
-			? [
-					...(vehicleLabel && vehicleId
-						? [{ label: vehicleLabel, to: `/vehicles/${vehicleId}` }]
-						: []),
-					{ label: existing?.title ?? 'Note' },
-					{ label: 'Edit' }
-				]
-			: [{ label: 'New note' }]
-	);
+	useCrumbs([
+		...(vehicleLabel && vehicleId ? [{ label: vehicleLabel, to: `/vehicles/${vehicleId}` }] : []),
+		...(editing
+			? [{ label: existing?.title ?? 'Note' }, { label: 'Edit' }]
+			: [{ label: 'New note' }])
+	]);
 
 	const save = useMutation({
 		mutationFn: (state: FormState) =>
@@ -142,7 +138,7 @@ function NoteForm({ existing }: { existing: ExistingNote | undefined }) {
 			if (editing) client.invalidateQueries({ queryKey: keys.note(uuid as string) });
 			if (vehicleId) client.invalidateQueries({ queryKey: keys.vehicle(vehicleId) });
 			if (repairId) client.invalidateQueries({ queryKey: keys.repair(repairId) });
-			navigate(repairId ? `/repairs/${repairId}` : vehicleId ? `/vehicles/${vehicleId}` : '/notes');
+			leave(repairId ? `/repairs/${repairId}` : vehicleId ? `/vehicles/${vehicleId}` : '/notes');
 		}
 	});
 
@@ -152,7 +148,7 @@ function NoteForm({ existing }: { existing: ExistingNote | undefined }) {
 			client.invalidateQueries({ queryKey: keys.notes });
 			if (vehicleId) client.invalidateQueries({ queryKey: keys.vehicle(vehicleId) });
 			if (repairId) client.invalidateQueries({ queryKey: keys.repair(repairId) });
-			navigate('/notes');
+			leave('/notes', `/notes/${uuid}`);
 		}
 	});
 
@@ -176,15 +172,7 @@ function NoteForm({ existing }: { existing: ExistingNote | undefined }) {
 
 	return (
 		<>
-			<Link
-				to="/notes"
-				className="inline-flex items-center gap-2 text-[0.9375rem] text-accent-bright transition-opacity hover:opacity-80"
-			>
-				<ArrowLeft className="size-4" strokeWidth={1.75} aria-hidden />
-				Back to notes
-			</Link>
-
-			<h1 className="display mt-6 text-[clamp(2rem,4vw,2.75rem)]">
+			<h1 className="display text-[clamp(2rem,4vw,2.75rem)]">
 				{editing ? 'Edit Note' : 'Add Note'}
 			</h1>
 			<p className="mt-3 text-[0.9375rem] text-text-muted">

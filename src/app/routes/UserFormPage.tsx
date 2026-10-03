@@ -1,9 +1,10 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { ArrowLeft, Trash2 } from 'lucide-react';
+import { Trash2 } from 'lucide-react';
 import { useState, type SubmitEvent } from 'react';
-import { Link, useNavigate, useParams } from 'react-router';
+import { useParams } from 'react-router';
 import { deleteUser, getUser, keys, updateUser } from '../api';
 import { useCrumbs } from '../AppShell';
+import { useLeave } from '../history';
 import { TextField } from '../components/Field';
 import { toSessionUser, useSession } from '../../lib/auth-client';
 import { ROLE_IDS } from '../../lib/roles';
@@ -72,7 +73,7 @@ export function UserFormPage() {
 
 function UserForm({ user, editingSelf }: { user: LoadedUser; editingSelf: boolean }) {
 	const id = user.id;
-	const navigate = useNavigate();
+	const leave = useLeave();
 	const client = useQueryClient();
 
 	const [name, setName] = useState(user.name);
@@ -86,7 +87,7 @@ function UserForm({ user, editingSelf }: { user: LoadedUser; editingSelf: boolea
 		mutationFn: () => updateUser(id, { name: name.trim(), roles }),
 		onSuccess: () => {
 			client.invalidateQueries({ queryKey: ['users'] });
-			navigate('/users');
+			leave('/users');
 		}
 	});
 
@@ -94,7 +95,7 @@ function UserForm({ user, editingSelf }: { user: LoadedUser; editingSelf: boolea
 		mutationFn: () => deleteUser(id),
 		onSuccess: () => {
 			client.invalidateQueries({ queryKey: ['users'] });
-			navigate('/users');
+			leave('/users', `/users/${id}`);
 		}
 	});
 
@@ -118,15 +119,7 @@ function UserForm({ user, editingSelf }: { user: LoadedUser; editingSelf: boolea
 
 	return (
 		<>
-			<Link
-				to="/users"
-				className="inline-flex items-center gap-2 text-[0.9375rem] text-accent-bright transition-opacity hover:opacity-80"
-			>
-				<ArrowLeft className="size-4" strokeWidth={1.75} aria-hidden />
-				Back to users
-			</Link>
-
-			<h1 className="display mt-6 text-[clamp(2rem,4vw,2.75rem)]">Edit User</h1>
+			<h1 className="display text-[clamp(2rem,4vw,2.75rem)]">Edit User</h1>
 			<p className="mt-3 text-[0.9375rem] text-text-muted">Update user details and roles.</p>
 
 			<form onSubmit={submit} noValidate className="card mt-10 max-w-xl p-6 sm:p-8">
