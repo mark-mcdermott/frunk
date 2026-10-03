@@ -298,6 +298,7 @@ export const keys = {
 	vehicle: (id: string) => ['vehicles', id] as const,
 	// Under the vehicle's key, so an edit to its make, model or year refetches it too.
 	recalls: (id: string) => ['vehicles', id, 'recalls'] as const,
+	models: (make: string, year: string) => ['models', make.toLowerCase(), year] as const,
 	vendors: ['vendors'] as const,
 	vendor: (id: string) => ['vendors', id] as const,
 	repairs: ['repairs'] as const,
@@ -330,6 +331,11 @@ export interface DecodedVin {
 
 export const decodeVin = (vin: string) =>
 	request<DecodedVin>(`/api/vin/${encodeURIComponent(vin)}`);
+
+export const listModels = (make: string, year: string) =>
+	request<{ models: string[] }>(
+		`/api/models?${new URLSearchParams({ make, year }).toString()}`
+	).then((r) => r.models);
 
 export interface Recall {
 	campaign: string;

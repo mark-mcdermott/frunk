@@ -8,6 +8,7 @@ import {
 	deleteVehicle,
 	getVehicle,
 	keys,
+	listModels,
 	updateVehicle,
 	type DecodedVin,
 	type Vehicle,
@@ -314,6 +315,23 @@ function VehicleForm({ loaded }: { loaded: Vehicle | undefined }) {
 	const [confirmingDelete, setConfirmingDelete] = useState(false);
 	const [vinNote, setVinNote] = useState<string | null>(null);
 
+	/* Fetched only while Model has focus, so typing the make is not a request per letter. */
+	const [modelFocused, setModelFocused] = useState(false);
+	const make = form.make.trim();
+	const models = useQuery({
+		queryKey: keys.models(make, form.year.trim()),
+		queryFn: () => listModels(make, form.year.trim()),
+		enabled: modelFocused && make.length >= 2,
+		staleTime: Infinity
+	});
+	const modelSuggestions = (models.data ?? []).map((value) => ({ value }));
+	const modelsNotice =
+		make.length < 2
+			? 'Enter the make first and its models appear here.'
+			: models.isFetching
+				? `Looking up ${make} models…`
+				: undefined;
+
 	const vinComplete = form.vin.trim().length === 17;
 	const lookup = useMutation({
 		mutationFn: decodeVin,
@@ -414,7 +432,15 @@ function VehicleForm({ loaded }: { loaded: Vehicle | undefined }) {
 						{...field('year')}
 					/>
 					<TextField id="make" label="Make" error={errors.make} {...field('make')} />
-					<TextField id="model" label="Model" error={errors.model} {...field('model')} />
+					<SuggestField
+						id="model"
+						label="Model"
+						error={errors.model}
+						suggestions={modelSuggestions}
+						notice={modelsNotice}
+						onFocusChange={setModelFocused}
+						{...field('model')}
+					/>
 					<TextField id="trim" label="Trim" optional placeholder="Sahara" {...field('trim')} />
 					<TextField id="nickname" label="Nickname" optional {...field('nickname')} />
 					<SelectField

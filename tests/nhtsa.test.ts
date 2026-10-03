@@ -69,6 +69,12 @@ beforeAll(async () => {
 			const row = vin === WRANGLER_VIN ? DECODED : { Make: '', ErrorCode: '11' };
 			return send(200, { Count: 1, Results: [row] });
 		}
+		if (url.pathname.startsWith('/api/vehicles/GetModelsForMake')) {
+			const names = url.pathname.includes('/modelyear/1991')
+				? ['Wrangler', 'Comanche', 'Cherokee', 'Comanche', ' ']
+				: ['Wrangler', 'Gladiator'];
+			return send(200, { Results: names.map((Model_Name) => ({ Make_Name: 'JEEP', Model_Name })) });
+		}
 		if (url.pathname === '/recalls/recallsByVehicle') {
 			const wrangler = url.searchParams.get('model')?.toLowerCase() === 'wrangler';
 			const results = wrangler ? RECALLS : [];
@@ -173,5 +179,30 @@ describe('GET /api/vehicles/:id/recalls', () => {
 			remedy: 'Owners will be offered a repurchase.',
 			reportedOn: '2006-03-23'
 		});
+	});
+});
+
+describe('GET /api/models', () => {
+	let user: TestUser;
+	beforeAll(async () => {
+		user = await signUpAndSignIn();
+	});
+
+	it('is signed-in only, and needs a make', async () => {
+		expect((await api('/api/models?make=Jeep')).status).toBe(401);
+		expect((await api('/api/models?make=J', { cookie: user.cookie })).status).toBe(422);
+	});
+
+	it('lists the make’s models for the year, sorted and each once', async () => {
+		const response = await api('/api/models?make=Jeep&year=1991', { cookie: user.cookie });
+		expect(response.status).toBe(200);
+		expect(await json(response)).toEqual({ models: ['Cherokee', 'Comanche', 'Wrangler'] });
+	});
+
+	it('falls back to every year when the year is missing or implausible', async () => {
+		for (const query of ['make=Jeep', 'make=Jeep&year=19', 'make=Jeep&year=abc']) {
+			const response = await api(`/api/models?${query}`, { cookie: user.cookie });
+			expect(await json(response)).toEqual({ models: ['Gladiator', 'Wrangler'] });
+		}
 	});
 });
