@@ -139,21 +139,6 @@ export function ListRow({
 	);
 }
 
-export function ListEmpty({ icon, title, line }: { icon: ReactNode; title: string; line: string }) {
-	return (
-		<div className="flex flex-col items-center gap-3 px-6 py-16 text-center">
-			<span
-				aria-hidden
-				className="flex size-12 items-center justify-center rounded-full bg-accent/10 text-accent-bright"
-			>
-				{icon}
-			</span>
-			<h2 className="display-sm text-lg">{title}</h2>
-			<p className="max-w-xs text-[0.875rem] text-text-muted">{line}</p>
-		</div>
-	);
-}
-
 export function ListState({
 	pending,
 	error,
