@@ -64,6 +64,11 @@ export APNS_TEAM_ID="TESTTEAM12"
 APNS_KEY="$(openssl ecparam -name prime256v1 -genkey -noout | openssl pkcs8 -topk8 -nocrypt)"
 export APNS_KEY
 
+# NHTSA (VIN decoding, recalls): `tests/nhtsa.test.ts` serves both hosts' paths on this
+# port. The journeys leave it unanswered, so the vehicle screen's recall panel shows its
+# quiet failure line there rather than calling the real service from CI.
+export NHTSA_BASE="http://localhost:${TEST_NHTSA_PORT:-4499}"
+
 # Built before the dev server starts, so nothing else runs a bundler while it is up.
 if [ "$RUNNER" = "playwright" ]; then
   PUBLIC_API_BASE="$BASE" node_modules/.bin/vite build --config vite.native.config.ts --mode native >/dev/null

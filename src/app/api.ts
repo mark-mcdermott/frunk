@@ -73,6 +73,8 @@ export interface Vehicle {
 	trim: string | null;
 	bodyStyle: string | null;
 	color: string | null;
+	drivetrain: string | null;
+	fuelType: string | null;
 	transmission: string | null;
 	engineType: string | null;
 	engineSize: string | null;
@@ -262,8 +264,11 @@ export type VehicleInput = {
 	Record<
 		| 'nickname'
 		| 'vin'
+		| 'trim'
 		| 'bodyStyle'
 		| 'color'
+		| 'drivetrain'
+		| 'fuelType'
 		| 'transmission'
 		| 'engineType'
 		| 'engineSize'
@@ -291,6 +296,8 @@ export const keys = {
 	account: ['account'] as const,
 	vehicles: ['vehicles'] as const,
 	vehicle: (id: string) => ['vehicles', id] as const,
+	// Under the vehicle's key, so an edit to its make, model or year refetches it too.
+	recalls: (id: string) => ['vehicles', id, 'recalls'] as const,
 	vendors: ['vendors'] as const,
 	vendor: (id: string) => ['vendors', id] as const,
 	repairs: ['repairs'] as const,
@@ -305,6 +312,36 @@ export const listVehicles = () =>
 	request<{ vehicles: VehicleListItem[] }>('/api/vehicles').then((r) => r.vehicles);
 
 export const getVehicle = (id: string) => request<VehicleDetail>(`/api/vehicles/${id}`);
+
+/** What NHTSA's decoder could tell, in the form's own words; see `src/lib/server/nhtsa.ts`. */
+export interface DecodedVin {
+	year: number | null;
+	make: string | null;
+	model: string | null;
+	trim: string | null;
+	bodyStyle: string | null;
+	engineSize: string | null;
+	engineType: string | null;
+	fuelType: string | null;
+	drivetrain: string | null;
+	transmission: string | null;
+	checkDigitFailed: boolean;
+}
+
+export const decodeVin = (vin: string) =>
+	request<DecodedVin>(`/api/vin/${encodeURIComponent(vin)}`);
+
+export interface Recall {
+	campaign: string;
+	component: string;
+	summary: string;
+	consequence: string;
+	remedy: string;
+	reportedOn: string | null;
+}
+
+export const getRecalls = (vehicleId: string) =>
+	request<{ recalls: Recall[] }>(`/api/vehicles/${vehicleId}/recalls`).then((r) => r.recalls);
 
 export const listVendors = () =>
 	request<{ vendors: Vendor[] }>('/api/vendors').then((r) => r.vendors);

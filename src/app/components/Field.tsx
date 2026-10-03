@@ -81,7 +81,8 @@ export function TextField({
 	autoComplete,
 	placeholder,
 	prefix,
-	suffix
+	suffix,
+	action
 }: {
 	id: string;
 	label: string;
@@ -97,6 +98,8 @@ export function TextField({
 	/** Static adornments — the mock's `$` on cost and `mi` on mileage. */
 	prefix?: string;
 	suffix?: string;
+	/** A control inside the field's right edge, like a search box's button. */
+	action?: ReactNode;
 }) {
 	return (
 		<FieldShell id={id} label={label} optional={optional} hint={hint} error={error}>
@@ -118,7 +121,7 @@ export function TextField({
 					value={value}
 					aria-invalid={error ? true : undefined}
 					onChange={(event) => onChange(event.target.value)}
-					className={`${CONTROL} ${CONTROL_H} ${prefix ? 'pl-9' : ''} ${suffix ? 'pr-12' : ''}`}
+					className={`${CONTROL} ${CONTROL_H} ${prefix ? 'pl-9' : ''} ${suffix ? 'pr-12' : ''} ${action ? 'pr-28' : ''}`}
 				/>
 				{suffix && (
 					<span
@@ -128,6 +131,7 @@ export function TextField({
 						{suffix}
 					</span>
 				)}
+				{action && <div className="absolute top-1/2 right-1.5 -translate-y-1/2">{action}</div>}
 			</div>
 		</FieldShell>
 	);

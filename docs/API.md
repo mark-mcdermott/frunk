@@ -119,6 +119,13 @@ alone. `tests/demo-conversion.test.ts` asserts both in Postgres.
 | `DELETE` | `/api/vehicles/:id`             | Notes, repairs, galleries and schedules cascade.                                                                                                                                                                                                                     |
 | `GET`    | `/api/vehicles/:id/report`      | The maintenance history as a **PDF download** (`src/lib/server/report.ts`): the vehicle, its public renewals, its schedules with what is next, and every service oldest first with vendor, cost, receipts on file and a total. Insurance details and notes stay out. |
 | `GET`    | `/api/vehicles/:id/history.csv` | The service record as CSV — ISO dates, dollars, a `Receipts` count — for a spreadsheet.                                                                                                                                                                              |
+| `GET`    | `/api/vehicles/:id/recalls`     | NHTSA's safety recalls for the vehicle's make, model and year, newest first, in sentence case (`src/lib/server/nhtsa.ts`). Per model, not per car. 502 when NHTSA does not answer.                                                                                   |
+
+### VIN
+
+| Method | Path            | Notes                                                                                                                                                                                                           |
+| ------ | --------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `GET`  | `/api/vin/:vin` | Signed in. NHTSA's decode of a 17-character VIN in the vehicle form's own words (`make: "Jeep"`, `engineType: "I6"`, `drivetrain: "4WD"`), plus `checkDigitFailed`. 422 not a VIN, 404 unknown, 502 NHTSA down. |
 
 ### Vendors
 
@@ -369,16 +376,17 @@ Both seed scripts print the database they are about to write to before they touc
 All of it goes in a gitignored `.env` at the repo root. Only `DATABASE_URL` is required.
 The schema is declared in `astro.config.mjs`; this table mirrors it.
 
-|                         |                                                                                     |
-| ----------------------- | ----------------------------------------------------------------------------------- |
-| `DATABASE_URL`          | Required. Points at the **new, blank** Neon database, not the legacy one.           |
-| `BETTER_AUTH_SECRET`    | Signs sessions and encrypts TOTP secrets at rest. **Never rotate** — see CLAUDE.md. |
-| `RP_ID`                 | The WebAuthn relying-party id — `frunk.cloud` in production.                        |
-| `RP_ORIGIN`             | `https://frunk.cloud`.                                                              |
-| `RESEND_API_KEY`        | Transactional email. Without it `sendEmail` fails at call time, not at build.       |
-| `CONTACT_EMAIL`         | Where the contact form lands. Defaults to the footer address.                       |
-| `BLOB_READ_WRITE_TOKEN` | Vercel Blob (`frunk-uploads`, private). Without it uploads answer 503.              |
-| `CRON_SECRET`           | What Vercel's cron presents to `/api/cron/*`. Production only; unset answers 503.   |
+|                         |                                                                                                  |
+| ----------------------- | ------------------------------------------------------------------------------------------------ |
+| `DATABASE_URL`          | Required. Points at the **new, blank** Neon database, not the legacy one.                        |
+| `BETTER_AUTH_SECRET`    | Signs sessions and encrypts TOTP secrets at rest. **Never rotate** — see CLAUDE.md.              |
+| `RP_ID`                 | The WebAuthn relying-party id — `frunk.cloud` in production.                                     |
+| `RP_ORIGIN`             | `https://frunk.cloud`.                                                                           |
+| `RESEND_API_KEY`        | Transactional email. Without it `sendEmail` fails at call time, not at build.                    |
+| `CONTACT_EMAIL`         | Where the contact form lands. Defaults to the footer address.                                    |
+| `BLOB_READ_WRITE_TOKEN` | Vercel Blob (`frunk-uploads`, private). Without it uploads answer 503.                           |
+| `CRON_SECRET`           | What Vercel's cron presents to `/api/cron/*`. Production only; unset answers 503.                |
+| `NHTSA_BASE`            | Overrides NHTSA's two hosts. Unset in every real environment; the suite points it at a stand-in. |
 
 **`RP_ID` and `RP_ORIGIN` are optional, and unset is the right answer in development
 and on preview deploys.** Left blank they are derived from the request, which is the only

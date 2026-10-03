@@ -9,12 +9,14 @@ import {
 	Copy,
 	FileDown,
 	FileText,
+	Fuel,
 	Gauge,
 	Hash,
 	Palette,
 	Paperclip,
 	Pencil,
 	Plus,
+	ShieldAlert,
 	Table2,
 	Trash2,
 	Wrench
@@ -35,6 +37,7 @@ import { assessExpirations, describeDeadline } from '@/lib/maintenance';
 import { DuePill } from '../components/DuePill';
 import { GalleryEditor } from '../components/GalleryEditor';
 import { EmptyState } from '../components/EmptyState';
+import { Recalls } from '../components/Recalls';
 import { ScheduleEditor } from '../components/ScheduleEditor';
 import { VehicleSetup } from '../components/VehicleSetup';
 import { formatCost, formatDate, formatMiles, formatNumericDate } from '../format';
@@ -364,6 +367,9 @@ export function VehicleDetailPage() {
 								label="Make & Model"
 								value={`${vehicle.make} ${vehicle.model}`}
 							/>
+							{vehicle.trim && (
+								<SpecRow icon={<Car className="size-4" />} label="Trim" value={vehicle.trim} />
+							)}
 							{vehicle.bodyStyle && (
 								<SpecRow
 									icon={<Car className="size-4" />}
@@ -380,6 +386,16 @@ export function VehicleDetailPage() {
 							)}
 							{engine && (
 								<SpecRow icon={<Cog className="size-4" />} label="Engine" value={engine} />
+							)}
+							{vehicle.drivetrain && (
+								<SpecRow
+									icon={<Cog className="size-4" />}
+									label="Drivetrain"
+									value={vehicle.drivetrain}
+								/>
+							)}
+							{vehicle.fuelType && (
+								<SpecRow icon={<Fuel className="size-4" />} label="Fuel" value={vehicle.fuelType} />
 							)}
 							{vehicle.transmission && (
 								<SpecRow
@@ -503,6 +519,10 @@ export function VehicleDetailPage() {
 					currentMileage={vehicle.currentMileage}
 					schedules={data.schedules}
 				/>
+			</Panel>
+
+			<Panel icon={<ShieldAlert className="size-5" />} title="Recalls">
+				<Recalls vehicle={vehicle} />
 			</Panel>
 
 			<Panel icon={<Camera className="size-5" />} title="Galleries">
