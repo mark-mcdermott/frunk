@@ -38,6 +38,7 @@ import { DuePill } from '../components/DuePill';
 import { GalleryEditor } from '../components/GalleryEditor';
 import { EmptyState } from '../components/EmptyState';
 import { Recalls } from '../components/Recalls';
+import { VehicleOutline } from '../components/VehicleOutline';
 import { ScheduleEditor } from '../components/ScheduleEditor';
 import { VehicleSetup } from '../components/VehicleSetup';
 import { formatCost, formatDate, formatMiles, formatNumericDate } from '../format';
@@ -340,11 +341,18 @@ export function VehicleDetailPage() {
 								className="h-48 w-full rounded-control border border-border object-cover"
 							/>
 						) : (
-							<div
-								aria-hidden
-								className="flex h-48 w-full items-center justify-center rounded-control border border-border bg-surface-raised"
-							>
-								<Car className="size-10 text-text-faint" strokeWidth={1.25} />
+							<div className="relative flex h-48 w-full items-center justify-center rounded-control border border-border bg-surface-raised">
+								<VehicleOutline
+									bodyStyle={vehicle.bodyStyle}
+									className="w-4/5 max-w-xs text-text-faint"
+								/>
+								<Link
+									to={`/vehicles/${vehicle.id}/edit#image`}
+									className="absolute right-3 bottom-3 flex items-center gap-1.5 rounded-full border border-border bg-surface/80 px-3 py-1.5 text-[0.75rem] text-text-muted backdrop-blur transition-colors hover:border-border-strong hover:text-text"
+								>
+									<Camera className="size-3.5" strokeWidth={1.75} aria-hidden />
+									Add a photo
+								</Link>
 							</div>
 						)}
 

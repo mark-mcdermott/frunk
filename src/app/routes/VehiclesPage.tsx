@@ -6,6 +6,7 @@ import type { Summary } from '@/lib/maintenance';
 import { deleteVehicle, keys, listVehicles, type VehicleListItem } from '../api';
 import { formatDate, formatTime } from '../format';
 import { EmptyState } from '../components/EmptyState';
+import { VehicleOutline } from '../components/VehicleOutline';
 import { FileImage } from '../files';
 
 /**
@@ -78,7 +79,7 @@ function VehicleRow({
 					aria-hidden
 					className="flex size-16 shrink-0 items-center justify-center rounded-[12px] border border-border bg-surface-raised sm:size-20"
 				>
-					<Car className="size-7 text-text-faint" strokeWidth={1.5} />
+					<VehicleOutline bodyStyle={vehicle.bodyStyle} className="w-[88%] text-text-faint" />
 				</span>
 			)}
 
