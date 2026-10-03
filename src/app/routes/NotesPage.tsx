@@ -7,12 +7,12 @@ import {
 	FilterChips,
 	IconButton,
 	ListCard,
-	ListEmpty,
 	ListRow,
 	ListState,
 	SearchInput,
 	type Filter
 } from '../components/List';
+import { EmptyState } from '../components/EmptyState';
 import { formatDate } from '../format';
 
 /**
@@ -175,7 +175,7 @@ export function NotesPage() {
 				{isPending || isError ? (
 					<ListState pending={isPending} error={error} noun="notes" />
 				) : visible.length === 0 ? (
-					<ListEmpty
+					<EmptyState
 						icon={<FileText className="size-5" strokeWidth={1.5} />}
 						title={all.length === 0 ? 'No notes yet' : 'Nothing matches that'}
 						line={

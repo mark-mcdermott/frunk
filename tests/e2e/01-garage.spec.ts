@@ -43,6 +43,16 @@ test.describe('garage', () => {
 		// A car with no dates is nudged rather than shown an empty list.
 		await expect(page.getByText('No renewal dates yet')).toBeVisible();
 
+		// A new car leads with what is left to fill in; each step lands on its field.
+		const setup = page.getByRole('region', { name: 'Finish setting up' });
+		await expect(setup.getByText('0 of 6 done')).toBeVisible();
+		await setup.getByRole('link', { name: /Add the VIN/ }).click();
+		await expect(page).toHaveURL(/\/edit#vin$/);
+		await expect(page.getByLabel('VIN')).toBeFocused();
+		await page.getByLabel('VIN').fill('JT2AW15C0H0123456');
+		await page.getByRole('button', { name: 'Save Changes' }).click();
+		await expect(setup.getByText('1 of 6 done')).toBeVisible();
+
 		// Edit: clear the nickname, set a colour — the cleared field must reach NULL —
 		// and give the registration a date ten days out, which makes it a reminder.
 		const inTenDays = new Date(Date.now() + 10 * 24 * 60 * 60 * 1000);

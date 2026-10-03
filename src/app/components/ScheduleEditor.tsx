@@ -11,6 +11,7 @@ import {
 	type Schedule
 } from '../api';
 import { DuePill } from './DuePill';
+import { EmptyState } from './EmptyState';
 import { TextField } from './Field';
 import { formatDate, formatMiles, fromDateInput, toCents, toDateInput } from '../format';
 
@@ -489,18 +490,11 @@ export function ScheduleEditor({
 			)}
 
 			{schedules.length === 0 && open?.kind !== 'new' ? (
-				<div className="flex flex-col items-center gap-3 py-10 text-center">
-					<span
-						aria-hidden
-						className="flex size-12 items-center justify-center rounded-full bg-accent/10 text-accent-bright"
-					>
-						<Plus className="size-5" strokeWidth={1.5} />
-					</span>
-					<h3 className="display-sm text-lg">No maintenance scheduled</h3>
-					<p className="max-w-xs text-[0.875rem] text-text-muted">
-						Add reminders to stay on top of maintenance.
-					</p>
-				</div>
+				<EmptyState
+					compact
+					title="No maintenance scheduled"
+					line="Add reminders to stay on top of maintenance."
+				/>
 			) : (
 				assessed.map(({ schedule, assessment }) => {
 					if (open?.kind === 'edit' && open.id === schedule.id) {

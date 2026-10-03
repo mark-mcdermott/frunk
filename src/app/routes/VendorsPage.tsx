@@ -3,14 +3,8 @@ import { Globe, MapPin, Pencil, Phone, Plus, Store, Trash2 } from 'lucide-react'
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router';
 import { deleteVendor, keys, listVendors, type Vendor } from '../api';
-import {
-	IconButton,
-	ListCard,
-	ListEmpty,
-	ListRow,
-	ListState,
-	SearchInput
-} from '../components/List';
+import { IconButton, ListCard, ListRow, ListState, SearchInput } from '../components/List';
+import { EmptyState } from '../components/EmptyState';
 
 /**
  * Vendors, built to `docs/mocks/vendor-index.webp`.
@@ -146,7 +140,7 @@ export function VendorsPage() {
 					aria-labelledby="delete-vendor-heading"
 					className="card mt-6 border-destructive/40 p-6"
 				>
-					<h2 id="delete-vendor-heading" className="display-sm text-lg">
+					<h2 id="delete-vendor-heading" className="heading text-lg">
 						Delete {confirming.name}?
 					</h2>
 					<p className="mt-2 text-[0.875rem] text-text-muted">
@@ -176,7 +170,7 @@ export function VendorsPage() {
 				{isPending || isError ? (
 					<ListState pending={isPending} error={error} noun="vendors" />
 				) : visible.length === 0 ? (
-					<ListEmpty
+					<EmptyState
 						icon={<Store className="size-5" strokeWidth={1.5} />}
 						title={vendors?.length === 0 ? 'No vendors yet' : 'Nothing matches that'}
 						line={
