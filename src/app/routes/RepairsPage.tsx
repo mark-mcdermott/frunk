@@ -7,12 +7,12 @@ import {
 	FilterChips,
 	IconButton,
 	ListCard,
-	ListEmpty,
 	ListRow,
 	ListState,
 	SearchInput,
 	type Filter
 } from '../components/List';
+import { EmptyState } from '../components/EmptyState';
 import { formatCost, formatDate, formatMiles } from '../format';
 
 /**
@@ -237,7 +237,7 @@ export function RepairsPage() {
 				{isPending || isError ? (
 					<ListState pending={isPending} error={error} noun="repairs" />
 				) : visible.length === 0 ? (
-					<ListEmpty
+					<EmptyState
 						icon={<Wrench className="size-5" strokeWidth={1.5} />}
 						title={all.length === 0 ? 'No repairs logged' : 'Nothing matches that'}
 						line={

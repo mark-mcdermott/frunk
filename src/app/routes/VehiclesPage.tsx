@@ -5,6 +5,7 @@ import { Link } from 'react-router';
 import type { Summary } from '@/lib/maintenance';
 import { deleteVehicle, keys, listVehicles, type VehicleListItem } from '../api';
 import { formatDate, formatTime } from '../format';
+import { EmptyState } from '../components/EmptyState';
 import { FileImage } from '../files';
 
 /**
@@ -201,22 +202,15 @@ export function VehiclesPage() {
 				)}
 
 				{!isPending && !isError && filtered.length === 0 && (
-					<div className="flex flex-col items-center gap-3 px-6 py-16 text-center">
-						<span
-							aria-hidden
-							className="flex size-12 items-center justify-center rounded-full bg-accent/10"
-						>
-							<Car className="size-5 text-accent-bright" strokeWidth={1.5} />
-						</span>
-						<h2 className="display-sm text-lg">
-							{search ? 'Nothing matches that' : 'No vehicles yet'}
-						</h2>
-						<p className="max-w-xs text-[0.875rem] text-text-muted">
-							{search
+					<EmptyState
+						icon={<Car className="size-5" strokeWidth={1.5} />}
+						title={search ? 'Nothing matches that' : 'No vehicles yet'}
+						line={
+							search
 								? 'Try a different make, model or VIN.'
-								: 'Add your first vehicle and its documents will have somewhere to live.'}
-						</p>
-					</div>
+								: 'Add your first vehicle and its documents will have somewhere to live.'
+						}
+					/>
 				)}
 
 				{filtered.map((vehicle) => (

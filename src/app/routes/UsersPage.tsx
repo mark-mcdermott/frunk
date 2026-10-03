@@ -3,7 +3,8 @@ import { ChevronLeft, ChevronRight, Pencil, Users } from 'lucide-react';
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router';
 import { keys, listUsers, type AdminUser } from '../api';
-import { IconButton, ListEmpty, ListState, SearchInput } from '../components/List';
+import { IconButton, ListState, SearchInput } from '../components/List';
+import { EmptyState } from '../components/EmptyState';
 import { getRoleNames } from '../../lib/roles';
 import { initial } from '../../lib/user';
 
@@ -143,7 +144,7 @@ export function UsersPage() {
 				{isPending || isError ? (
 					<ListState pending={isPending} error={error} noun="users" />
 				) : data && data.users.length === 0 ? (
-					<ListEmpty
+					<EmptyState
 						icon={<Users className="size-5" strokeWidth={1.5} />}
 						title={search ? 'Nothing matches that' : 'No users yet'}
 						line={
