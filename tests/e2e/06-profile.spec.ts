@@ -11,7 +11,11 @@ test('edits the profile, swaps the avatar, and deletes the account', async ({ pa
 
 	await page.getByLabel('Full Name').fill('Journey Tester');
 	await page.getByRole('button', { name: 'Save Changes' }).click();
-	await expect(page.getByText('Saved')).toBeVisible();
+	// Scoped to the section just saved: the demo's keep step also says "saved", and a bare
+	// getByText matches it case-insensitively before the confirmation has even appeared.
+	await expect(
+		page.getByRole('region', { name: 'Account Information' }).getByRole('status')
+	).toHaveText('Saved');
 	// Better Auth's endpoint refreshes the session store, so the header follows at once.
 	await expect(page.getByRole('link', { name: 'Your profile (Journey Tester)' })).toBeVisible();
 

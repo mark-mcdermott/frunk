@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Camera, Check, KeyRound, LogOut, Mail, ShieldCheck, Trash2 } from 'lucide-react';
-import { useRef, useState, type ReactNode, type SubmitEvent } from 'react';
+import { useId, useRef, useState, type ReactNode, type SubmitEvent } from 'react';
 import { deleteUpload, deleteUser, getAccount, keys, setAccountPassword, uploadFile } from '../api';
 import { useCrumbs } from '../AppShell';
 import { TextField } from '../components/Field';
@@ -48,9 +48,12 @@ import { NATIVE, siteUrl } from '../../lib/platform';
  */
 
 function Section({ title, children }: { title: string; children: ReactNode }) {
+	const headingId = useId();
 	return (
-		<section className="border-t border-border pt-6">
-			<h2 className="display-sm text-lg">{title}</h2>
+		<section aria-labelledby={headingId} className="border-t border-border pt-6">
+			<h2 id={headingId} className="display-sm text-lg">
+				{title}
+			</h2>
 			<div className="mt-4">{children}</div>
 		</section>
 	);
@@ -270,11 +273,16 @@ function ProfileBody({
 							>
 								{saveName.isPending ? 'Saving…' : 'Save Changes'}
 							</button>
-							{saved && (
-								<span className="flex items-center gap-1.5 text-[0.875rem] text-positive">
-									<Check className="size-4" strokeWidth={2} aria-hidden /> Saved
-								</span>
-							)}
+							<span
+								role="status"
+								className="flex items-center gap-1.5 text-[0.875rem] text-positive"
+							>
+								{saved && (
+									<>
+										<Check className="size-4" strokeWidth={2} aria-hidden /> Saved
+									</>
+								)}
+							</span>
 						</div>
 						<Failure error={saveName.error} fallback="Could not save." />
 					</form>
