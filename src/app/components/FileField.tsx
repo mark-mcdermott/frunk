@@ -21,11 +21,14 @@ import { FileImage, FileLink } from '../files';
 const ACCEPT = 'image/jpeg,image/png,image/webp,image/gif,image/avif,application/pdf';
 
 export function FileField({
+	anchor,
 	label,
 	value,
 	onChange,
 	imagesOnly = false
 }: {
+	/** An id for the whole field, so a link can land on it (`/vehicles/:id/edit#image`). */
+	anchor?: string;
 	label: string;
 	/** The stored serving URL, or null when nothing is attached. */
 	value: string | null;
@@ -43,7 +46,7 @@ export function FileField({
 	const isPdf = value?.toLowerCase().includes('.pdf');
 
 	return (
-		<div className="flex flex-col gap-2">
+		<div id={anchor} className="flex scroll-mt-6 flex-col gap-2">
 			<span className="text-[0.8125rem] font-medium text-text">
 				{label} <span className="font-normal text-text-muted">(optional)</span>
 			</span>

@@ -275,6 +275,17 @@
 		letter-spacing: -0.01em;
 	}
 
+	/*
+	 * UI headings: section titles, empty states, dialogs, form sections. The serif is for
+	 * names (page titles, vehicles, repairs, vendors); below ~24px its hairlines and
+	 * weight make a label you scan past read like a headline (DESIGN.md §3).
+	 */
+	.heading {
+		font-family: var(--font-sans);
+		font-weight: 600;
+		letter-spacing: -0.01em;
+	}
+
 	/* Terminal period on display headings, in accent */
 	.dot::after {
 		content: '.';

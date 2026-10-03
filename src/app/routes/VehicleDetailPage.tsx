@@ -34,7 +34,9 @@ import { useCrumbs } from '../AppShell';
 import { assessExpirations, describeDeadline } from '@/lib/maintenance';
 import { DuePill } from '../components/DuePill';
 import { GalleryEditor } from '../components/GalleryEditor';
+import { EmptyState } from '../components/EmptyState';
 import { ScheduleEditor } from '../components/ScheduleEditor';
+import { VehicleSetup } from '../components/VehicleSetup';
 import { formatCost, formatDate, formatMiles, formatNumericDate } from '../format';
 import { FileImage, FileLink } from '../files';
 
@@ -52,13 +54,17 @@ import { FileImage, FileLink } from '../files';
  * `GalleryEditor`) — each is a small record attached to the vehicle already on screen.
  */
 
+const MAINTENANCE_ID = 'maintenance';
+
 function Panel({
+	id,
 	icon,
 	title,
 	addTo,
 	addLabel,
 	children
 }: {
+	id?: string;
 	icon: ReactNode;
 	title: string;
 	addTo?: string;
@@ -68,9 +74,9 @@ function Panel({
 	// Named by its heading, each panel is a landmark a screen reader (and a test) can address.
 	const headingId = useId();
 	return (
-		<section aria-labelledby={headingId} className="card p-6">
+		<section id={id} aria-labelledby={headingId} className="card scroll-mt-6 p-6">
 			<div className="flex items-center justify-between gap-3">
-				<h2 id={headingId} className="display-sm flex items-center gap-3 text-xl">
+				<h2 id={headingId} className="heading flex items-center gap-3 text-lg">
 					<span aria-hidden className="text-text-muted">
 						{icon}
 					</span>
@@ -119,22 +125,6 @@ function RowActions({
 			>
 				<Trash2 className="size-3.5" strokeWidth={1.75} aria-hidden />
 			</button>
-		</div>
-	);
-}
-
-/** Centred icon in a soft violet glow, serif title, one muted line (DESIGN.md §5). */
-function Empty({ icon, title, line }: { icon: ReactNode; title: string; line: string }) {
-	return (
-		<div className="flex flex-col items-center gap-3 py-10 text-center">
-			<span
-				aria-hidden
-				className="flex size-12 items-center justify-center rounded-full bg-accent/10 text-accent-bright"
-			>
-				{icon}
-			</span>
-			<h3 className="display-sm text-lg">{title}</h3>
-			<p className="max-w-xs text-[0.875rem] text-text-muted">{line}</p>
 		</div>
 	);
 }
@@ -337,109 +327,124 @@ export function VehicleDetailPage() {
 
 	return (
 		<div className="flex flex-col gap-6">
-			<div className="grid gap-6 lg:grid-cols-3">
-				<section className="card p-6">
-					{vehicle.image ? (
-						<FileImage
-							src={vehicle.image}
-							alt=""
-							className="h-48 w-full rounded-control border border-border object-cover"
-						/>
-					) : (
-						<div
-							aria-hidden
-							className="flex h-48 w-full items-center justify-center rounded-control border border-border bg-surface-raised"
-						>
-							<Car className="size-10 text-text-faint" strokeWidth={1.25} />
-						</div>
-					)}
+			<div className="grid items-start gap-6 lg:grid-cols-3">
+				<div className="flex flex-col gap-6">
+					<section className="card p-6">
+						{vehicle.image ? (
+							<FileImage
+								src={vehicle.image}
+								alt=""
+								className="h-48 w-full rounded-control border border-border object-cover"
+							/>
+						) : (
+							<div
+								aria-hidden
+								className="flex h-48 w-full items-center justify-center rounded-control border border-border bg-surface-raised"
+							>
+								<Car className="size-10 text-text-faint" strokeWidth={1.25} />
+							</div>
+						)}
 
-					<h1 className="display mt-6 text-[1.75rem]">{vehicle.nickname || title}</h1>
+						<h1 className="display mt-6 text-[1.75rem]">{vehicle.nickname || title}</h1>
 
-					{vehicle.vin && (
-						<div className="mt-4">
-							<CopyVin vin={vehicle.vin} />
-						</div>
-					)}
+						{vehicle.vin && (
+							<div className="mt-4">
+								<CopyVin vin={vehicle.vin} />
+							</div>
+						)}
 
-					<div className="mt-6">
-						<SpecRow
-							icon={<Calendar className="size-4" />}
-							label="Year"
-							value={String(vehicle.year)}
-						/>
-						<SpecRow
-							icon={<Car className="size-4" />}
-							label="Make & Model"
-							value={`${vehicle.make} ${vehicle.model}`}
-						/>
-						{vehicle.bodyStyle && (
+						<div className="mt-6">
+							<SpecRow
+								icon={<Calendar className="size-4" />}
+								label="Year"
+								value={String(vehicle.year)}
+							/>
 							<SpecRow
 								icon={<Car className="size-4" />}
-								label="Body Style"
-								value={vehicle.bodyStyle}
+								label="Make & Model"
+								value={`${vehicle.make} ${vehicle.model}`}
 							/>
-						)}
-						{vehicle.color && (
-							<SpecRow icon={<Palette className="size-4" />} label="Color" value={vehicle.color} />
-						)}
-						{engine && <SpecRow icon={<Cog className="size-4" />} label="Engine" value={engine} />}
-						{vehicle.transmission && (
-							<SpecRow
-								icon={<Cog className="size-4" />}
-								label="Transmission"
-								value={vehicle.transmission}
-							/>
-						)}
-						{vehicle.currentMileage != null && (
-							<SpecRow
-								icon={<Gauge className="size-4" />}
-								label="Mileage"
-								value={formatMiles(vehicle.currentMileage)}
-							/>
-						)}
-						{vehicle.licensePlate && (
-							<SpecRow
-								icon={<Hash className="size-4" />}
-								label="Plate"
-								value={[vehicle.licensePlate, vehicle.licensePlateState]
-									.filter(Boolean)
-									.join(' · ')}
-							/>
-						)}
-					</div>
+							{vehicle.bodyStyle && (
+								<SpecRow
+									icon={<Car className="size-4" />}
+									label="Body Style"
+									value={vehicle.bodyStyle}
+								/>
+							)}
+							{vehicle.color && (
+								<SpecRow
+									icon={<Palette className="size-4" />}
+									label="Color"
+									value={vehicle.color}
+								/>
+							)}
+							{engine && (
+								<SpecRow icon={<Cog className="size-4" />} label="Engine" value={engine} />
+							)}
+							{vehicle.transmission && (
+								<SpecRow
+									icon={<Cog className="size-4" />}
+									label="Transmission"
+									value={vehicle.transmission}
+								/>
+							)}
+							{vehicle.currentMileage != null && (
+								<SpecRow
+									icon={<Gauge className="size-4" />}
+									label="Mileage"
+									value={formatMiles(vehicle.currentMileage)}
+								/>
+							)}
+							{vehicle.licensePlate && (
+								<SpecRow
+									icon={<Hash className="size-4" />}
+									label="Plate"
+									value={[vehicle.licensePlate, vehicle.licensePlateState]
+										.filter(Boolean)
+										.join(' · ')}
+								/>
+							)}
+						</div>
 
-					<Renewals vehicle={vehicle} />
+						<Renewals vehicle={vehicle} />
 
-					<Link
-						to={`/vehicles/${vehicle.id}/edit`}
-						className="mt-6 flex w-full items-center justify-center gap-2 rounded-control border border-accent/50 py-3 text-[0.9375rem] text-text transition-colors hover:bg-accent/10"
-					>
-						<Pencil className="size-4 text-accent-bright" strokeWidth={1.75} aria-hidden />
-						Edit Vehicle
-					</Link>
+						<Link
+							to={`/vehicles/${vehicle.id}/edit`}
+							className="mt-6 flex w-full items-center justify-center gap-2 rounded-control border border-accent/50 py-3 text-[0.9375rem] text-text transition-colors hover:bg-accent/10"
+						>
+							<Pencil className="size-4 text-accent-bright" strokeWidth={1.75} aria-hidden />
+							Edit Vehicle
+						</Link>
 
-					{/* Plain links, not router links: the endpoints answer with a file, and the
+						{/* Plain links, not router links: the endpoints answer with a file, and the
 					    session cookie travels with a same-origin download like any request. */}
-					<div className="mt-3 grid grid-cols-2 gap-3">
-						<FileLink
-							href={`/api/vehicles/${vehicle.id}/report`}
-							download
-							className="flex items-center justify-center gap-2 rounded-control border border-border py-2.5 text-[0.8125rem] text-text-muted transition-colors hover:border-border-strong hover:text-text"
-						>
-							<FileDown className="size-4" strokeWidth={1.75} aria-hidden />
-							History (PDF)
-						</FileLink>
-						<FileLink
-							href={`/api/vehicles/${vehicle.id}/history.csv`}
-							download
-							className="flex items-center justify-center gap-2 rounded-control border border-border py-2.5 text-[0.8125rem] text-text-muted transition-colors hover:border-border-strong hover:text-text"
-						>
-							<Table2 className="size-4" strokeWidth={1.75} aria-hidden />
-							Repairs (CSV)
-						</FileLink>
-					</div>
-				</section>
+						<div className="mt-3 grid grid-cols-2 gap-3">
+							<FileLink
+								href={`/api/vehicles/${vehicle.id}/report`}
+								download
+								className="flex items-center justify-center gap-2 rounded-control border border-border py-2.5 text-[0.8125rem] text-text-muted transition-colors hover:border-border-strong hover:text-text"
+							>
+								<FileDown className="size-4" strokeWidth={1.75} aria-hidden />
+								History (PDF)
+							</FileLink>
+							<FileLink
+								href={`/api/vehicles/${vehicle.id}/history.csv`}
+								download
+								className="flex items-center justify-center gap-2 rounded-control border border-border py-2.5 text-[0.8125rem] text-text-muted transition-colors hover:border-border-strong hover:text-text"
+							>
+								<Table2 className="size-4" strokeWidth={1.75} aria-hidden />
+								Repairs (CSV)
+							</FileLink>
+						</div>
+					</section>
+
+					<VehicleSetup
+						vehicle={vehicle}
+						hasSchedules={data.schedules.length > 0}
+						hasRepairs={data.repairs.length > 0}
+						maintenanceId={MAINTENANCE_ID}
+					/>
+				</div>
 
 				<Panel
 					icon={<FileText className="size-5" />}
@@ -448,8 +453,8 @@ export function VehicleDetailPage() {
 					addLabel="Add Note"
 				>
 					{data.notes.length === 0 ? (
-						<Empty
-							icon={<FileText className="size-5" strokeWidth={1.5} />}
+						<EmptyState
+							compact
 							title="No notes yet"
 							line="Receipts, known issues and anything else worth remembering."
 						/>
@@ -473,8 +478,8 @@ export function VehicleDetailPage() {
 					addLabel="Add Repair"
 				>
 					{data.repairs.length === 0 ? (
-						<Empty
-							icon={<Wrench className="size-5" strokeWidth={1.5} />}
+						<EmptyState
+							compact
 							title="No repairs logged"
 							line="Every service you record builds this car's history."
 						/>
@@ -492,7 +497,7 @@ export function VehicleDetailPage() {
 				</Panel>
 			</div>
 
-			<Panel icon={<Clock className="size-5" />} title="Maintenance Schedule">
+			<Panel id={MAINTENANCE_ID} icon={<Clock className="size-5" />} title="Maintenance Schedule">
 				<ScheduleEditor
 					vehicleId={vehicle.id}
 					currentMileage={vehicle.currentMileage}
