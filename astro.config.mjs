@@ -58,6 +58,9 @@ export default defineConfig({
 			APNS_KEY_ID: envField.string({ context: 'server', access: 'secret', optional: true }),
 			APNS_TEAM_ID: envField.string({ context: 'server', access: 'secret', optional: true }),
 			APNS_HOST: envField.string({ context: 'server', access: 'secret', optional: true }),
+			// NHTSA's VIN decoder and recall lookups (`src/lib/server/nhtsa.ts`) are public and
+			// keyless; this overrides both hosts, and the suite points it at a stand-in.
+			NHTSA_BASE: envField.string({ context: 'server', access: 'secret', optional: true }),
 			// Extra origins treated like the native app's, comma-separated. Unset in
 			// production; the journeys set it to serve the native bundle from a second port.
 			NATIVE_ORIGINS_EXTRA: envField.string({ context: 'server', access: 'secret', optional: true })

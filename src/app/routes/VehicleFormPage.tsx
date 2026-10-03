@@ -1,13 +1,15 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Trash2 } from 'lucide-react';
+import { Search, Trash2 } from 'lucide-react';
 import { useEffect, useState, type SubmitEvent } from 'react';
 import { useLocation, useParams } from 'react-router';
 import {
 	createVehicle,
+	decodeVin,
 	deleteVehicle,
 	getVehicle,
 	keys,
 	updateVehicle,
+	type DecodedVin,
 	type Vehicle,
 	type VehicleInput
 } from '../api';
@@ -57,6 +59,7 @@ interface FormState {
 	year: string;
 	make: string;
 	model: string;
+	trim: string;
 	nickname: string;
 	vin: string;
 	bodyStyle: string | null;
@@ -64,6 +67,8 @@ interface FormState {
 	engineSize: string;
 	engineType: string;
 	transmission: string;
+	drivetrain: string;
+	fuelType: string;
 	currentMileage: string;
 	image: string | null;
 	licensePlate: string;
@@ -81,6 +86,7 @@ const BLANK: FormState = {
 	year: '',
 	make: '',
 	model: '',
+	trim: '',
 	nickname: '',
 	vin: '',
 	bodyStyle: null,
@@ -88,6 +94,8 @@ const BLANK: FormState = {
 	engineSize: '',
 	engineType: '',
 	transmission: '',
+	drivetrain: '',
+	fuelType: '',
 	currentMileage: '',
 	image: null,
 	licensePlate: '',
@@ -107,6 +115,7 @@ function toForm(vehicle: Vehicle): FormState {
 		year: String(vehicle.year),
 		make: vehicle.make,
 		model: vehicle.model,
+		trim: vehicle.trim ?? '',
 		nickname: vehicle.nickname ?? '',
 		vin: vehicle.vin ?? '',
 		bodyStyle: vehicle.bodyStyle,
@@ -114,6 +123,8 @@ function toForm(vehicle: Vehicle): FormState {
 		engineSize: vehicle.engineSize ?? '',
 		engineType: vehicle.engineType ?? '',
 		transmission: vehicle.transmission ?? '',
+		drivetrain: vehicle.drivetrain ?? '',
+		fuelType: vehicle.fuelType ?? '',
 		currentMileage: vehicle.currentMileage == null ? '' : String(vehicle.currentMileage),
 		image: vehicle.image,
 		licensePlate: vehicle.licensePlate ?? '',
@@ -137,6 +148,7 @@ function toPayload(form: FormState): VehicleInput {
 		year: Number(form.year),
 		make: form.make.trim(),
 		model: form.model.trim(),
+		trim: orNull(form.trim),
 		nickname: orNull(form.nickname),
 		vin: orNull(form.vin),
 		bodyStyle: form.bodyStyle,
@@ -144,6 +156,8 @@ function toPayload(form: FormState): VehicleInput {
 		engineSize: orNull(form.engineSize),
 		engineType: orNull(form.engineType),
 		transmission: orNull(form.transmission),
+		drivetrain: orNull(form.drivetrain),
+		fuelType: orNull(form.fuelType),
 		currentMileage: form.currentMileage.trim() ? Number(form.currentMileage) : null,
 		image: form.image,
 		licensePlate: orNull(form.licensePlate),
@@ -155,6 +169,49 @@ function toPayload(form: FormState): VehicleInput {
 		insurancePolicyNumber: orNull(form.insurancePolicyNumber),
 		insuranceExpiration: dateOrNull(form.insuranceExpiration)
 	};
+}
+
+const FROM_VIN = [
+	'make',
+	'model',
+	'trim',
+	'bodyStyle',
+	'engineSize',
+	'engineType',
+	'transmission',
+	'drivetrain',
+	'fuelType'
+] as const;
+
+/**
+ * Fills what the VIN told us into the fields still empty. Anything already typed is the
+ * owner's word and stays: NHTSA's trim or engine can be wrong for a car that was swapped
+ * or rebadged, and a lookup should never quietly overwrite it.
+ */
+function fillFromVin(form: FormState, decoded: DecodedVin): { next: FormState; filled: number } {
+	const next = { ...form };
+	let filled = 0;
+
+	if (decoded.year && !next.year.trim()) {
+		next.year = String(decoded.year);
+		filled++;
+	}
+	for (const key of FROM_VIN) {
+		const value = decoded[key];
+		if (value && !next[key]?.trim()) {
+			next[key] = value;
+			filled++;
+		}
+	}
+	return { next, filled };
+}
+
+function describeFill(filled: number, checkDigitFailed: boolean) {
+	const done =
+		filled === 0
+			? 'Nothing new to fill in: those fields already have values.'
+			: `Filled in ${filled} ${filled === 1 ? 'field' : 'fields'} from the VIN. Check them over.`;
+	return checkDigitFailed ? `${done} Its check digit doesn’t add up, so look for a typo.` : done;
 }
 
 type Errors = Partial<Record<'year' | 'make' | 'model' | 'currentMileage', string>>;
@@ -232,6 +289,19 @@ function VehicleForm({ loaded }: { loaded: Vehicle | undefined }) {
 	const [form, setForm] = useState<FormState>(() => (loaded ? toForm(loaded) : BLANK));
 	const [errors, setErrors] = useState<Errors>({});
 	const [confirmingDelete, setConfirmingDelete] = useState(false);
+	const [vinNote, setVinNote] = useState<string | null>(null);
+
+	const vinComplete = form.vin.trim().length === 17;
+	const lookup = useMutation({
+		mutationFn: decodeVin,
+		onMutate: () => setVinNote(null),
+		onSuccess: (decoded) => {
+			const { next, filled } = fillFromVin(form, decoded);
+			setForm(next);
+			setVinNote(describeFill(filled, decoded.checkDigitFailed));
+		}
+	});
+	const vinError = lookup.error instanceof Error ? lookup.error.message : undefined;
 
 	const title = loaded
 		? loaded.nickname || `${loaded.year} ${loaded.make} ${loaded.model}`
@@ -287,6 +357,32 @@ function VehicleForm({ loaded }: { loaded: Vehicle | undefined }) {
 			<form onSubmit={submit} noValidate className="card mt-10 max-w-xl p-6 sm:p-8">
 				<div className="flex flex-col gap-5">
 					<TextField
+						id="vin"
+						label="VIN"
+						optional
+						autoComplete="off"
+						error={vinError}
+						hint={vinNote ?? 'Look it up and the details below fill themselves in.'}
+						action={
+							<button
+								type="button"
+								onClick={() => lookup.mutate(form.vin.trim().toUpperCase())}
+								disabled={!vinComplete || lookup.isPending}
+								className="flex h-9 items-center gap-1.5 rounded-full bg-accent/15 px-3.5 text-[0.8125rem] font-medium text-accent-bright transition-colors hover:bg-accent/25 disabled:cursor-not-allowed disabled:bg-transparent disabled:text-text-faint"
+							>
+								<Search className="size-3.5" strokeWidth={2} aria-hidden />
+								{lookup.isPending ? 'Looking…' : 'Look up'}
+							</button>
+						}
+						value={form.vin}
+						onChange={(vin) => {
+							// A stale "no record" under a VIN being corrected reads as a verdict on the new one.
+							lookup.reset();
+							setVinNote(null);
+							setForm((prev) => ({ ...prev, vin }));
+						}}
+					/>
+					<TextField
 						id="year"
 						label="Year"
 						type="number"
@@ -296,14 +392,8 @@ function VehicleForm({ loaded }: { loaded: Vehicle | undefined }) {
 					/>
 					<TextField id="make" label="Make" error={errors.make} {...field('make')} />
 					<TextField id="model" label="Model" error={errors.model} {...field('model')} />
+					<TextField id="trim" label="Trim" optional placeholder="Sahara" {...field('trim')} />
 					<TextField id="nickname" label="Nickname" optional {...field('nickname')} />
-					<TextField
-						id="vin"
-						label="VIN"
-						optional
-						hint="The VIN is used to identify your vehicle."
-						{...field('vin')}
-					/>
 					<SelectField
 						id="bodyStyle"
 						label="Body Style"
@@ -333,6 +423,20 @@ function VehicleForm({ loaded }: { loaded: Vehicle | undefined }) {
 						optional
 						placeholder="3-Speed Manual"
 						{...field('transmission')}
+					/>
+					<TextField
+						id="drivetrain"
+						label="Drivetrain"
+						optional
+						placeholder="4WD"
+						{...field('drivetrain')}
+					/>
+					<TextField
+						id="fuelType"
+						label="Fuel Type"
+						optional
+						placeholder="Gasoline"
+						{...field('fuelType')}
 					/>
 					<TextField
 						id="currentMileage"
