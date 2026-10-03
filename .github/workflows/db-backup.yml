@@ -5,6 +5,19 @@
 # manual migrate workflow uses — so there is exactly one place that knows where production
 # is. (Until 2026-09-21 this dumped the legacy Cloudflare-era database through a separate
 # DATABASE_URL secret; that database is retired with the Cloudflare project.)
+#
+# Reworked 2026-10-03:
+# - **No secrets in the dump.** Sessions, verification links and rate-limit counters are
+#   dumped as empty tables. A restore signs everyone out, which is harmless; accounts,
+#   passkeys and TOTP enrolment are kept, so everyone can sign back in. A leaked backup
+#   no longer hands over a live session.
+# - **Every dump is restored before it is kept.** A throwaway Postgres in this job loads
+#   it and must find the users table populated; a dump that does not restore fails the
+#   run instead of quietly replacing a good `latest.sql`.
+# - **A window, not a pile.** The repo keeps `latest.sql`, the last 14 nightly dumps and
+#   the first dump of each of the last 6 months, and is pushed as one fresh commit each
+#   night, so a dropped dump is gone from history too, not merely from the tree.
+#   Dumps from before LEGACY_CUTOFF are of the retired legacy database and are never kept.
 name: Daily DB Backup
 
 on:
@@ -15,12 +28,30 @@ on:
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
   BACKUP_REPO: mark-mcdermott/frunk-daily-backups
+  KEEP_DAILY: 14
+  KEEP_MONTHLY: 6
+  LEGACY_CUTOFF: '2026-09-21'
 
 jobs:
   backup:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     environment: database
+
+    services:
+      restore-check:
+        image: postgres:17
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: restore
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
 
     steps:
       - name: Install PostgreSQL 17 client
@@ -35,21 +66,54 @@ jobs:
           DATABASE_URL: ${{ secrets.ASTRO_DATABASE_URL }}
         run: |
           /usr/lib/postgresql/17/bin/pg_dump --version
-          /usr/lib/postgresql/17/bin/pg_dump "$DATABASE_URL" --no-owner --no-acl --clean --if-exists > backup.sql
+          /usr/lib/postgresql/17/bin/pg_dump "$DATABASE_URL" --no-owner --no-acl --clean --if-exists \
+            --exclude-table-data=session \
+            --exclude-table-data=verification \
+            --exclude-table-data=rate_limit \
+            --exclude-table-data=auth_rate_limits \
+            > backup.sql
           echo "Backup size: $(wc -c < backup.sql) bytes"
+
+      - name: Restore it into a throwaway database
+        env:
+          PGPASSWORD: postgres
+        run: |
+          RESTORE="postgresql://postgres@localhost:5432/restore"
+          /usr/lib/postgresql/17/bin/psql "$RESTORE" -q -v ON_ERROR_STOP=1 -f backup.sql > /dev/null
+          users=$(/usr/lib/postgresql/17/bin/psql "$RESTORE" -Atc 'select count(*) from "user"')
+          sessions=$(/usr/lib/postgresql/17/bin/psql "$RESTORE" -Atc 'select count(*) from session')
+          echo "Restored: $users users, $sessions sessions"
+          [ "$users" -gt 0 ] || { echo "::error::The dump restored with no users"; exit 1; }
+          [ "$sessions" -eq 0 ] || { echo "::error::The dump carries live sessions"; exit 1; }
 
       - name: Clone backup repo
         run: |
           git clone https://x-access-token:${{ secrets.FRUNK_BACKUP_REPO_TOKEN }}@github.com/${{ env.BACKUP_REPO }}.git backup-repo
 
-      - name: Commit and push backup
+      - name: Keep the window and push it as one fresh commit
         run: |
           cd backup-repo
-          cp ../backup.sql frunk-$(date -u +%Y-%m-%d).sql
+          today=$(date -u +%Y-%m-%d)
+          cp ../backup.sql "frunk-$today.sql"
           cp ../backup.sql latest.sql
+
+          # Dated dumps from the current database, oldest first (ISO dates sort as text).
+          ls frunk-*.sql | sort | awk -v cutoff="frunk-$LEGACY_CUTOFF" '$0 >= cutoff' > all
+          tail -n "$KEEP_DAILY" all > keep
+          for back in $(seq 0 $((KEEP_MONTHLY - 1))); do
+            month=$(date -u -d "$today -$back month" +%Y-%m)
+            grep "^frunk-$month-" all | head -n 1 >> keep || true
+          done
+          sort -u keep -o keep
+          for dump in frunk-*.sql; do
+            grep -qx "$dump" keep || rm "$dump"
+          done
+          rm all keep
+          echo "Keeping $(ls frunk-*.sql | wc -l) dated dumps plus latest.sql"
+
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add .
-          git diff --cached --quiet && echo "No changes to backup" && exit 0
-          git commit -m "backup $(date -u +%Y-%m-%d-%H%M)"
-          git push
+          git checkout --orphan window
+          git add -A
+          git commit -q -m "backup $(date -u +%Y-%m-%d-%H%M)"
+          git push --force origin window:main
