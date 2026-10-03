@@ -190,7 +190,7 @@ function Receipts({ repairId, attachments }: { repairId: string; attachments: At
 	return (
 		<section className="card p-6">
 			<div className="flex items-center justify-between gap-3">
-				<h2 className="display-sm flex items-center gap-3 text-xl">
+				<h2 className="heading flex items-center gap-3 text-lg">
 					<Paperclip className="size-5 text-text-muted" aria-hidden />
 					Receipts &amp; documents
 				</h2>
@@ -354,7 +354,7 @@ export function RepairDetailPage() {
 
 				<section className="card p-6">
 					<div className="flex items-center justify-between gap-3">
-						<h2 className="display-sm flex items-center gap-3 text-xl">
+						<h2 className="heading flex items-center gap-3 text-lg">
 							<FileText className="size-5 text-text-muted" aria-hidden />
 							Notes
 						</h2>

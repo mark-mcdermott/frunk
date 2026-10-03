@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Trash2 } from 'lucide-react';
-import { useState, type SubmitEvent } from 'react';
-import { useParams } from 'react-router';
+import { useEffect, useState, type SubmitEvent } from 'react';
+import { useLocation, useParams } from 'react-router';
 import {
 	createVehicle,
 	deleteVehicle,
@@ -214,6 +214,21 @@ function VehicleForm({ loaded }: { loaded: Vehicle | undefined }) {
 	const leave = useLeave();
 	const client = useQueryClient();
 
+	/*
+	 * A link to one field (`#vin`, from the vehicle's setup checklist) lands on it. The
+	 * frame's delay lets the shell's scroll-to-top for the new screen run first.
+	 */
+	const { hash } = useLocation();
+	useEffect(() => {
+		const target = hash && document.getElementById(hash.slice(1));
+		if (!target) return;
+		const frame = requestAnimationFrame(() => {
+			target.scrollIntoView({ block: 'center' });
+			target.focus({ preventScroll: true });
+		});
+		return () => cancelAnimationFrame(frame);
+	}, [hash]);
+
 	const [form, setForm] = useState<FormState>(() => (loaded ? toForm(loaded) : BLANK));
 	const [errors, setErrors] = useState<Errors>({});
 	const [confirmingDelete, setConfirmingDelete] = useState(false);
@@ -329,6 +344,7 @@ function VehicleForm({ loaded }: { loaded: Vehicle | undefined }) {
 						{...field('currentMileage')}
 					/>
 					<FileField
+						anchor="image"
 						label="Cover Image"
 						imagesOnly
 						value={form.image}
@@ -338,7 +354,7 @@ function VehicleForm({ loaded }: { loaded: Vehicle | undefined }) {
 					{/* Renewal dates feed the reminders (src/lib/maintenance.ts) the same way
 					    schedules do; the rest is what a glovebox usually has to hold. */}
 					<div className="mt-3 border-t border-border pt-6">
-						<h2 className="display-sm text-lg">Registration &amp; insurance</h2>
+						<h2 className="heading text-lg">Registration &amp; insurance</h2>
 						<p className="mt-1 text-[0.875rem] text-text-muted">
 							Expiry dates join your maintenance reminders.
 						</p>

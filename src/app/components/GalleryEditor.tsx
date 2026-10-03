@@ -10,6 +10,7 @@ import {
 	uploadFile,
 	type Gallery
 } from '../api';
+import { EmptyState } from './EmptyState';
 import { TextField } from './Field';
 import { FileImage } from '../files';
 
@@ -243,18 +244,11 @@ export function GalleryEditor({
 			)}
 
 			{galleries.length === 0 && !adding ? (
-				<div className="flex flex-col items-center gap-3 py-10 text-center">
-					<span
-						aria-hidden
-						className="flex size-12 items-center justify-center rounded-full bg-accent/10 text-accent-bright"
-					>
-						<ImagePlus className="size-5" strokeWidth={1.5} />
-					</span>
-					<h3 className="display-sm text-lg">No galleries yet</h3>
-					<p className="max-w-xs text-[0.875rem] text-text-muted">
-						Group photos by exterior, interior or details.
-					</p>
-				</div>
+				<EmptyState
+					compact
+					title="No galleries yet"
+					line="Group photos by exterior, interior or details."
+				/>
 			) : (
 				<div className="grid gap-8 md:grid-cols-2">
 					{galleries.map((gallery) => (
