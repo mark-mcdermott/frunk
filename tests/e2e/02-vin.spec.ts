@@ -73,7 +73,17 @@ test('adds a car from its VIN and shows its recalls', async ({ page }) => {
 	await expect(page.getByLabel('Engine Type')).toHaveValue('I6');
 	await expect(page.getByLabel('Drivetrain')).toHaveValue('4WD');
 
-	await page.getByLabel('Current Mileage').fill('115000');
+	// Mileage reads grouped as it is typed, and an edit in the middle keeps its place.
+	const mileage = page.getByLabel('Current Mileage');
+	await mileage.fill('115000');
+	await expect(mileage).toHaveValue('115,000');
+	await mileage.press('End');
+	await mileage.press('ArrowLeft');
+	await mileage.press('ArrowLeft');
+	await mileage.press('ArrowLeft');
+	await mileage.pressSequentially('59');
+	await expect(mileage).toHaveValue('11,559,000');
+	await mileage.fill('115000');
 	await page.getByRole('button', { name: 'Add Vehicle' }).click();
 	await expect(page).toHaveURL(/\/vehicles\/[0-9a-f-]{36}$/);
 	expect(

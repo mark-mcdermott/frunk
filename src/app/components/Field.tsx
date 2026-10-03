@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react';
+import { useLayoutEffect, useRef, type ReactNode } from 'react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
@@ -8,6 +8,7 @@ import {
 	SelectTrigger,
 	SelectValue
 } from '@/components/ui/select';
+import { groupDigits, onlyDigits } from '../format';
 
 /**
  * Form fields, built to `docs/mocks/vehicle-edit.webp` and `repair-edit.webp`.
@@ -82,7 +83,8 @@ export function TextField({
 	placeholder,
 	prefix,
 	suffix,
-	action
+	action,
+	grouped = false
 }: {
 	id: string;
 	label: string;
@@ -100,7 +102,28 @@ export function TextField({
 	suffix?: string;
 	/** A control inside the field's right edge, like a search box's button. */
 	action?: ReactNode;
+	/**
+	 * A whole number shown with thousands separators. `value` and `onChange` stay bare
+	 * digits, so the form's state and payload never see a comma.
+	 */
+	grouped?: boolean;
 }) {
+	const input = useRef<HTMLInputElement>(null);
+	/* Digits left of the caret after an edit. Inserting a separator changes the text, which
+	   sends a controlled input's caret to the end; this puts it back after the same digit. */
+	const caret = useRef<number | null>(null);
+
+	useLayoutEffect(() => {
+		const element = input.current;
+		if (caret.current == null || !element) return;
+		let position = 0;
+		for (let seen = 0; position < element.value.length && seen < caret.current; position++) {
+			if (/\d/.test(element.value[position] ?? '')) seen++;
+		}
+		element.setSelectionRange(position, position);
+		caret.current = null;
+	}, [value]);
+
 	return (
 		<FieldShell id={id} label={label} optional={optional} hint={hint} error={error}>
 			<div className="relative">
@@ -114,13 +137,21 @@ export function TextField({
 				)}
 				<Input
 					id={id}
-					type={type}
-					inputMode={inputMode}
+					ref={input}
+					type={grouped ? 'text' : type}
+					inputMode={grouped ? 'numeric' : inputMode}
 					autoComplete={autoComplete}
 					placeholder={placeholder}
-					value={value}
+					value={grouped ? groupDigits(value) : value}
 					aria-invalid={error ? true : undefined}
-					onChange={(event) => onChange(event.target.value)}
+					onChange={(event) => {
+						if (!grouped) return onChange(event.target.value);
+						const typed = event.target.value;
+						caret.current = onlyDigits(
+							typed.slice(0, event.target.selectionStart ?? typed.length)
+						).length;
+						onChange(onlyDigits(typed));
+					}}
 					className={`${CONTROL} ${CONTROL_H} ${prefix ? 'pl-9' : ''} ${suffix ? 'pr-12' : ''} ${action ? 'pr-28' : ''}`}
 				/>
 				{suffix && (

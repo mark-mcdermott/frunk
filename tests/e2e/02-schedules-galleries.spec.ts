@@ -34,7 +34,7 @@ test.describe('vehicle detail', () => {
 		// A template prefills every field; nothing about it is locked.
 		await panel.getByRole('button', { name: 'Oil change', exact: true }).click();
 		await expect(panel.getByLabel('Name')).toHaveValue('Oil change');
-		await expect(panel.getByLabel('Every', { exact: true })).toHaveValue('5000');
+		await expect(panel.getByLabel('Every', { exact: true })).toHaveValue('5,000');
 		await expect(panel.getByLabel('Or every')).toHaveValue('6');
 
 		// A schedule needs an interval; the form refuses before the server has to.
@@ -62,7 +62,7 @@ test.describe('vehicle detail', () => {
 		// Mark done: last done moves, the odometer follows, and a repair is written.
 		await panel.getByRole('button', { name: 'Mark Journey oil change done' }).click();
 		const done = panel.getByRole('form', { name: 'Mark Journey oil change done' });
-		await expect(done.getByLabel('Mileage')).toHaveValue('84200');
+		await expect(done.getByLabel('Mileage')).toHaveValue('84,200');
 		await done.getByLabel('Mileage').fill('90000');
 		await done.getByLabel('Cost').fill('45');
 		await done.getByRole('button', { name: 'Save' }).click();

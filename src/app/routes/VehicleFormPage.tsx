@@ -442,8 +442,7 @@ function VehicleForm({ loaded }: { loaded: Vehicle | undefined }) {
 						id="currentMileage"
 						label="Current Mileage"
 						optional
-						type="number"
-						inputMode="numeric"
+						grouped
 						error={errors.currentMileage}
 						{...field('currentMileage')}
 					/>

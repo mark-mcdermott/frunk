@@ -306,8 +306,7 @@ function RepairForm({ existing }: { existing: ExistingRepair | undefined }) {
 							id="mileage"
 							label="Mileage"
 							optional
-							type="number"
-							inputMode="numeric"
+							grouped
 							suffix="mi"
 							error={errors.mileage}
 							value={form.mileage}
