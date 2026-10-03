@@ -346,7 +346,7 @@ This replaces `vite dev` + SvelteKit's server routes.
   kept for now: it holds 5 unmerged commits of a hand-rolled Svelte component system,
   superseded by Decision 3 (shadcn). Nothing depends on it; delete when convenient.
 - ~~Reconcile or delete `origin/staging`.~~ **Deleted.** Verified fully superseded: its 46
-  optional vehicle fields landed on `main` as `7146ed2` (PR #28), its Capacitor shells are
+  optional vehicle fields landed on `main` as `b021c92` (PR #28), its Capacitor shells are
   on `main`, and its only remaining content was `src-tauri/`, which Decision 7 drops. `main`
   is strictly ahead of it (`main` also carries `maintenance_schedules`, which staging lacked).
   `feat/vehicle-detail-fields` deleted too — merged in PR #28.
@@ -421,7 +421,7 @@ inlined ahead of paint. **Deploying to Vercel is blocked on the manual setup abo
 The old SvelteKit app moved to `legacy/` rather than being deleted — it is the reference for
 Phase 2's 25 load functions and Phase 4's 60 components, and it is excluded from the Astro
 build and typecheck. ~~Delete the directory at the end of Phase 5.~~ **Deleted 2026-09-21**,
-once the Cloudflare project was gone; the last commit holding it is `5f2364c`. `legacy/`
+once the Cloudflare project was gone; the last commit holding it is `9ee251f`. `legacy/`
 also held the Capacitor shells (`android/`, `ios/`, `capacitor.config.ts`), which are pinned to the
 SvelteKit dev port and `build/` output; ~~Phase 6 re-points them at the Astro origin~~
 **moved to the repo root and re-pointed 2026-09-20 — see Phase 6.**

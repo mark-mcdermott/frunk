@@ -11,7 +11,7 @@ Named for "front trunk" — the storage compartment in EVs and mid-engine cars.
 The repository is the **Astro rewrite** (`docs/PORT-PLAN.md`). The SvelteKit app it
 replaced was kept in `legacy/` as the reference for the port until 2026-09-21, when the
 Cloudflare Pages project was retired and the directory deleted; it is in the history up to
-commit `5f2364c` (`git show 5f2364c:legacy/src/...`) if anything needs consulting.
+commit `9ee251f` (`git show 9ee251f:legacy/src/...`) if anything needs consulting.
 
 **Phases 0–5 are done and Phase 6 is closed.** The applet is complete — every screen family is
 built (vehicles, repairs, notes, vendors, maintenance schedules, galleries, user admin,
@@ -401,6 +401,10 @@ the semantic green and red).
   Actions log is world-readable: no credentials, connection strings or database dumps in
   any of them, and never as a workflow artifact. The backup repository is private and
   stays that way.
+- **History was rewritten on 2026-10-03** to replace a revoked Printful key (committed in
+  December 2025 and deleted with `legacy/`) with `***REMOVED***`. Every commit from
+  2025-12-21 on has a new hash, so commit links in PR pages and anything written before
+  that date point at hashes that no longer exist on `main`; PR links are unaffected.
 - Strict TypeScript — no `any` (enforced by lint). Prefer extracting a shared helper over
   repeating a cast.
 - `pnpm format` before committing; CI rejects unformatted files.
