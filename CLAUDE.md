@@ -400,7 +400,10 @@ the semantic green and red).
   scanning and push protection are on. Everything committed, every PR body and every
   Actions log is world-readable: no credentials, connection strings or database dumps in
   any of them, and never as a workflow artifact. The backup repository is private and
-  stays that way.
+  stays that way. Since 2026-10-03 `db-backup.yml` leaves session, verification and
+  rate-limit rows out of the dump, restores every dump into a throwaway Postgres before
+  keeping it, and force-pushes the backup repo as one commit holding a window: `latest.sql`,
+  14 nightly dumps and the first of each of the last 6 months.
 - **History was rewritten on 2026-10-03** to replace a revoked Printful key (committed in
   December 2025 and deleted with `legacy/`) with `***REMOVED***`. Every commit from
   2025-12-21 on has a new hash, so commit links in PR pages and anything written before
