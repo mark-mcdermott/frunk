@@ -32,6 +32,14 @@ export const formatCost = (cents: number) =>
 export const formatMiles = (miles: number) => `${miles.toLocaleString()} mi`;
 
 /**
+ * A whole-number field's digits, grouped for reading as typed: "115000" → "115,000".
+ * The form keeps the bare digits; `onlyDigits` turns whatever was typed or pasted
+ * ("115,000", "115.000", "115 000 mi") back into them.
+ */
+export const groupDigits = (digits: string) => (digits ? Number(digits).toLocaleString() : '');
+export const onlyDigits = (text: string) => text.replace(/\D/g, '');
+
+/**
  * ISO → `YYYY-MM-DD` for a date input, read in **local** time.
  *
  * `toISOString().slice(0, 10)` is the tempting one-liner and it is wrong: it converts to

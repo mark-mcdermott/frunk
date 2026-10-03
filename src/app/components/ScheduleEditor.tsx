@@ -129,8 +129,7 @@ function ScheduleForm({
 					<TextField
 						id="schedule-miles"
 						label="Every"
-						type="number"
-						inputMode="numeric"
+						grouped
 						suffix="mi"
 						placeholder="5000"
 						error={errors.intervalMiles}
@@ -238,8 +237,7 @@ function CompleteForm({
 					id="complete-mileage"
 					label="Mileage"
 					optional
-					type="number"
-					inputMode="numeric"
+					grouped
 					suffix="mi"
 					error={errors.mileage}
 					value={draft.mileage}
