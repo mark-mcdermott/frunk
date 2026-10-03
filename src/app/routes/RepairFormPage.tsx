@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { ArrowLeft, Trash2 } from 'lucide-react';
+import { Trash2 } from 'lucide-react';
 import { useState, type SubmitEvent } from 'react';
-import { Link, useNavigate, useParams, useSearchParams } from 'react-router';
+import { Link, useParams, useSearchParams } from 'react-router';
 import {
 	createRepair,
 	deleteRepair,
@@ -16,6 +16,7 @@ import {
 	type RepairStatus
 } from '../api';
 import { useCrumbs } from '../AppShell';
+import { useLeave } from '../history';
 import { SelectField, TextField, type Option } from '../components/Field';
 import { fromCents, fromDateInput, toCents, toDateInput } from '../format';
 
@@ -144,7 +145,7 @@ function RepairForm({ existing }: { existing: ExistingRepair | undefined }) {
 	const { id } = useParams();
 	const editing = Boolean(id);
 	const [params] = useSearchParams();
-	const navigate = useNavigate();
+	const leave = useLeave();
 	const client = useQueryClient();
 
 	const [form, setForm] = useState<FormState>(() =>
@@ -190,7 +191,7 @@ function RepairForm({ existing }: { existing: ExistingRepair | undefined }) {
 			client.invalidateQueries({ queryKey: keys.repairs });
 			if (editing) client.invalidateQueries({ queryKey: keys.repair(id as string) });
 			if (vehicleId) client.invalidateQueries({ queryKey: keys.vehicle(vehicleId) });
-			navigate(`/repairs/${saved.id}`);
+			leave(`/repairs/${saved.id}`);
 		}
 	});
 
@@ -199,7 +200,7 @@ function RepairForm({ existing }: { existing: ExistingRepair | undefined }) {
 		onSuccess: () => {
 			client.invalidateQueries({ queryKey: keys.repairs });
 			if (vehicleId) client.invalidateQueries({ queryKey: keys.vehicle(vehicleId) });
-			navigate('/repairs');
+			leave('/repairs', `/repairs/${id}`);
 		}
 	});
 
@@ -246,15 +247,7 @@ function RepairForm({ existing }: { existing: ExistingRepair | undefined }) {
 
 	return (
 		<>
-			<Link
-				to="/repairs"
-				className="inline-flex items-center gap-2 text-[0.9375rem] text-accent-bright transition-opacity hover:opacity-80"
-			>
-				<ArrowLeft className="size-4" strokeWidth={1.75} aria-hidden />
-				Back to repairs
-			</Link>
-
-			<h1 className="display mt-6 text-[clamp(2rem,4vw,2.75rem)]">
+			<h1 className="display text-[clamp(2rem,4vw,2.75rem)]">
 				{editing ? 'Edit Repair' : 'Add Repair'}
 			</h1>
 			<p className="mt-3 text-[0.9375rem] text-text-muted">
