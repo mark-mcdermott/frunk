@@ -15,7 +15,13 @@ import {
 } from '../api';
 import { useCrumbs } from '../AppShell';
 import { useLeave } from '../history';
-import { plainOptions, SelectField, TextField } from '../components/Field';
+import {
+	plainOptions,
+	SelectField,
+	SuggestField,
+	TextField,
+	type Suggestion
+} from '../components/Field';
 import { FileField } from '../components/FileField';
 import { fromDateInput, toDateInput } from '../format';
 
@@ -54,6 +60,23 @@ const BODY_STYLES = plainOptions([
 	'Van',
 	'Minivan'
 ]);
+
+/** The colours most cars come in, most common first; anything else can still be typed. */
+const COLORS: Suggestion[] = [
+	{ value: 'White', swatch: '#f4f4f2' },
+	{ value: 'Black', swatch: '#0b0b0d' },
+	{ value: 'Gray', swatch: '#7c7f86' },
+	{ value: 'Silver', swatch: '#c3c6cc' },
+	{ value: 'Blue', swatch: '#2f5fb3' },
+	{ value: 'Red', swatch: '#b8282f' },
+	{ value: 'Green', swatch: '#2f6b47' },
+	{ value: 'Brown', swatch: '#6b4a32' },
+	{ value: 'Beige', swatch: '#d8c7a3' },
+	{ value: 'Gold', swatch: '#c2a14d' },
+	{ value: 'Orange', swatch: '#d9682b' },
+	{ value: 'Yellow', swatch: '#e6c331' },
+	{ value: 'Purple', swatch: '#6a3f9e' }
+];
 
 interface FormState {
 	year: string;
@@ -402,7 +425,14 @@ function VehicleForm({ loaded }: { loaded: Vehicle | undefined }) {
 						placeholder="Select a body style"
 						{...field('bodyStyle')}
 					/>
-					<TextField id="color" label="Color" optional {...field('color')} />
+					<SuggestField
+						id="color"
+						label="Color"
+						optional
+						placeholder="Pick or type a color"
+						suggestions={COLORS}
+						{...field('color')}
+					/>
 					<TextField
 						id="engineSize"
 						label="Engine Size"

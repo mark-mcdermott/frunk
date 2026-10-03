@@ -1,3 +1,4 @@
+import { Autocomplete } from '@base-ui/react/autocomplete';
 import { useLayoutEffect, useRef, type ReactNode } from 'react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -244,9 +245,11 @@ export function SelectField({
 			{/* Base UI treats `null` as "no value", which is what makes the placeholder show
 			    and what the API wants for a cleared column — so no sentinel is needed. */}
 			<Select value={value} onValueChange={(next) => onChange(next === null ? null : String(next))}>
+				{/* The trigger sizes itself with `data-[size=default]:h-8`, which outranks a plain
+				    height class, so the field height is restated under the same selector. */}
 				<SelectTrigger
 					id={id}
-					className={`${CONTROL} ${CONTROL_H} justify-between font-normal`}
+					className={`${CONTROL} ${CONTROL_H} justify-between font-normal data-[size=default]:h-[2.875rem]`}
 					aria-invalid={error ? true : undefined}
 				>
 					<SelectValue placeholder={placeholder}>
@@ -266,6 +269,104 @@ export function SelectField({
 					))}
 				</SelectContent>
 			</Select>
+		</FieldShell>
+	);
+}
+
+export interface Suggestion {
+	value: string;
+	/** A CSS colour drawn as a dot beside the value — the colour field's swatches. */
+	swatch?: string;
+}
+
+function Swatch({ color }: { color: string }) {
+	return (
+		<span
+			aria-hidden
+			className="size-4 shrink-0 rounded-full border border-border-strong"
+			style={{ background: color }}
+		/>
+	);
+}
+
+/**
+ * Free text with a list of likely answers under it.
+ *
+ * For fields where most people pick one of a handful of values but anyone may need to
+ * type their own — a colour, a model. Base UI's Autocomplete, not a select: the value is
+ * whatever is in the box, and the list only filters as you type. A native `<datalist>`
+ * would be less code, but on iOS it is a strip above the keyboard, not a list
+ * (dogfooding, 2026-10-02).
+ */
+export function SuggestField({
+	id,
+	label,
+	value,
+	onChange,
+	suggestions,
+	optional,
+	hint,
+	error,
+	placeholder
+}: {
+	id: string;
+	label: string;
+	value: string;
+	onChange: (value: string) => void;
+	suggestions: readonly Suggestion[];
+	optional?: boolean;
+	hint?: ReactNode;
+	error?: string;
+	placeholder?: string;
+}) {
+	const chosen = suggestions.find((s) => s.value.toLowerCase() === value.trim().toLowerCase());
+
+	return (
+		<FieldShell id={id} label={label} optional={optional} hint={hint} error={error}>
+			<Autocomplete.Root
+				items={suggestions}
+				itemToStringValue={(item: Suggestion) => item.value}
+				value={value}
+				onValueChange={(next) => onChange(next)}
+				openOnInputClick
+				mode="list"
+			>
+				<div className="relative">
+					{chosen?.swatch && (
+						<span className="pointer-events-none absolute top-1/2 left-4 flex -translate-y-1/2">
+							<Swatch color={chosen.swatch} />
+						</span>
+					)}
+					<Autocomplete.Input
+						id={id}
+						placeholder={placeholder}
+						autoComplete="off"
+						aria-invalid={error ? true : undefined}
+						className={`${CONTROL} ${CONTROL_H} border transition-colors outline-none focus:border-accent ${chosen?.swatch ? 'pl-11' : ''}`}
+					/>
+				</div>
+				<Autocomplete.Portal>
+					<Autocomplete.Positioner sideOffset={6} className="z-50 outline-none">
+						<Autocomplete.Popup className="max-h-[min(18rem,var(--available-height))] w-[var(--anchor-width)] overflow-y-auto rounded-control border border-border bg-surface-raised p-1.5 shadow-lg transition-opacity duration-100 data-[ending-style]:opacity-0 data-[starting-style]:opacity-0">
+							<Autocomplete.Empty className="px-3 py-2 text-[0.8125rem] text-text-muted empty:hidden">
+								No suggestion — what you typed is kept.
+							</Autocomplete.Empty>
+							<Autocomplete.List>
+								{(item: Suggestion) => (
+									<Autocomplete.Item
+										key={item.value}
+										value={item}
+										className="flex cursor-default items-center gap-3 rounded-[8px] px-3 py-2.5 text-[0.9375rem] text-text outline-none select-none data-[highlighted]:bg-muted"
+									>
+										{item.swatch && <Swatch color={item.swatch} />}
+										{item.value}
+									</Autocomplete.Item>
+								)}
+							</Autocomplete.List>
+						</Autocomplete.Popup>
+					</Autocomplete.Positioner>
+				</Autocomplete.Portal>
+			</Autocomplete.Root>
 		</FieldShell>
 	);
 }

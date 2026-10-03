@@ -59,7 +59,10 @@ test.describe('garage', () => {
 		const ymd = `${inTenDays.getFullYear()}-${String(inTenDays.getMonth() + 1).padStart(2, '0')}-${String(inTenDays.getDate()).padStart(2, '0')}`;
 		await page.getByRole('link', { name: 'Edit Vehicle' }).click();
 		await page.getByLabel('Nickname').fill('');
-		await page.getByLabel('Color').fill('Red');
+		// Colour is pick-or-type: the list filters as you type and a pick fills the box.
+		await page.getByLabel('Color').fill('Re');
+		await page.getByRole('option', { name: 'Red' }).click();
+		await expect(page.getByLabel('Color')).toHaveValue('Red');
 		await page.getByLabel('Registration expires').fill(ymd);
 		await page.getByRole('button', { name: 'Save Changes' }).click();
 
