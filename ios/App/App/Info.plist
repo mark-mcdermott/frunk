@@ -2,12 +2,12 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-    <key>CAPACITOR_DEBUG</key>
+	<key>CAPACITOR_DEBUG</key>
 	<string>$(CAPACITOR_DEBUG)</string>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>en</string>
 	<key>CFBundleDisplayName</key>
-        <string>Frunk</string>
+	<string>Frunk</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
@@ -27,7 +27,7 @@
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>NSCameraUsageDescription</key>
-	<string>Take a photo of a receipt, a document or your vehicle to attach it to your records.</string>
+	<string>Take a photo of a receipt, a document or your vehicle to attach it to your records, or scan your VIN so you don’t have to type it.</string>
 	<key>NSPhotoLibraryAddUsageDescription</key>
 	<string>Save a photo or document from your Frunk records to your library.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
