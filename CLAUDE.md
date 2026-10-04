@@ -127,7 +127,14 @@ outstanding.
   server for live reload. The journeys rehearse the bundle from a second port
   (`tests/e2e/07-native-bundle.spec.ts`), which makes it genuinely cross-origin; what a
   browser cannot stand in for — the passkey sheet, the share sheet, the preferences
-  store — is checked in the simulator.
+  store — is checked in the simulator. **The app's own native code** (2026-10-04) lives in
+  `ios/App/App/` and registers through `AppViewController` (`Main.storyboard` names it),
+  a `CAPBridgeViewController` subclass whose `capacitorDidLoad` calls
+  `registerPluginInstance`. The first is `VinScannerPlugin`: VisionKit's live scanner
+  reads the VIN as text or barcode and `VinText` keeps only a check-digit-valid one
+  (`src/lib/vin-scanner.ts` on the JS side; iOS 16+, so the Scan button is absent on the
+  web, Android and older phones). A new Swift file must be added to the Xcode project,
+  not just the folder: the project uses file references, not a synchronized group.
 
 Dropped for now: the merch store (Stripe + Printful), Tauri desktop, Skeleton UI.
 

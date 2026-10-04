@@ -15,6 +15,9 @@
 		504EC30F1FED79650016851F /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 504EC30E1FED79650016851F /* Assets.xcassets */; };
 		504EC3121FED79650016851F /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 504EC3101FED79650016851F /* LaunchScreen.storyboard */; };
 		50B271D11FEDC1A000F3C39B /* public in Resources */ = {isa = PBXBuildFile; fileRef = 50B271D01FEDC1A000F3C39B /* public */; };
+		14FE4CF65466498980D1268F /* VinText.swift in Sources */ = {isa = PBXBuildFile; fileRef = EAF9D3A0511B45229EA02056 /* VinText.swift */; };
+		F52A5F3F59CB42508984E677 /* VinScannerPlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0038600D84A54BCEB5F211CD /* VinScannerPlugin.swift */; };
+		FDE08231EB7A42CD8351CA6D /* AppViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6D9B4C5EE914BADAB2DB93A /* AppViewController.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -28,6 +31,9 @@
 		504EC3131FED79650016851F /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		50B271D01FEDC1A000F3C39B /* public */ = {isa = PBXFileReference; lastKnownFileType = folder; path = public; sourceTree = "<group>"; };
 		958DCC722DB07C7200EA8C5F /* debug.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; name = debug.xcconfig; path = ../debug.xcconfig; sourceTree = SOURCE_ROOT; };
+		EAF9D3A0511B45229EA02056 /* VinText.swift */ = {isa = PBXFileReference; name = "VinText.swift"; path = "VinText.swift"; sourceTree = "<group>"; fileEncoding = 4; lastKnownFileType = sourcecode.swift; };
+		0038600D84A54BCEB5F211CD /* VinScannerPlugin.swift */ = {isa = PBXFileReference; name = "VinScannerPlugin.swift"; path = "VinScannerPlugin.swift"; sourceTree = "<group>"; fileEncoding = 4; lastKnownFileType = sourcecode.swift; };
+		F6D9B4C5EE914BADAB2DB93A /* AppViewController.swift */ = {isa = PBXFileReference; name = "AppViewController.swift"; path = "AppViewController.swift"; sourceTree = "<group>"; fileEncoding = 4; lastKnownFileType = sourcecode.swift; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -70,6 +76,9 @@
 				504EC3131FED79650016851F /* Info.plist */,
 				2FAD9762203C412B000D30F8 /* config.xml */,
 				50B271D01FEDC1A000F3C39B /* public */,
+				EAF9D3A0511B45229EA02056 /* VinText.swift */,
+				0038600D84A54BCEB5F211CD /* VinScannerPlugin.swift */,
+				F6D9B4C5EE914BADAB2DB93A /* AppViewController.swift */,
 			);
 			path = App;
 			sourceTree = "<group>";
@@ -156,6 +165,9 @@
 			buildActionMask = 2147483647;
 			files = (
 				504EC3081FED79650016851F /* AppDelegate.swift in Sources */,
+				14FE4CF65466498980D1268F /* VinText.swift in Sources */,
+				F52A5F3F59CB42508984E677 /* VinScannerPlugin.swift in Sources */,
+				FDE08231EB7A42CD8351CA6D /* AppViewController.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

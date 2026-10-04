@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Search, Trash2 } from 'lucide-react';
+import { ScanLine, Search, Trash2 } from 'lucide-react';
 import { useEffect, useState, type SubmitEvent } from 'react';
 import { useLocation, useParams } from 'react-router';
 import {
@@ -16,6 +16,7 @@ import {
 } from '../api';
 import { useCrumbs } from '../AppShell';
 import { useLeave } from '../history';
+import { cameraDenied, canScanVin, scanVin } from '@/lib/vin-scanner';
 import {
 	plainOptions,
 	SelectField,
@@ -195,6 +196,9 @@ function toPayload(form: FormState): VehicleInput {
 	};
 }
 
+const VIN_ACTION =
+	'flex h-9 items-center gap-1.5 rounded-full bg-accent/15 px-3.5 text-[0.8125rem] font-medium text-accent-bright transition-colors hover:bg-accent/25 disabled:cursor-not-allowed disabled:bg-transparent disabled:text-text-faint';
+
 const FROM_VIN = [
 	'make',
 	'model',
@@ -336,13 +340,32 @@ function VehicleForm({ loaded }: { loaded: Vehicle | undefined }) {
 	const lookup = useMutation({
 		mutationFn: decodeVin,
 		onMutate: () => setVinNote(null),
-		onSuccess: (decoded) => {
-			const { next, filled } = fillFromVin(form, decoded);
+		// The VIN looked up, not `form.vin`: a scan sets the field and looks up in one go.
+		onSuccess: (decoded, vin) => {
+			const { next, filled } = fillFromVin({ ...form, vin }, decoded);
 			setForm(next);
 			setVinNote(describeFill(filled, decoded.checkDigitFailed));
 		}
 	});
 	const vinError = lookup.error instanceof Error ? lookup.error.message : undefined;
+
+	const scanner = useQuery({ queryKey: ['vin-scanner'], queryFn: canScanVin, staleTime: Infinity });
+	const offerScan = scanner.data === true && !form.vin.trim();
+	const scan = useMutation({
+		mutationFn: scanVin,
+		onMutate: () => setVinNote(null),
+		onSuccess: (vin) => {
+			if (!vin) return;
+			setForm((prev) => ({ ...prev, vin }));
+			lookup.mutate(vin);
+		},
+		onError: (error) =>
+			setVinNote(
+				cameraDenied(error)
+					? 'Camera access is off for Frunk. Turn it on in Settings › Frunk › Camera, or type the VIN.'
+					: 'The scanner could not start. Type the VIN instead.'
+			)
+	});
 
 	const title = loaded
 		? loaded.nickname || `${loaded.year} ${loaded.make} ${loaded.model}`
@@ -403,17 +426,34 @@ function VehicleForm({ loaded }: { loaded: Vehicle | undefined }) {
 						optional
 						autoComplete="off"
 						error={vinError}
-						hint={vinNote ?? 'Look it up and the details below fill themselves in.'}
+						hint={
+							vinNote ??
+							(offerScan
+								? 'Scan it with the camera and the details below fill themselves in.'
+								: 'Look it up and the details below fill themselves in.')
+						}
 						action={
-							<button
-								type="button"
-								onClick={() => lookup.mutate(form.vin.trim().toUpperCase())}
-								disabled={!vinComplete || lookup.isPending}
-								className="flex h-9 items-center gap-1.5 rounded-full bg-accent/15 px-3.5 text-[0.8125rem] font-medium text-accent-bright transition-colors hover:bg-accent/25 disabled:cursor-not-allowed disabled:bg-transparent disabled:text-text-faint"
-							>
-								<Search className="size-3.5" strokeWidth={2} aria-hidden />
-								{lookup.isPending ? 'Looking…' : 'Look up'}
-							</button>
+							offerScan ? (
+								<button
+									type="button"
+									onClick={() => scan.mutate()}
+									disabled={scan.isPending}
+									className={VIN_ACTION}
+								>
+									<ScanLine className="size-3.5" strokeWidth={2} aria-hidden />
+									{scan.isPending ? 'Scanning…' : 'Scan'}
+								</button>
+							) : (
+								<button
+									type="button"
+									onClick={() => lookup.mutate(form.vin.trim().toUpperCase())}
+									disabled={!vinComplete || lookup.isPending}
+									className={VIN_ACTION}
+								>
+									<Search className="size-3.5" strokeWidth={2} aria-hidden />
+									{lookup.isPending ? 'Looking…' : 'Look up'}
+								</button>
+							)
 						}
 						value={form.vin}
 						onChange={(vin) => {
