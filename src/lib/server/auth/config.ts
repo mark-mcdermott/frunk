@@ -88,7 +88,30 @@ function build(rp: { id: string; origin: string }) {
 
 		emailAndPassword: {
 			enabled: true,
-			requireEmailVerification: true
+			requireEmailVerification: true,
+			/**
+			 * Until this landed there was no way back into a password-only account.
+			 *
+			 * Passkeys and TOTP are the recovery story for anyone who enrolled them, but
+			 * both are opt-in and come *after* sign-up — so an account that only ever had
+			 * a password had nothing behind it. That is most accounts.
+			 *
+			 * Unlike `sendVerificationEmail` below, this is not a background task: a failed
+			 * send reaches the caller, so the form can say so rather than claiming the mail
+			 * is on its way.
+			 */
+			sendResetPassword: async ({ user, url }) => {
+				await sendEmail({
+					to: user.email,
+					subject: 'Reset your Frunk password',
+					text: `Reset your Frunk password:\n\n${url}\n\nThe link expires shortly. If you did not ask to reset it, ignore this message — your password will not change.`,
+					html: `<div style="font-family:system-ui,-apple-system,sans-serif;line-height:1.6;color:#0b0f18">
+						<p>Reset your Frunk password.</p>
+						<p><a href="${url}" style="display:inline-block;background:#6438cc;color:#fff;text-decoration:none;padding:12px 24px;border-radius:9999px;font-weight:600">Choose a new password</a></p>
+						<p style="font-size:13px;color:#8b93a1">The link expires shortly. If you did not ask to reset it, ignore this message — your password will not change.</p>
+					</div>`
+				});
+			}
 		},
 
 		/**

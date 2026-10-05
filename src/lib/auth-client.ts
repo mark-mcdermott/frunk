@@ -126,6 +126,18 @@ export async function signIn(email: string, password: string): Promise<SignInRes
  * 5's "upgrade in place": a demo visitor is already signed in anonymously, so attaching
  * a credential converts that same row and keeps everything they made.
  */
+/** Asks for the reset mail. Says the same thing either way: this is public, and a differing answer names which addresses have accounts. */
+export async function requestPasswordReset(email: string): Promise<void> {
+	const { error } = await authClient.requestPasswordReset({ email, redirectTo: '/reset-password' });
+	if (error) throw new AuthError(error.message ?? 'Could not send the reset email');
+}
+
+/** Completes the reset from the emailed token. */
+export async function resetPassword(token: string, newPassword: string): Promise<void> {
+	const { error } = await authClient.resetPassword({ token, newPassword });
+	if (error) throw new AuthError(error.message ?? 'Could not reset the password');
+}
+
 export async function registerPasskey(name?: string): Promise<void> {
 	const result = await authClient.passkey.addPasskey({ name });
 	if (result?.error) throw new AuthError(result.error.message ?? 'Could not add that passkey.');
