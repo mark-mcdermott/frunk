@@ -441,7 +441,23 @@ async function seed() {
 				age: character.age,
 				roles: character.roles,
 				image: character.avatar,
-				emailVerified: true
+				emailVerified: true,
+				/*
+				 * Seeded characters must never be mailed.
+				 *
+				 * Their addresses are at `dundermifflin.com`, a domain frunk does not own, so
+				 * every message to one is a hard bounce. They were getting mailed: the digest's
+				 * `mailable` test is `emailVerified && remindersByEmail && !isDemo(roles)`, and
+				 * these rows satisfy all three — `emailVerified` is set above so they can sign
+				 * in at all (frunk requires verification), and they carry `USER` rather than the
+				 * demo role. `remindersByEmail: false` is the one field that excludes them
+				 * without taking their sign-in away.
+				 *
+				 * This matters past the noise: hard bounces are the main signal a provider uses
+				 * to judge a sender, `maintenance-digest` is on a cron so they repeat, and they
+				 * accrue against the same Resend account that carries password resets.
+				 */
+				remindersByEmail: false
 			})
 			.onConflictDoNothing();
 
