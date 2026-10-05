@@ -48,7 +48,7 @@
 		"astro": "^7.2.10",
 		"better-auth": "^1.7.6",
 		"class-variance-authority": "^0.7.1",
-		"cn": "^0.3.0",
+		"cn": "^0.4.0",
 		"drizzle-orm": "^0.45.3",
 		"lucide-react": "^1.48.0",
 		"nanostores": "^1.5.4",
