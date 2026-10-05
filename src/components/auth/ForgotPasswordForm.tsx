@@ -39,7 +39,7 @@ export function ForgotPasswordForm() {
 				title="Check your email"
 				subtitle="If that address has an account, a reset link is on its way. The link expires shortly."
 			>
-				<p className="mt-8 text-sm text-ink-soft">
+				<p className="text-ink-soft mt-8 text-sm">
 					<a href="/signin" className="underline">
 						Back to sign in
 					</a>
@@ -64,7 +64,7 @@ export function ForgotPasswordForm() {
 				/>
 				{error === null ? null : <FormError message={error} />}
 				<SubmitButton label="Email me a link" pendingLabel="Sending…" pending={pending} />
-				<p className="text-center text-sm text-ink-soft">
+				<p className="text-ink-soft text-center text-sm">
 					<a href="/signin" className="underline">
 						Back to sign in
 					</a>

@@ -54,7 +54,7 @@ export function ResetPasswordForm() {
 	if (done) {
 		return (
 			<AuthCard title="Password changed" subtitle="Sign in with your new password.">
-				<p className="mt-8 text-sm text-ink-soft">
+				<p className="text-ink-soft mt-8 text-sm">
 					<a href="/signin" className="underline">
 						Sign in
 					</a>
@@ -90,7 +90,7 @@ export function ResetPasswordForm() {
 				/>
 				{error === null ? null : <FormError message={error} />}
 				<SubmitButton label="Change my password" pendingLabel="Changing…" pending={pending} />
-				<p className="text-center text-sm text-ink-soft">
+				<p className="text-ink-soft text-center text-sm">
 					<a href="/forgot-password" className="underline">
 						Request a new link
 					</a>

@@ -140,7 +140,7 @@ export function SignInForm() {
 							recover the accounts that enrolled them, but both are opt-in and come
 							after sign-up, so most accounts had nothing behind the password.
 						*/}
-						<p className="-mt-1 text-right text-sm text-ink-soft">
+						<p className="text-ink-soft -mt-1 text-right text-sm">
 							<a href="/forgot-password" className="underline">
 								Forgot your password?
 							</a>
