@@ -135,6 +135,16 @@ export function SignInForm() {
 							value={password}
 							onChange={(event) => setPassword(event.target.value)}
 						/>
+						{/*
+							The only route back for a password-only account. Passkeys and TOTP
+							recover the accounts that enrolled them, but both are opt-in and come
+							after sign-up, so most accounts had nothing behind the password.
+						*/}
+						<p className="text-ink-soft -mt-1 text-right text-sm">
+							<a href="/forgot-password" className="underline">
+								Forgot your password?
+							</a>
+						</p>
 					</>
 				)}
 
