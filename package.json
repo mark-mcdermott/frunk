@@ -30,7 +30,7 @@
 	"dependencies": {
 		"@astrojs/react": "^7.0.0",
 		"@astrojs/vercel": "^11.0.21",
-		"@base-ui/react": "^1.8.0",
+		"@base-ui/react": "^1.9.0",
 		"@better-auth/passkey": "^1.7.22",
 		"@capacitor/core": "^8.5.2",
 		"@capacitor/filesystem": "^8.1.3",
