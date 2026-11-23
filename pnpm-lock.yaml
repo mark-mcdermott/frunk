@@ -22,7 +22,7 @@ importers:
         version: 7.0.0(@types/node@26.6.6)(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(esbuild@0.28.2)(jiti@2.7.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)(tsx@4.23.15)(yaml@2.9.1)
       '@astrojs/vercel':
         specifier: ^11.0.21
-        version: 11.0.21(astro@7.4.7(@capacitor/preferences@8.0.1(@capacitor/core@8.5.2))(@types/node@26.6.6)(@vercel/blob@2.8.0)(@vercel/functions@3.11.3)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15)(yaml@2.9.1))(react@19.3.1)
+        version: 11.0.21(astro@7.4.7(@capacitor/preferences@8.0.1(@capacitor/core@8.6.2))(@types/node@26.6.6)(@vercel/blob@2.8.0)(@vercel/functions@3.11.3)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15)(yaml@2.9.1))(react@19.3.1)
       '@base-ui/react':
         specifier: ^1.8.0
         version: 1.8.0(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
@@ -30,23 +30,23 @@ importers:
         specifier: ^1.7.22
         version: 1.7.22(@better-auth/core@1.7.22(@better-auth/utils@0.5.1)(@better-fetch/fetch@1.3.3)(better-call@1.4.5(zod@4.6.7))(jose@6.2.12)(kysely@0.29.6)(nanostores@1.5.5))(@better-auth/utils@0.5.1)(@better-fetch/fetch@1.3.3)(better-auth@1.7.22(drizzle-kit@0.31.11)(drizzle-orm@0.45.4(@neondatabase/serverless@1.2.0)(@types/pg@8.23.1)(kysely@0.29.6)(pg@8.23.1))(pg@8.23.1)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)(vitest@5.1.0(@types/node@26.6.6)(vite@8.3.6(@types/node@26.6.6)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15)(yaml@2.9.1))))(better-call@1.4.5(zod@4.6.7))(nanostores@1.5.5)
       '@capacitor/core':
-        specifier: ^8.5.2
-        version: 8.5.2
+        specifier: ^8.6.2
+        version: 8.6.2
       '@capacitor/filesystem':
         specifier: ^8.1.3
-        version: 8.1.3(@capacitor/core@8.5.2)
+        version: 8.1.3(@capacitor/core@8.6.2)
       '@capacitor/preferences':
         specifier: ^8.0.1
-        version: 8.0.1(@capacitor/core@8.5.2)
+        version: 8.0.1(@capacitor/core@8.6.2)
       '@capacitor/push-notifications':
         specifier: ^8.1.2
-        version: 8.1.2(@capacitor/core@8.5.2)
+        version: 8.1.2(@capacitor/core@8.6.2)
       '@capacitor/share':
         specifier: ^8.0.2
-        version: 8.0.2(@capacitor/core@8.5.2)
+        version: 8.0.2(@capacitor/core@8.6.2)
       '@capgo/capacitor-passkey':
         specifier: ^8.5.2
-        version: 8.5.2(@capacitor/core@8.5.2)
+        version: 8.5.2(@capacitor/core@8.6.2)
       '@fontsource-variable/playfair-display':
         specifier: ^5.3.0
         version: 5.3.0
@@ -70,7 +70,7 @@ importers:
         version: 2.8.0
       astro:
         specifier: ^7.4.7
-        version: 7.4.7(@capacitor/preferences@8.0.1(@capacitor/core@8.5.2))(@types/node@26.6.6)(@vercel/blob@2.8.0)(@vercel/functions@3.11.3)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15)(yaml@2.9.1)
+        version: 7.4.7(@capacitor/preferences@8.0.1(@capacitor/core@8.6.2))(@types/node@26.6.6)(@vercel/blob@2.8.0)(@vercel/functions@3.11.3)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15)(yaml@2.9.1)
       better-auth:
         specifier: ^1.7.22
         version: 1.7.22(drizzle-kit@0.31.11)(drizzle-orm@0.45.4(@neondatabase/serverless@1.2.0)(@types/pg@8.23.1)(kysely@0.29.6)(pg@8.23.1))(pg@8.23.1)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)(vitest@5.1.0(@types/node@26.6.6)(vite@8.3.6(@types/node@26.6.6)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15)(yaml@2.9.1)))
@@ -122,13 +122,13 @@ importers:
         version: 0.9.12(prettier-plugin-astro@1.1.2(prettier@3.9.10))(prettier@3.9.10)(typescript@5.9.3)
       '@capacitor/android':
         specifier: ^8.5.2
-        version: 8.5.2(@capacitor/core@8.5.2)
+        version: 8.5.2(@capacitor/core@8.6.2)
       '@capacitor/cli':
         specifier: ^8.5.2
         version: 8.5.2
       '@capacitor/ios':
         specifier: ^8.5.2
-        version: 8.5.2(@capacitor/core@8.5.2)
+        version: 8.5.2(@capacitor/core@8.6.2)
       '@eslint/js':
         specifier: ^10.0.1
         version: 10.0.1(eslint@10.15.0(jiti@2.7.0))
@@ -677,8 +677,8 @@ packages:
     engines: {node: '>=22.0.0'}
     hasBin: true
 
-  '@capacitor/core@8.5.2':
-    resolution: {integrity: sha512-agnQbGdhGw/KZFuLf7H9SY2o+oE7upkr/WPQsYaokXP6f9chaE8iVmbKkfN6SVl4w3pmz7oZ3Ur1hbkmy1hx+w==}
+  '@capacitor/core@8.6.2':
+    resolution: {integrity: sha512-UEb9crRuqEAe2Iu2eGOEuQ8rLQxpwg7ZZIpl17UJoytEpnV1e4oXXW0K7yYS2NsCOGmJjyLeKjNlgG7tkAoX8g==}
 
   '@capacitor/filesystem@8.1.3':
     resolution: {integrity: sha512-GNBlRkaXEEb+6WP/YsDXr2zygyOHoieuye6viyd2ZkEdBwfseG41jxfarVxLWH0r0owhyNUbwJ/Qi8fubqr6wA==}
@@ -4420,6 +4420,9 @@ packages:
   tslib@2.8.1:
     resolution: {integrity: sha512-oJFu94HQb+KVduSUQL7wnpmqnfmLsOA/nAh6b6EH0wCEoK0/mPeXU6c3wKDV83MkOuHPRHtSXKKU99IBazS/2w==}
 
+  tslib@2.9.1:
+    resolution: {integrity: sha512-a4Ux9VKuIMHsOS7ENbEq6hK2ZGYIT27Rtl0E4eD9KqwxhKiQeMZE/9xb3IdYwWaSOyIBQLExhQgXDTYoiCxnWA==}
+
   tsx@4.23.15:
     resolution: {integrity: sha512-Yiex1Ovn8z2xPpOWckIiysV1SSyRMY9BkLF++q0yKiDxCqRhosKfMg3janKkiLBwZ5c/YryloKwGZcrEmtwxKw==}
     engines: {node: '>=18.0.0'}
@@ -5184,14 +5187,14 @@ snapshots:
       is-docker: 4.0.0
       package-manager-detector: 1.9.0
 
-  '@astrojs/vercel@11.0.21(astro@7.4.7(@capacitor/preferences@8.0.1(@capacitor/core@8.5.2))(@types/node@26.6.6)(@vercel/blob@2.8.0)(@vercel/functions@3.11.3)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15)(yaml@2.9.1))(react@19.3.1)':
+  '@astrojs/vercel@11.0.21(astro@7.4.7(@capacitor/preferences@8.0.1(@capacitor/core@8.6.2))(@types/node@26.6.6)(@vercel/blob@2.8.0)(@vercel/functions@3.11.3)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15)(yaml@2.9.1))(react@19.3.1)':
     dependencies:
       '@astrojs/internal-helpers': 0.13.2
       '@vercel/analytics': 2.0.1(react@19.3.1)
       '@vercel/functions': 3.11.3
       '@vercel/nft': 1.11.7
       '@vercel/routing-utils': 6.6.1
-      astro: 7.4.7(@capacitor/preferences@8.0.1(@capacitor/core@8.5.2))(@types/node@26.6.6)(@vercel/blob@2.8.0)(@vercel/functions@3.11.3)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15)(yaml@2.9.1)
+      astro: 7.4.7(@capacitor/preferences@8.0.1(@capacitor/core@8.6.2))(@types/node@26.6.6)(@vercel/blob@2.8.0)(@vercel/functions@3.11.3)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15)(yaml@2.9.1)
       rolldown: 1.2.19
       tinyglobby: 0.2.17
     transitivePeerDependencies:
@@ -5451,9 +5454,9 @@ snapshots:
       hashery: 1.5.1
       keyv: 5.6.0
 
-  '@capacitor/android@8.5.2(@capacitor/core@8.5.2)':
+  '@capacitor/android@8.5.2(@capacitor/core@8.6.2)':
     dependencies:
-      '@capacitor/core': 8.5.2
+      '@capacitor/core': 8.6.2
 
   '@capacitor/cli@8.5.2':
     dependencies:
@@ -5478,36 +5481,36 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@capacitor/core@8.5.2':
+  '@capacitor/core@8.6.2':
     dependencies:
-      tslib: 2.8.1
+      tslib: 2.9.1
 
-  '@capacitor/filesystem@8.1.3(@capacitor/core@8.5.2)':
+  '@capacitor/filesystem@8.1.3(@capacitor/core@8.6.2)':
     dependencies:
-      '@capacitor/core': 8.5.2
+      '@capacitor/core': 8.6.2
       '@capacitor/synapse': 1.0.4
 
-  '@capacitor/ios@8.5.2(@capacitor/core@8.5.2)':
+  '@capacitor/ios@8.5.2(@capacitor/core@8.6.2)':
     dependencies:
-      '@capacitor/core': 8.5.2
+      '@capacitor/core': 8.6.2
 
-  '@capacitor/preferences@8.0.1(@capacitor/core@8.5.2)':
+  '@capacitor/preferences@8.0.1(@capacitor/core@8.6.2)':
     dependencies:
-      '@capacitor/core': 8.5.2
+      '@capacitor/core': 8.6.2
 
-  '@capacitor/push-notifications@8.1.2(@capacitor/core@8.5.2)':
+  '@capacitor/push-notifications@8.1.2(@capacitor/core@8.6.2)':
     dependencies:
-      '@capacitor/core': 8.5.2
+      '@capacitor/core': 8.6.2
 
-  '@capacitor/share@8.0.2(@capacitor/core@8.5.2)':
+  '@capacitor/share@8.0.2(@capacitor/core@8.6.2)':
     dependencies:
-      '@capacitor/core': 8.5.2
+      '@capacitor/core': 8.6.2
 
   '@capacitor/synapse@1.0.4': {}
 
-  '@capgo/capacitor-passkey@8.5.2(@capacitor/core@8.5.2)':
+  '@capgo/capacitor-passkey@8.5.2(@capacitor/core@8.6.2)':
     dependencies:
-      '@capacitor/core': 8.5.2
+      '@capacitor/core': 8.6.2
 
   '@capsizecss/unpack@4.0.1':
     dependencies:
@@ -5554,46 +5557,46 @@ snapshots:
   '@emnapi/core@1.11.1':
     dependencies:
       '@emnapi/wasi-threads': 1.2.2
-      tslib: 2.8.1
+      tslib: 2.9.1
     optional: true
 
   '@emnapi/core@1.11.3':
     dependencies:
       '@emnapi/wasi-threads': 1.2.3
-      tslib: 2.8.1
+      tslib: 2.9.1
 
   '@emnapi/core@2.0.0-beta.2':
     dependencies:
       '@emnapi/wasi-threads': 2.2.0
-      tslib: 2.8.1
+      tslib: 2.9.1
     optional: true
 
   '@emnapi/runtime@1.11.1':
     dependencies:
-      tslib: 2.8.1
+      tslib: 2.9.1
     optional: true
 
   '@emnapi/runtime@1.11.3':
     dependencies:
-      tslib: 2.8.1
+      tslib: 2.9.1
 
   '@emnapi/runtime@2.0.0-beta.2':
     dependencies:
-      tslib: 2.8.1
+      tslib: 2.9.1
     optional: true
 
   '@emnapi/wasi-threads@1.2.2':
     dependencies:
-      tslib: 2.8.1
+      tslib: 2.9.1
     optional: true
 
   '@emnapi/wasi-threads@1.2.3':
     dependencies:
-      tslib: 2.8.1
+      tslib: 2.9.1
 
   '@emnapi/wasi-threads@2.2.0':
     dependencies:
-      tslib: 2.8.1
+      tslib: 2.9.1
     optional: true
 
   '@esbuild-kit/core-utils@3.3.2':
@@ -5947,14 +5950,14 @@ snapshots:
     dependencies:
       '@ionic/utils-terminal': 2.3.5
       debug: 4.4.3
-      tslib: 2.8.1
+      tslib: 2.9.1
     transitivePeerDependencies:
       - supports-color
 
   '@ionic/utils-array@2.1.6':
     dependencies:
       debug: 4.4.3
-      tslib: 2.8.1
+      tslib: 2.9.1
     transitivePeerDependencies:
       - supports-color
 
@@ -5963,14 +5966,14 @@ snapshots:
       '@types/fs-extra': 8.1.5
       debug: 4.4.3
       fs-extra: 9.1.0
-      tslib: 2.8.1
+      tslib: 2.9.1
     transitivePeerDependencies:
       - supports-color
 
   '@ionic/utils-object@2.1.6':
     dependencies:
       debug: 4.4.3
-      tslib: 2.8.1
+      tslib: 2.9.1
     transitivePeerDependencies:
       - supports-color
 
@@ -5981,14 +5984,14 @@ snapshots:
       debug: 4.4.3
       signal-exit: 3.0.7
       tree-kill: 1.2.2
-      tslib: 2.8.1
+      tslib: 2.9.1
     transitivePeerDependencies:
       - supports-color
 
   '@ionic/utils-stream@3.1.7':
     dependencies:
       debug: 4.4.3
-      tslib: 2.8.1
+      tslib: 2.9.1
     transitivePeerDependencies:
       - supports-color
 
@@ -6001,7 +6004,7 @@ snapshots:
       '@ionic/utils-terminal': 2.3.5
       cross-spawn: 7.0.6
       debug: 4.4.3
-      tslib: 2.8.1
+      tslib: 2.9.1
     transitivePeerDependencies:
       - supports-color
 
@@ -6013,7 +6016,7 @@ snapshots:
       slice-ansi: 4.0.0
       string-width: 4.2.3
       strip-ansi: 6.0.1
-      tslib: 2.8.1
+      tslib: 2.9.1
       untildify: 4.0.0
       wrap-ansi: 7.0.0
     transitivePeerDependencies:
@@ -6153,7 +6156,7 @@ snapshots:
     dependencies:
       '@peculiar/asn1-schema': 2.9.4
       asn1js: 3.0.10
-      tslib: 2.8.1
+      tslib: 2.9.1
 
   '@peculiar/asn1-cms@2.9.4':
     dependencies:
@@ -6161,21 +6164,21 @@ snapshots:
       '@peculiar/asn1-x509': 2.9.4
       '@peculiar/asn1-x509-attr': 2.9.4
       asn1js: 3.0.10
-      tslib: 2.8.1
+      tslib: 2.9.1
 
   '@peculiar/asn1-csr@2.9.4':
     dependencies:
       '@peculiar/asn1-schema': 2.9.4
       '@peculiar/asn1-x509': 2.9.4
       asn1js: 3.0.10
-      tslib: 2.8.1
+      tslib: 2.9.1
 
   '@peculiar/asn1-ecc@2.9.4':
     dependencies:
       '@peculiar/asn1-schema': 2.9.4
       '@peculiar/asn1-x509': 2.9.4
       asn1js: 3.0.10
-      tslib: 2.8.1
+      tslib: 2.9.1
 
   '@peculiar/asn1-pfx@2.9.4':
     dependencies:
@@ -6184,14 +6187,14 @@ snapshots:
       '@peculiar/asn1-rsa': 2.9.4
       '@peculiar/asn1-schema': 2.9.4
       asn1js: 3.0.10
-      tslib: 2.8.1
+      tslib: 2.9.1
 
   '@peculiar/asn1-pkcs8@2.9.4':
     dependencies:
       '@peculiar/asn1-schema': 2.9.4
       '@peculiar/asn1-x509': 2.9.4
       asn1js: 3.0.10
-      tslib: 2.8.1
+      tslib: 2.9.1
 
   '@peculiar/asn1-pkcs9@2.9.4':
     dependencies:
@@ -6202,38 +6205,38 @@ snapshots:
       '@peculiar/asn1-x509': 2.9.4
       '@peculiar/asn1-x509-attr': 2.9.4
       asn1js: 3.0.10
-      tslib: 2.8.1
+      tslib: 2.9.1
 
   '@peculiar/asn1-rsa@2.9.4':
     dependencies:
       '@peculiar/asn1-schema': 2.9.4
       '@peculiar/asn1-x509': 2.9.4
       asn1js: 3.0.10
-      tslib: 2.8.1
+      tslib: 2.9.1
 
   '@peculiar/asn1-schema@2.9.4':
     dependencies:
       '@peculiar/utils': 2.0.3
       asn1js: 3.0.10
-      tslib: 2.8.1
+      tslib: 2.9.1
 
   '@peculiar/asn1-x509-attr@2.9.4':
     dependencies:
       '@peculiar/asn1-schema': 2.9.4
       '@peculiar/asn1-x509': 2.9.4
       asn1js: 3.0.10
-      tslib: 2.8.1
+      tslib: 2.9.1
 
   '@peculiar/asn1-x509@2.9.4':
     dependencies:
       '@peculiar/asn1-schema': 2.9.4
       '@peculiar/utils': 2.0.3
       asn1js: 3.0.10
-      tslib: 2.8.1
+      tslib: 2.9.1
 
   '@peculiar/utils@2.0.3':
     dependencies:
-      tslib: 2.8.1
+      tslib: 2.9.1
 
   '@peculiar/x509@1.14.3':
     dependencies:
@@ -6246,7 +6249,7 @@ snapshots:
       '@peculiar/asn1-x509': 2.9.4
       pvtsutils: 1.3.6
       reflect-metadata: 0.2.2
-      tslib: 2.8.1
+      tslib: 2.9.1
       tsyringe: 4.10.0
 
   '@pkgr/core@0.3.6': {}
@@ -6472,7 +6475,7 @@ snapshots:
 
   '@swc/helpers@0.5.23':
     dependencies:
-      tslib: 2.8.1
+      tslib: 2.9.1
 
   '@tailwindcss/node@4.3.4':
     dependencies:
@@ -6551,7 +6554,7 @@ snapshots:
 
   '@tybys/wasm-util@0.10.4':
     dependencies:
-      tslib: 2.8.1
+      tslib: 2.9.1
 
   '@types/chai@5.2.3':
     dependencies:
@@ -6961,7 +6964,7 @@ snapshots:
     dependencies:
       pvtsutils: 1.3.6
       pvutils: 1.2.0
-      tslib: 2.8.1
+      tslib: 2.9.1
 
   assertion-error@2.0.1: {}
 
@@ -6985,7 +6988,7 @@ snapshots:
       - '@emnapi/runtime'
       - supports-color
 
-  astro@7.4.7(@capacitor/preferences@8.0.1(@capacitor/core@8.5.2))(@types/node@26.6.6)(@vercel/blob@2.8.0)(@vercel/functions@3.11.3)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15)(yaml@2.9.1):
+  astro@7.4.7(@capacitor/preferences@8.0.1(@capacitor/core@8.6.2))(@types/node@26.6.6)(@vercel/blob@2.8.0)(@vercel/functions@3.11.3)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15)(yaml@2.9.1):
     dependencies:
       '@astrojs/compiler-rs': 0.5.3
       '@astrojs/internal-helpers': 0.13.1
@@ -7032,7 +7035,7 @@ snapshots:
       tinyps: 0.5.2
       ultrahtml: 1.7.0
       unifont: 1.0.3
-      unstorage: 1.17.6(@capacitor/preferences@8.0.1(@capacitor/core@8.5.2))(@vercel/blob@2.8.0)(@vercel/functions@3.11.3)
+      unstorage: 1.17.6(@capacitor/preferences@8.0.1(@capacitor/core@8.6.2))(@vercel/blob@2.8.0)(@vercel/functions@3.11.3)
       verkit: 0.5.0
       vite: 8.3.6(@types/node@26.6.6)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15)(yaml@2.9.1)
       vitefu: 1.1.3(vite@8.3.6(@types/node@26.6.6)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15)(yaml@2.9.1))
@@ -8371,7 +8374,7 @@ snapshots:
       plist: 3.1.1
       split2: 4.2.0
       through2: 4.0.2
-      tslib: 2.8.1
+      tslib: 2.9.1
       yauzl: 2.10.0
     transitivePeerDependencies:
       - supports-color
@@ -8658,7 +8661,7 @@ snapshots:
 
   pvtsutils@1.3.6:
     dependencies:
-      tslib: 2.8.1
+      tslib: 2.9.1
 
   pvutils@1.2.0: {}
 
@@ -9160,6 +9163,8 @@ snapshots:
 
   tslib@2.8.1: {}
 
+  tslib@2.9.1: {}
+
   tsx@4.23.15:
     dependencies:
       esbuild: 0.28.2
@@ -9297,7 +9302,7 @@ snapshots:
 
   universalify@2.0.1: {}
 
-  unstorage@1.17.6(@capacitor/preferences@8.0.1(@capacitor/core@8.5.2))(@vercel/blob@2.8.0)(@vercel/functions@3.11.3):
+  unstorage@1.17.6(@capacitor/preferences@8.0.1(@capacitor/core@8.6.2))(@vercel/blob@2.8.0)(@vercel/functions@3.11.3):
     dependencies:
       anymatch: 3.1.3
       chokidar: 5.0.0
@@ -9308,7 +9313,7 @@ snapshots:
       ofetch: 1.5.1
       ufo: 1.6.4
     optionalDependencies:
-      '@capacitor/preferences': 8.0.1(@capacitor/core@8.5.2)
+      '@capacitor/preferences': 8.0.1(@capacitor/core@8.6.2)
       '@vercel/blob': 2.8.0
       '@vercel/functions': 3.11.3
 
